@@ -1,0 +1,28 @@
+image: gradle:8.9-jdk17
+
+variables:
+  GRADLE_OPTS: "-Dorg.gradle.daemon=false"
+
+cache:
+  paths:
+    - .gradle/wrapper
+    - .gradle/caches
+
+stages:
+  - build
+
+build_service:
+  stage: build
+  tags:
+    - saas-linux-medium-amd64
+  script:
+    - echo "Add required permissions"
+    - chmod +x gradlew
+    - echo "Run build for service"
+    - ./gradlew clean build
+  rules:
+    - if: $CI_PIPELINE_SOURCE == 'merge_request_event'
+      when: always
+
+after_script:
+  - echo "All builds runs"

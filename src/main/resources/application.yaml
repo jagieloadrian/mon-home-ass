@@ -1,0 +1,11 @@
+ktor:
+    application:
+        modules:
+            - com.anjo.monhomeass.ApplicationKt.module
+    deployment:
+        port: 8080
+    database:
+        user: "home_ass_monitor"
+        password: "Secondary_home_1"
+        url: "192.168.0.23:5432"
+        database_name: "home_assistant"
