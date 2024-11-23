@@ -5,7 +5,9 @@ ktor:
     deployment:
         port: 8080
     database:
-        user: "home_ass_monitor"
-        password: "Secondary_home_1"
-        url: "192.168.0.23:5432"
-        database_name: "home_assistant"
+        user: "db_user"
+        password: "db_password"
+        url: "db_url"
+        database_name: "db_name"
+        driver: "org.postgresql.Driver"
+        database_type: "postgres"

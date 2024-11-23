@@ -10,11 +10,13 @@ fun Application.configureDatabases() {
     val dbName = dbConfig.propertyOrNull("database_name")?.getString() ?: "postgres"
     val dbUser = dbConfig.propertyOrNull("user")?.getString() ?: "postgres"
     val dbPassword = dbConfig.propertyOrNull("password")?.getString() ?: ""
-    val url = "jdbc:postgresql://$dbUrl/$dbName"
+    val driver = dbConfig.propertyOrNull("driver")?.getString() ?: ""
+    val type = dbConfig.propertyOrNull("database_type")?.getString() ?: ""
+    val url = generateUrl(type, dbUrl, dbName)
 
     Database.connect(
             url = url,
-            driver = "org.postgresql.Driver",
+            driver = driver,
             user = dbUser,
             password = dbPassword,
             setupConnection = {
@@ -22,4 +24,12 @@ fun Application.configureDatabases() {
 
             }
     )
+}
+
+fun generateUrl(type: String, dbUrl: String, dbName: String): String {
+    return when(type) {
+        "postgres" -> "jdbc:postgresql://$dbUrl/$dbName"
+        "h2" -> "jdbc:h2:$dbUrl:$dbName"
+        else -> throw IllegalArgumentException("")
+    }
 }
