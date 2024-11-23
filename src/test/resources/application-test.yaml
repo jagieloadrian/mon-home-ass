@@ -1,0 +1,13 @@
+ktor:
+  application:
+    modules:
+      - com.anjo.monhomeass.ApplicationKt.module
+  deployment:
+    port: 8080
+  database:
+    user: "home_ass_monitor"
+    password: "testpassword"
+    url: "mem"
+    database_name: "home_assistant"
+    driver: "org.h2.Driver"
+    database_type: "h2"
