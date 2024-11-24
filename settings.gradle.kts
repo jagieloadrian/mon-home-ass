@@ -1,1 +1,1 @@
-rootProject.name = "com.anjo.mon-home-ass"
+rootProject.name = "mon-home-ass"

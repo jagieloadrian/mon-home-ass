@@ -1,3 +1,5 @@
+import io.ktor.plugin.features.*
+
 val h2_version: String by project
 val kotlin_version: String by project
 val logback_version: String by project
@@ -55,4 +57,18 @@ dependencies {
     testImplementation("org.jetbrains.kotlin:kotlin-test-junit:$kotlin_version")
     testImplementation("io.kotest:kotest-assertions-core:5.9.1")
     testImplementation("io.mockk:mockk:1.13.13")
+}
+
+ktor {
+    docker {
+        jreVersion.set(JavaVersion.VERSION_21)
+        customBaseImage.set("eclipse-temurin:21-jre-alpine")
+        localImageName.set(rootProject.name)
+        imageTag.set(version.toString())
+        jib.container.creationTime = "USE_CURRENT_TIMESTAMP"
+        portMappings.set(listOf(
+                DockerPortMapping(outsideDocker = 8080, 8080, DockerPortMappingProtocol.TCP)
+        )
+        )
+    }
 }
