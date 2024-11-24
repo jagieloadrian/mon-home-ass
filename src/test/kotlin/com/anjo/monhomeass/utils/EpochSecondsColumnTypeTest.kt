@@ -1,0 +1,50 @@
+package com.anjo.monhomeass.utils
+
+import io.kotest.matchers.nulls.shouldBeNull
+import io.kotest.matchers.shouldBe
+import io.kotest.matchers.types.shouldBeInstanceOf
+import kotlinx.datetime.Instant
+import kotlin.test.Test
+
+class EpochSecondsColumnTypeTest {
+
+    @Test
+    fun `given class instance when check return type then assert response`() {
+        //given
+        val epochSecondsColumnType = EpochSecondsColumnType()
+        val expected = "DOUBLE PRECISION"
+
+        //when
+        val actual = epochSecondsColumnType.sqlType()
+
+        //then
+        actual shouldBe expected
+        actual.shouldBeInstanceOf<String>()
+    }
+
+    @Test
+    fun `given double value when transform value then return new instant`() {
+        //given
+        val doubleNumer = 1713132010.2021418
+        val epochSecondsColumnType = EpochSecondsColumnType()
+        val expected = Instant.fromEpochSeconds(1713132010, 202141761)
+        //when
+        val actual = epochSecondsColumnType.valueFromDB(doubleNumer)
+
+        //then
+        actual shouldBe expected
+    }
+
+    @Test
+    fun `given different type when transform value then return null`() {
+        //given
+        val epochSecondsColumnType = EpochSecondsColumnType()
+        val differentType = 123
+
+        //when
+        val actual = epochSecondsColumnType.valueFromDB(differentType)
+
+        //then
+        actual.shouldBeNull()
+    }
+}

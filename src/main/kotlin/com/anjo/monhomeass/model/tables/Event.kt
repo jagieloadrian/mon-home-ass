@@ -1,10 +1,10 @@
 package com.anjo.monhomeass.model.tables
 
+import com.anjo.monhomeass.utils.epochSeconds
 import org.jetbrains.exposed.sql.Table
-import org.jetbrains.exposed.sql.kotlin.datetime.timestamp
 import org.jetbrains.exposed.sql.kotlin.datetime.timestampWithTimeZone
 
-object EventData : Table() {
+object EventData : Table("event_data") {
     val id = integer("data_id")
     val hash = long("hash").nullable()
     val sharedData = text("shared_data").nullable()
@@ -22,13 +22,13 @@ object Event : Table("events") {
     val origin = char("origin", 1).nullable()
     val originIdx = integer("origin_idx").nullable()
     val timestamp = timestampWithTimeZone("time_fired").nullable()
-    val timestampTs = timestamp("time_fired_ts").nullable()
+    val timestampTs = epochSeconds("time_fired_ts").nullable()
     val contextId = char("context_id", 1).nullable()
     val contextUserId = char("context_user_id", 1).nullable()
     val contextParentId = char("context_parent_id", 1).nullable()
     val dataId = integer("data_id").references(EventData.id).nullable()
     val contextIdBinary = binary("context_id_bin").nullable()
-    val contextUserIdBinary = binary("context_user_id").nullable()
-    val contextParentIdBinary = binary("context_parent_id").nullable()
+    val contextUserIdBinary = binary("context_user_id_bin").nullable()
+    val contextParentIdBinary = binary("context_parent_id_bin").nullable()
     val eventTypeId = integer("event_type_id").references(EventType.id).nullable()
 }

@@ -4,7 +4,7 @@ import com.anjo.monhomeass.repository.MigrationRepo
 import io.ktor.server.routing.*
 import io.ktor.util.reflect.*
 
-fun Route.migrationRout(repo: MigrationRepo) {
+fun Route.migrationRoute(repo: MigrationRepo) {
 
     route("/migrations") {
         get("/all") {

@@ -1,4 +1,3 @@
-
 val h2_version: String by project
 val kotlin_version: String by project
 val logback_version: String by project
@@ -49,9 +48,11 @@ dependencies {
     //health
     implementation("dev.hayden:khealth:3.0.0")
     //logging
+    implementation("io.github.oshai:kotlin-logging-jvm:7.0.0")
     implementation("ch.qos.logback:logback-classic:$logback_version")
     //test
     testImplementation("io.ktor:ktor-server-test-host-jvm")
     testImplementation("org.jetbrains.kotlin:kotlin-test-junit:$kotlin_version")
     testImplementation("io.kotest:kotest-assertions-core:5.9.1")
+    testImplementation("io.mockk:mockk:1.13.13")
 }
