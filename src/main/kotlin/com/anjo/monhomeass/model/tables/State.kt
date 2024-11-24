@@ -1,7 +1,7 @@
 package com.anjo.monhomeass.model.tables
 
+import com.anjo.monhomeass.utils.epochSeconds
 import org.jetbrains.exposed.sql.Table
-import org.jetbrains.exposed.sql.kotlin.datetime.timestamp
 import org.jetbrains.exposed.sql.kotlin.datetime.timestampWithTimeZone
 
 object StateAttributes : Table() {
@@ -16,12 +16,12 @@ object State : Table("states") {
     val state = varchar("state", 255).nullable()
     val attributes = char("attributes", 1).nullable()
     val lastModified = timestampWithTimeZone("last_changed").nullable()
-    val lastModifiedTs = timestamp("last_changed_ts").nullable()
-    val lastReportedTs = timestamp("last_reported_ts").nullable()
+    val lastModifiedTs = epochSeconds("last_changed_ts").nullable()
+    val lastReportedTs = epochSeconds("last_reported_ts").nullable()
     val lastUpdated = timestampWithTimeZone("last_updated").nullable()
     val oldId = integer("old_state_id").references(id).nullable()
     val attributesId = integer("attributes_id").references(StateAttributes.id).nullable()
-    val lastUpdatedTs = timestamp("last_updated_ts").nullable()
+    val lastUpdatedTs = epochSeconds("last_updated_ts").nullable()
     val contextId = char("context_id", 1).nullable()
     val contextUserId = char("context_user_id", 1).nullable()
     val contextParentId = char("context_parent_id", 1).nullable()

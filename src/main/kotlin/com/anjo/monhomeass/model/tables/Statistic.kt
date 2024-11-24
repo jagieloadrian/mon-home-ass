@@ -1,21 +1,21 @@
 package com.anjo.monhomeass.model.tables
 
+import com.anjo.monhomeass.utils.epochSeconds
 import org.jetbrains.exposed.sql.Table
-import org.jetbrains.exposed.sql.kotlin.datetime.timestamp
 import org.jetbrains.exposed.sql.kotlin.datetime.timestampWithTimeZone
 
 object Statistic : Table("statistics") {
     val id = integer("id")
     val created = timestampWithTimeZone("created").nullable()
-    val createdTs = timestamp("created_ts").nullable()
+    val createdTs = epochSeconds("created_ts").nullable()
     val metadataId = integer("metadata_id").references(StateMetadata.id).nullable()
     val start = timestampWithTimeZone("start").nullable()
-    val startTs = timestamp("start_ts").nullable()
+    val startTs = epochSeconds("start_ts").nullable()
     val mean = double("mean").nullable()
     val min = double("min").nullable()
     val max = double("max").nullable()
     val lastReset = timestampWithTimeZone("last_reset").nullable()
-    val lastResetTs = timestamp("last_reset_ts").nullable()
+    val lastResetTs = epochSeconds("last_reset_ts").nullable()
     val state = double("state").nullable()
     val sum = double("sum").nullable()
 }
@@ -38,15 +38,15 @@ object StatisticRun : Table("statistics_runs") {
 object StatisticShortTem : Table() {
     val id = integer("id")
     val created = timestampWithTimeZone("created").nullable()
-    val createdTs = timestamp("created_ts").nullable()
+    val createdTs = epochSeconds("created_ts").nullable()
     val metadataId = integer("metadata_id").references(StateMetadata.id).nullable()
     val start = timestampWithTimeZone("start").nullable()
-    val startTs = timestamp("start_ts").nullable()
+    val startTs = epochSeconds("start_ts").nullable()
     val mean = double("mean").nullable()
     val min = double("min").nullable()
     val max = double("max").nullable()
     val lastReset = timestampWithTimeZone("last_reset").nullable()
-    val lastResetTs = timestamp("last_reset_ts").nullable()
+    val lastResetTs = epochSeconds("last_reset_ts").nullable()
     val state = double("state").nullable()
     val sum = double("sum").nullable()
 }
