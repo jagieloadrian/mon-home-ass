@@ -15,6 +15,13 @@ class EpochSecondsColumnType : ColumnType<Instant>() {
             else -> null
         }
     }
+
+    override fun valueToDB(value: Instant?): Double? {
+      return when(value) {
+          is Instant -> value.epochSeconds + value.nanosecondsOfSecond / 1_000_000_000.0
+          else -> null
+      }
+    }
 }
 
 fun Table.epochSeconds(name: String) = registerColumn(name, EpochSecondsColumnType())

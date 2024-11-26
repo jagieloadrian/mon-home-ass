@@ -40,7 +40,7 @@ class SchemaChangesRoutesKtTest {
         val expected = listOf(SchemaChangeDto(1, 1, date))
 
         //when
-        val response = client.get("/schemas/all") {
+        val response = client.get("/schemas") {
             header(HttpHeaders.ContentType, "application/json")
             header(HttpHeaders.Accept, "application/json")
         }
@@ -58,9 +58,9 @@ class SchemaChangesRoutesKtTest {
             SchemaUtils.create(SchemaChanges)
             addRecords {
                 SchemaChanges.insert {
-                    it[this.id] = 1
-                    it[this.version] = 1
-                    it[this.changedAt] = OffsetDateTime.ofInstant(java.time.Instant.ofEpochSecond(1), ZoneOffset.UTC)
+                    it[id] = 1
+                    it[version] = 1
+                    it[changedAt] = OffsetDateTime.ofInstant(java.time.Instant.ofEpochSecond(1), ZoneOffset.UTC)
                 }
             }
         }

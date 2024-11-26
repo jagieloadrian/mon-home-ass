@@ -41,7 +41,7 @@ class RecorderRoutesKtTest {
         val expected = listOf(RecorderDto(1, dateTime, dateTime, true, dateTime))
 
         //when
-        val response = client.get("/recorders/all") {
+        val response = client.get("/recorders") {
             header(HttpHeaders.ContentType, "application/json")
             header(HttpHeaders.Accept, "application/json")
         }
@@ -59,11 +59,11 @@ class RecorderRoutesKtTest {
             SchemaUtils.create(Recorder)
             addRecords {
                 Recorder.insert {
-                    it[this.runId] = 1
-                    it[this.startTime] = OffsetDateTime.ofInstant(Instant.ofEpochSecond(1), ZoneOffset.UTC)
-                    it[this.endTime] = OffsetDateTime.ofInstant(Instant.ofEpochSecond(1), ZoneOffset.UTC)
-                    it[this.isClosedIncorrect] = true
-                    it[this.createdAt] = OffsetDateTime.ofInstant(Instant.ofEpochSecond(1), ZoneOffset.UTC)
+                    it[runId] = 1
+                    it[startTime] = OffsetDateTime.ofInstant(Instant.ofEpochSecond(1), ZoneOffset.UTC)
+                    it[endTime] = OffsetDateTime.ofInstant(Instant.ofEpochSecond(1), ZoneOffset.UTC)
+                    it[isClosedIncorrect] = true
+                    it[createdAt] = OffsetDateTime.ofInstant(Instant.ofEpochSecond(1), ZoneOffset.UTC)
                 }
             }
         }

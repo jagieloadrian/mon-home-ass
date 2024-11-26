@@ -5,7 +5,7 @@ import com.anjo.monhomeass.plugins.configureHTTP
 import com.anjo.monhomeass.plugins.configureMonitoring
 import com.anjo.monhomeass.plugins.configureRouting
 import com.anjo.monhomeass.plugins.configureSerialization
-import io.ktor.server.application.*
+import io.ktor.server.application.Application
 
 fun main(args: Array<String>) {
     io.ktor.server.netty.EngineMain.main(args)

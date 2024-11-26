@@ -8,11 +8,15 @@ object EventData : Table("event_data") {
     val id = integer("data_id")
     val hash = long("hash").nullable()
     val sharedData = text("shared_data").nullable()
+
+    override val primaryKey = PrimaryKey(id)
 }
 
 object EventType : Table("event_types") {
     val id = integer("event_type_id")
     val type = varchar("event_type", 64).nullable()
+
+    override val primaryKey = PrimaryKey(id)
 }
 
 object Event : Table("events") {

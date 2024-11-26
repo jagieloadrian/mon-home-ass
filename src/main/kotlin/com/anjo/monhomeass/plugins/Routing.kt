@@ -8,8 +8,8 @@ import com.anjo.monhomeass.routing.migrationRoute
 import com.anjo.monhomeass.routing.recorderRout
 import com.anjo.monhomeass.routing.schemaChangesRout
 import com.anjo.monhomeass.service.EventService
-import io.ktor.server.application.*
-import io.ktor.server.routing.*
+import io.ktor.server.application.Application
+import io.ktor.server.routing.routing
 
 
 fun Application.configureRouting() {

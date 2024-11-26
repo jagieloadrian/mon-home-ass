@@ -34,7 +34,7 @@ class MigrationRoutesKtTest {
         val expected = listOf(MigrationDto("new_id", 1))
 
         //when
-        val response = client.get("/migrations/all") {
+        val response = client.get("/migrations") {
             header(HttpHeaders.ContentType, "application/json")
             header(HttpHeaders.Accept, "application/json")
         }
@@ -52,8 +52,8 @@ class MigrationRoutesKtTest {
             SchemaUtils.create(MigrationChanges)
             addRecords {
                 MigrationChanges.insert {
-                    it[this.id] = "new_id"
-                    it[this.version] = 1
+                    it[id] = "new_id"
+                    it[version] = 1
                 }
             }
         }
