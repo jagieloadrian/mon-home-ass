@@ -22,9 +22,6 @@ data class EventDto(
         val contextUserId: String?,
         val contextParentId: String?,
         val dataContent: DataContentDto?,
-        val contextIdBinary: String?,
-        val contextUserIdBinary: String?,
-        val contextParentIdBinary: String?,
         val eventType: EventTypeDto?
 )
 
@@ -41,7 +38,6 @@ data class EventTypeDto(
         val type: String?
 )
 
-@OptIn(ExperimentalStdlibApi::class)
 fun ResultRow.toEventDto(): EventDto {
     val eventType = generateEventType(this)
     val eventData = generateEventData(this)
@@ -58,9 +54,6 @@ fun ResultRow.toEventDto(): EventDto {
             contextUserId = this[Event.contextUserId],
             contextParentId = this[Event.contextParentId],
             dataContent = eventData,
-            contextIdBinary = this[Event.contextIdBinary]?.toHexString(),
-            contextUserIdBinary = this[Event.contextUserIdBinary]?.toHexString(),
-            contextParentIdBinary = this[Event.contextParentIdBinary]?.toHexString(),
             eventType = eventType
     )
 }
