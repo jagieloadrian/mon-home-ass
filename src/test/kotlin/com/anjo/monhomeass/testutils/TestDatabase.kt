@@ -1,8 +1,8 @@
 package com.anjo.monhomeass.testutils
 
-import org.jetbrains.exposed.sql.Database
-import org.jetbrains.exposed.sql.statements.InsertStatement
-import org.jetbrains.exposed.sql.transactions.transaction
+import org.jetbrains.exposed.v1.core.statements.InsertStatement
+import org.jetbrains.exposed.v1.jdbc.Database
+import org.jetbrains.exposed.v1.jdbc.transactions.transaction
 
 fun prepareDatabase() {
     Database.connect(

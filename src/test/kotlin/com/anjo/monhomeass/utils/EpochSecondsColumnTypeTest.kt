@@ -3,8 +3,8 @@ package com.anjo.monhomeass.utils
 import io.kotest.matchers.nulls.shouldBeNull
 import io.kotest.matchers.shouldBe
 import io.kotest.matchers.types.shouldBeInstanceOf
-import kotlinx.datetime.Instant
 import kotlin.test.Test
+import kotlin.time.Instant
 
 class EpochSecondsColumnTypeTest {
 

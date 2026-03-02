@@ -1,8 +1,8 @@
 package com.anjo.monhomeass.model.tables
 
 import com.anjo.monhomeass.utils.epochSeconds
-import org.jetbrains.exposed.sql.Table
-import org.jetbrains.exposed.sql.kotlin.datetime.timestampWithTimeZone
+import org.jetbrains.exposed.v1.core.Table
+import org.jetbrains.exposed.v1.datetime.timestampWithTimeZone
 
 object Statistic : Table("statistics") {
     val id = integer("id")

@@ -1,8 +1,8 @@
 package com.anjo.monhomeass.utils
 
-import kotlinx.datetime.Instant
-import org.jetbrains.exposed.sql.ColumnType
-import org.jetbrains.exposed.sql.Table
+import org.jetbrains.exposed.v1.core.ColumnType
+import org.jetbrains.exposed.v1.core.Table
+import kotlin.time.Instant
 
 class EpochSecondsColumnType : ColumnType<Instant>() {
     override fun sqlType(): String {

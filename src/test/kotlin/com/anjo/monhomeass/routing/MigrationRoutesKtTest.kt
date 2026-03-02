@@ -7,15 +7,17 @@ import com.anjo.monhomeass.plugins.configureRouting
 import com.anjo.monhomeass.testutils.addRecords
 import com.anjo.monhomeass.testutils.prepareDatabase
 import io.kotest.matchers.shouldBe
-import io.ktor.client.request.*
-import io.ktor.client.statement.*
-import io.ktor.http.*
-import io.ktor.server.config.*
-import io.ktor.server.testing.*
+import io.ktor.client.request.get
+import io.ktor.client.request.header
+import io.ktor.client.statement.bodyAsText
+import io.ktor.http.HttpHeaders
+import io.ktor.http.HttpStatusCode
+import io.ktor.server.config.ApplicationConfig
+import io.ktor.server.testing.testApplication
 import kotlinx.serialization.json.Json
-import org.jetbrains.exposed.sql.SchemaUtils
-import org.jetbrains.exposed.sql.insert
-import org.jetbrains.exposed.sql.transactions.transaction
+import org.jetbrains.exposed.v1.jdbc.SchemaUtils
+import org.jetbrains.exposed.v1.jdbc.insert
+import org.jetbrains.exposed.v1.jdbc.transactions.transaction
 import kotlin.test.Test
 
 class MigrationRoutesKtTest {

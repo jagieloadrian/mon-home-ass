@@ -5,10 +5,12 @@ import com.anjo.monhomeass.model.dto.toEventDto
 import com.anjo.monhomeass.model.tables.Event
 import com.anjo.monhomeass.model.tables.EventData
 import com.anjo.monhomeass.model.tables.EventType
-import org.jetbrains.exposed.sql.SortOrder
-import org.jetbrains.exposed.sql.andWhere
-import org.jetbrains.exposed.sql.selectAll
-import org.jetbrains.exposed.sql.transactions.transaction
+import org.jetbrains.exposed.v1.core.SortOrder
+import org.jetbrains.exposed.v1.core.like
+import org.jetbrains.exposed.v1.core.notLike
+import org.jetbrains.exposed.v1.jdbc.andWhere
+import org.jetbrains.exposed.v1.jdbc.selectAll
+import org.jetbrains.exposed.v1.jdbc.transactions.transaction
 
 class EventRepo {
 

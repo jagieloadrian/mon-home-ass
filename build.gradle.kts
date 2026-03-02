@@ -5,11 +5,12 @@ val kotlin_version: String by project
 val logback_version: String by project
 val postgres_version: String by project
 val exposed_version: String by project
+val ktor_version: String by project
 
 plugins {
-    kotlin("jvm") version "2.0.21"
-    id("io.ktor.plugin") version "3.0.1"
-    id("org.jetbrains.kotlin.plugin.serialization") version "2.0.21"
+    kotlin("jvm")
+    kotlin("plugin.serialization")
+    id("io.ktor.plugin")
 }
 
 group = "com.anjo"
@@ -37,8 +38,10 @@ dependencies {
     implementation("io.ktor:ktor-server-netty-jvm")
     implementation("io.ktor:ktor-server-config-yaml")
 
-    //    implementation("io.ktor:ktor-server-swagger")
-    //    implementation("io.ktor:ktor-server-swagger-jvm")
+    //swagger
+    implementation("io.ktor:ktor-server-swagger:${ktor_version}")
+    // will be removed with ktor 3.4.1
+    implementation("io.ktor:ktor-server-routing-openapi:${ktor_version}")
 
     //databases
     implementation("org.postgresql:postgresql:$postgres_version")
@@ -57,6 +60,7 @@ dependencies {
     testImplementation("org.jetbrains.kotlin:kotlin-test-junit:$kotlin_version")
     testImplementation("io.kotest:kotest-assertions-core:5.9.1")
     testImplementation("io.mockk:mockk:1.13.13")
+    testImplementation("io.ktor:ktor-client-content-negotiation:${ktor_version}")
 }
 
 ktor {

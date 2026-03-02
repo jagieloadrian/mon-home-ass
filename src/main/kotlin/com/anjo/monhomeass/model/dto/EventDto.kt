@@ -4,10 +4,10 @@ import com.anjo.monhomeass.model.tables.Event
 import com.anjo.monhomeass.model.tables.EventData
 import com.anjo.monhomeass.model.tables.EventType
 import com.anjo.monhomeass.utils.toKotlinxDateTime
-import kotlinx.datetime.Instant
 import kotlinx.datetime.LocalDateTime
 import kotlinx.serialization.Serializable
-import org.jetbrains.exposed.sql.ResultRow
+import org.jetbrains.exposed.v1.core.ResultRow
+import kotlin.time.Instant
 
 @Serializable
 data class EventDto(
