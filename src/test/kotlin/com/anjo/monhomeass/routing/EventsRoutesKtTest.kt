@@ -3,7 +3,6 @@ package com.anjo.monhomeass.routing
 import com.anjo.monhomeass.model.dto.DataContentDto
 import com.anjo.monhomeass.model.dto.EventDto
 import com.anjo.monhomeass.model.dto.EventTypeDto
-import com.anjo.monhomeass.model.dto.toEventDto
 import com.anjo.monhomeass.model.tables.Event
 import com.anjo.monhomeass.model.tables.EventData
 import com.anjo.monhomeass.model.tables.EventType
@@ -26,7 +25,6 @@ import kotlinx.datetime.toLocalDateTime
 import org.jetbrains.exposed.v1.jdbc.SchemaUtils
 import org.jetbrains.exposed.v1.jdbc.deleteAll
 import org.jetbrains.exposed.v1.jdbc.insert
-import org.jetbrains.exposed.v1.jdbc.selectAll
 import org.jetbrains.exposed.v1.jdbc.transactions.transaction
 import java.time.OffsetDateTime
 import java.time.ZoneOffset

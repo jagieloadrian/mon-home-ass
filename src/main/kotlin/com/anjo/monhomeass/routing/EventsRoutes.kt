@@ -1,3 +1,5 @@
+@file:OptIn(ExperimentalKtorApi::class)
+
 package com.anjo.monhomeass.routing
 
 import com.anjo.monhomeass.model.dto.EventDto
@@ -9,6 +11,7 @@ import io.ktor.server.routing.Route
 import io.ktor.server.routing.get
 import io.ktor.server.routing.openapi.describe
 import io.ktor.server.routing.route
+import io.ktor.utils.io.ExperimentalKtorApi
 
 fun Route.eventsRoute(service: EventService) {
 

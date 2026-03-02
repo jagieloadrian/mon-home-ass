@@ -1,6 +1,7 @@
+@file:OptIn(ExperimentalKtorApi::class)
+
 package com.anjo.monhomeass.routing
 
-import com.anjo.monhomeass.model.dto.EventDto
 import com.anjo.monhomeass.model.dto.RecorderDto
 import com.anjo.monhomeass.repository.RecorderRepo
 import io.ktor.http.HttpStatusCode
@@ -10,6 +11,7 @@ import io.ktor.server.routing.get
 import io.ktor.server.routing.openapi.describe
 import io.ktor.server.routing.route
 import io.ktor.util.reflect.TypeInfo
+import io.ktor.utils.io.ExperimentalKtorApi
 
 fun Route.recorderRout(repo: RecorderRepo) {
 
