@@ -36,11 +36,11 @@ object StatisticRun : Table("statistics_runs") {
     val startedAt = timestampWithTimeZone("start")
 }
 
-object StatisticShortTem : Table() {
+object StatisticShortTem : Table("statistics_short_term") {
     val id = integer("id")
     val created = timestampWithTimeZone("created").nullable()
     val createdTs = epochSeconds("created_ts").nullable()
-    val metadataId = integer("metadata_id").references(StateMetadata.id).nullable()
+    val metadataId = integer("metadata_id").references(StatisticMetaData.id).nullable()
     val start = timestampWithTimeZone("start").nullable()
     val startTs = epochSeconds("start_ts").nullable()
     val mean = double("mean").nullable()

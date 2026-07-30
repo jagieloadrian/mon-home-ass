@@ -104,3 +104,61 @@ fun Route.statisticRoute(repo: StatisticRepo) {
         }
     }
 }
+
+fun Route.statisticShortTermRoute(repo: StatisticRepo) {
+
+    route("/statistics") {
+        get("/{statisticId}/short-term") {
+            val statisticId = call.parameters["statisticId"]!!
+            val from = call.request.queryParameters["from"]?.let {
+                parseInstant(it) ?: return@get call.respond(HttpStatusCode.BadRequest, ErrorDto("Invalid 'from' value"))
+            }
+            val to = call.request.queryParameters["to"]?.let {
+                parseInstant(it) ?: return@get call.respond(HttpStatusCode.BadRequest, ErrorDto("Invalid 'to' value"))
+            }
+
+            val rows = repo.getShortTerm(statisticId, from, to)
+            if (rows == null) {
+                call.respond(HttpStatusCode.NotFound, ErrorDto("Unknown statisticId"))
+            } else {
+                call.respond(rows, typeInfo = TypeInfo(ArrayList::class))
+            }
+        }.describe {
+            tag("Statistics")
+            summary = "Short-term (5-minute) statistics for one entity"
+
+            parameters {
+                path("statisticId") {
+                    schema = jsonSchema<String>()
+                }
+                query("from") {
+                    required = false
+                    schema = jsonSchema<Long>()
+                }
+                query("to") {
+                    required = false
+                    schema = jsonSchema<Long>()
+                }
+            }
+
+            responses {
+                HttpStatusCode.OK {
+                    description = "Short-term statistic rows, oldest first."
+                    schema = jsonSchema<List<StatisticDto>>()
+                }
+                HttpStatusCode.BadRequest {
+                    description = "from/to present but unparseable."
+                    schema = jsonSchema<ErrorDto>()
+                }
+                HttpStatusCode.NotFound {
+                    description = "Unknown statisticId."
+                    schema = jsonSchema<ErrorDto>()
+                }
+                HttpStatusCode.ServiceUnavailable {
+                    description = "Recorder database unreachable or query failed."
+                    schema = jsonSchema<ErrorDto>()
+                }
+            }
+        }
+    }
+}

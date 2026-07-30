@@ -3,6 +3,7 @@ package com.anjo.monhomeass.routing
 import com.anjo.monhomeass.model.dto.StatisticDto
 import com.anjo.monhomeass.model.tables.Statistic
 import com.anjo.monhomeass.model.tables.StatisticMetaData
+import com.anjo.monhomeass.model.tables.StatisticShortTem
 import com.anjo.monhomeass.plugins.configureDatabases
 import com.anjo.monhomeass.plugins.configureRouting
 import com.anjo.monhomeass.plugins.configureStatusPages
@@ -221,10 +222,12 @@ class StatisticLongTermRoutesKtTest {
         }
     }
 
-    // ponytail: shared named in-memory H2 DB reused across every test in this
-    // class — drop first so each test starts clean regardless of run order.
+    // ponytail: shared named in-memory H2 DB reused across every test class in
+    // the suite — drop Statistic/StatisticShortTem first since they FK into
+    // StatisticMetaData, so each test starts clean regardless of run order.
     private fun dropTablesIfExists() {
         runCatching { SchemaUtils.drop(Statistic) }
+        runCatching { SchemaUtils.drop(StatisticShortTem) }
         runCatching { SchemaUtils.drop(StatisticMetaData) }
     }
 }

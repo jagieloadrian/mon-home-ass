@@ -3,6 +3,7 @@ package com.anjo.monhomeass.routing
 import com.anjo.monhomeass.model.dto.StatisticMetaDto
 import com.anjo.monhomeass.model.tables.Statistic
 import com.anjo.monhomeass.model.tables.StatisticMetaData
+import com.anjo.monhomeass.model.tables.StatisticShortTem
 import com.anjo.monhomeass.plugins.configureDatabases
 import com.anjo.monhomeass.plugins.configureRouting
 import com.anjo.monhomeass.plugins.configureStatusPages
@@ -140,11 +141,12 @@ class StatisticsMetaRoutesKtTest {
 
     // ponytail: TestDatabase's H2 instance is a shared named in-memory DB
     // (DB_CLOSE_DELAY=-1) reused across every test class in the suite — drop
-    // Statistic first since it FKs into StatisticMetaData (statistics-long-term
-    // tests may have left it behind), then drop this table, so each test
-    // starts from a clean/absent table regardless of run order.
+    // Statistic/StatisticShortTem first since they FK into StatisticMetaData
+    // (other test classes may have left them behind), then drop this table,
+    // so each test starts from a clean/absent table regardless of run order.
     private fun dropTableIfExists() {
         runCatching { SchemaUtils.drop(Statistic) }
+        runCatching { SchemaUtils.drop(StatisticShortTem) }
         runCatching { SchemaUtils.drop(StatisticMetaData) }
     }
 }
