@@ -5,6 +5,7 @@ package com.anjo.monhomeass.routing
 import com.anjo.monhomeass.model.dto.ErrorDto
 import com.anjo.monhomeass.model.dto.StatisticDto
 import com.anjo.monhomeass.model.dto.StatisticMetaDto
+import com.anjo.monhomeass.model.dto.StatisticSummaryDto
 import com.anjo.monhomeass.repository.StatisticMetaRepo
 import com.anjo.monhomeass.repository.StatisticRepo
 import io.ktor.http.HttpStatusCode
@@ -32,6 +33,64 @@ fun Route.statisticMetaRoute(repo: StatisticMetaRepo) {
                 HttpStatusCode.OK {
                     description = "List of statistic metadata entries."
                     schema = jsonSchema<List<StatisticMetaDto>>()
+                }
+                HttpStatusCode.ServiceUnavailable {
+                    description = "Recorder database unreachable or query failed."
+                    schema = jsonSchema<ErrorDto>()
+                }
+            }
+        }
+    }
+}
+
+fun Route.statisticSummaryRoute(repo: StatisticRepo) {
+
+    route("/statistics") {
+        get("/{statisticId}/summary") {
+            val statisticId = call.parameters["statisticId"]!!
+            val from = call.request.queryParameters["from"]?.let {
+                parseInstant(it) ?: return@get call.respond(HttpStatusCode.BadRequest, ErrorDto("Invalid 'from' value"))
+            }
+            val to = call.request.queryParameters["to"]?.let {
+                parseInstant(it) ?: return@get call.respond(HttpStatusCode.BadRequest, ErrorDto("Invalid 'to' value"))
+            }
+
+            val summary = repo.getSummary(statisticId, from, to)
+            if (summary == null) {
+                call.respond(HttpStatusCode.NotFound, ErrorDto("Unknown statisticId"))
+            } else {
+                call.respond(summary)
+            }
+        }.describe {
+            tag("Statistics")
+            summary = "Aggregated min/max/avg/sum over a date range"
+
+            parameters {
+                path("statisticId") {
+                    schema = jsonSchema<String>()
+                }
+                query("from") {
+                    required = false
+                    schema = jsonSchema<Long>()
+                }
+                query("to") {
+                    required = false
+                    schema = jsonSchema<Long>()
+                }
+            }
+
+            responses {
+                HttpStatusCode.OK {
+                    description = "Aggregate summary for the range."
+                    schema = jsonSchema<StatisticSummaryDto>()
+                }
+                HttpStatusCode.BadRequest {
+                    description = "from/to present but unparseable."
+                    schema = jsonSchema<ErrorDto>()
+                }
+                HttpStatusCode.NotFound {
+                    description = "Unknown statisticId."
+                    schema = jsonSchema<ErrorDto>()
                 }
                 HttpStatusCode.ServiceUnavailable {
                     description = "Recorder database unreachable or query failed."

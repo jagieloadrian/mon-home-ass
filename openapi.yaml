@@ -102,8 +102,24 @@ paths:
             application/json:
               schema:
                 $ref: "#/components/schemas/StatisticSummaryDto"
+        "400":
+          description: from/to present but unparseable.
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorDto"
         "404":
           description: Unknown statisticId.
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorDto"
+        "503":
+          description: Recorder database unreachable or query failed.
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorDto"
 
   /entities:
     get:
@@ -226,9 +242,11 @@ components:
         from:
           type: string
           format: date-time
+          nullable: true
         to:
           type: string
           format: date-time
+          nullable: true
         min:
           type: number
           format: double

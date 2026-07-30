@@ -14,6 +14,7 @@ import com.anjo.monhomeass.routing.schemaChangesRout
 import com.anjo.monhomeass.routing.statisticMetaRoute
 import com.anjo.monhomeass.routing.statisticRoute
 import com.anjo.monhomeass.routing.statisticShortTermRoute
+import com.anjo.monhomeass.routing.statisticSummaryRoute
 import com.anjo.monhomeass.service.EventService
 import io.ktor.http.ContentType
 import io.ktor.openapi.OpenApiInfo
@@ -48,5 +49,6 @@ fun Application.configureRouting() {
         statisticMetaRoute(statisticMetaRepo)
         statisticRoute(statisticRepo)
         statisticShortTermRoute(statisticRepo)
+        statisticSummaryRoute(statisticRepo)
     }
 }

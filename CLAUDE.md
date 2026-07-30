@@ -1,7 +1,7 @@
 <!-- SPECKIT START -->
 For additional context about technologies to be used, project structure,
 shell commands, and other important information, read the current plan
-at specs/004-entities-list/plan.md
+at specs/005-statistics-summary/plan.md
 <!-- SPECKIT END -->
 
 # mon-home-ass
