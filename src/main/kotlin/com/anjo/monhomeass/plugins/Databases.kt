@@ -21,7 +21,6 @@ fun Application.configureDatabases() {
             password = dbPassword,
             setupConnection = {
                 it.isReadOnly = true
-
             }
     )
 }

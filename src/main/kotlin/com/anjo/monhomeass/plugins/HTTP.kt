@@ -9,10 +9,6 @@ import io.ktor.server.plugins.defaultheaders.DefaultHeaders
 
 
 fun Application.configureHTTP() {
-    // TODO add open api
-    //    routing {
-    //        swaggerUI(path = "openapi")
-    //    }
     install(CORS) {
         allowMethod(HttpMethod.Options)
         allowMethod(HttpMethod.Put)

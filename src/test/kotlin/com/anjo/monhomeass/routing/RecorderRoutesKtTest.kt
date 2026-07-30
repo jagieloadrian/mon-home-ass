@@ -29,7 +29,7 @@ import kotlin.time.Instant
 class RecorderRoutesKtTest {
 
     @Test
-    fun `given migration routes when get the return migration dto`() = testApplication {
+    fun `given migration routes when get recorders the return migration dto`() = testApplication {
         //given
         setupWithRecord()
         environment {

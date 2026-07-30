@@ -3,14 +3,19 @@ package com.anjo.monhomeass.plugins
 import com.anjo.monhomeass.repository.MigrationRepo
 import com.anjo.monhomeass.repository.RecorderRepo
 import com.anjo.monhomeass.repository.SchemaChangesRepo
+import com.anjo.monhomeass.repository.StatisticMetaRepo
+import com.anjo.monhomeass.repository.StatisticRepo
 import com.anjo.monhomeass.routing.eventsRoute
 import com.anjo.monhomeass.routing.migrationRoute
 import com.anjo.monhomeass.routing.recorderRout
 import com.anjo.monhomeass.routing.schemaChangesRout
+import com.anjo.monhomeass.routing.statisticMetaRoute
+import com.anjo.monhomeass.routing.statisticRoute
 import com.anjo.monhomeass.service.EventService
 import io.ktor.http.ContentType
 import io.ktor.openapi.OpenApiInfo
 import io.ktor.server.application.Application
+import io.ktor.server.plugins.di.dependencies
 import io.ktor.server.plugins.swagger.swaggerUI
 import io.ktor.server.routing.openapi.OpenApiDocSource
 import io.ktor.server.routing.routing
@@ -18,6 +23,12 @@ import io.ktor.server.routing.routingRoot
 
 
 fun Application.configureRouting() {
+    val eventService:EventService by dependencies
+    val migrationRepo: MigrationRepo by dependencies
+    val recorderRepo: RecorderRepo by dependencies
+    val schemaChangesRepo: SchemaChangesRepo by dependencies
+    val statisticMetaRepo: StatisticMetaRepo by dependencies
+    val statisticRepo: StatisticRepo by dependencies
     routing {
         swaggerUI("/swagger") {
             info = OpenApiInfo("Monitor Home Assistant Stats", "1.0")
@@ -25,9 +36,11 @@ fun Application.configureRouting() {
                 routingRoot.descendants()
             }
         }
-        migrationRoute(MigrationRepo())
-        recorderRout(RecorderRepo())
-        schemaChangesRout(SchemaChangesRepo())
-        eventsRoute(EventService())
+        migrationRoute(migrationRepo)
+        recorderRout(recorderRepo)
+        schemaChangesRout(schemaChangesRepo)
+        eventsRoute(eventService)
+        statisticMetaRoute(statisticMetaRepo)
+        statisticRoute(statisticRepo)
     }
 }

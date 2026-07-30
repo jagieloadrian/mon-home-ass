@@ -37,11 +37,14 @@ dependencies {
     implementation("io.ktor:ktor-server-default-headers-jvm")
     implementation("io.ktor:ktor-server-netty-jvm")
     implementation("io.ktor:ktor-server-config-yaml")
+    implementation("io.ktor:ktor-server-di")
 
     //swagger
     implementation("io.ktor:ktor-server-swagger:${ktor_version}")
     // will be removed with ktor 3.4.1
     implementation("io.ktor:ktor-server-routing-openapi:${ktor_version}")
+    //error handling
+    implementation("io.ktor:ktor-server-status-pages-jvm")
 
     //databases
     implementation("org.postgresql:postgresql:$postgres_version")
@@ -53,7 +56,7 @@ dependencies {
     //health
     implementation("dev.hayden:khealth:3.0.0")
     //logging
-    implementation("io.github.oshai:kotlin-logging-jvm:7.0.0")
+    implementation("io.github.oshai:kotlin-logging-jvm:7.0.14")
     implementation("ch.qos.logback:logback-classic:$logback_version")
     //test
     testImplementation("io.ktor:ktor-server-test-host-jvm")

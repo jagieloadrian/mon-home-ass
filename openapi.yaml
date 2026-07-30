@@ -1,0 +1,240 @@
+openapi: 3.0.3
+info:
+  title: Monitor Home Assistant Stats
+  version: "1.0"
+  description: Readonly API over a Home Assistant recorder database (statistics/entities).
+servers:
+  - url: http://localhost:8080
+
+paths:
+  /statistics-meta:
+    get:
+      tags: [Statistics]
+      summary: List trackable statistic entities
+      responses:
+        "200":
+          description: List of statistic metadata entries.
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/StatisticMetaDto"
+        "503":
+          description: Recorder database unreachable or query failed.
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorDto"
+
+  /statistics/{statisticId}:
+    get:
+      tags: [Statistics]
+      summary: Long-term statistics for one entity
+      parameters:
+        - $ref: "#/components/parameters/StatisticId"
+        - $ref: "#/components/parameters/From"
+        - $ref: "#/components/parameters/To"
+      responses:
+        "200":
+          description: Long-term statistic rows, oldest first.
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/StatisticDto"
+        "400":
+          description: from/to present but unparseable.
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorDto"
+        "404":
+          description: Unknown statisticId.
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorDto"
+
+  /statistics/{statisticId}/short-term:
+    get:
+      tags: [Statistics]
+      summary: Short-term (5-minute) statistics for one entity
+      parameters:
+        - $ref: "#/components/parameters/StatisticId"
+        - $ref: "#/components/parameters/From"
+        - $ref: "#/components/parameters/To"
+      responses:
+        "200":
+          description: Short-term statistic rows.
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/StatisticDto"
+        "404":
+          description: Unknown statisticId.
+
+  /statistics/{statisticId}/summary:
+    get:
+      tags: [Statistics]
+      summary: Aggregated min/max/avg/sum over a date range
+      parameters:
+        - $ref: "#/components/parameters/StatisticId"
+        - $ref: "#/components/parameters/From"
+        - $ref: "#/components/parameters/To"
+      responses:
+        "200":
+          description: Aggregate summary for the range.
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/StatisticSummaryDto"
+        "404":
+          description: Unknown statisticId.
+
+  /entities:
+    get:
+      tags: [Entities]
+      summary: List known entity ids
+      responses:
+        "200":
+          description: List of entities.
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/EntityDto"
+
+components:
+  parameters:
+    StatisticId:
+      name: statisticId
+      in: path
+      required: true
+      schema:
+        type: string
+      example: sensor.living_room_temperature
+    From:
+      name: from
+      in: query
+      required: false
+      schema:
+        oneOf:
+          - type: integer
+            format: int64
+          - type: string
+            format: date-time
+      description: Range start — epoch seconds or ISO-8601 date-time.
+    To:
+      name: to
+      in: query
+      required: false
+      schema:
+        oneOf:
+          - type: integer
+            format: int64
+          - type: string
+            format: date-time
+      description: Range end — epoch seconds or ISO-8601 date-time.
+
+  schemas:
+    ErrorDto:
+      type: object
+      required: [message]
+      properties:
+        message:
+          type: string
+
+    StatisticMetaDto:
+      type: object
+      required: [id, statisticId]
+      properties:
+        id:
+          type: integer
+        statisticId:
+          type: string
+        source:
+          type: string
+          nullable: true
+        unitOfMeasurement:
+          type: string
+          nullable: true
+        hasMean:
+          type: boolean
+          nullable: true
+        hasSum:
+          type: boolean
+          nullable: true
+        name:
+          type: string
+          nullable: true
+
+    StatisticDto:
+      type: object
+      required: [startTs]
+      properties:
+        startTs:
+          type: integer
+          format: int64
+          description: Period start, epoch seconds.
+        mean:
+          type: number
+          format: double
+          nullable: true
+        min:
+          type: number
+          format: double
+          nullable: true
+        max:
+          type: number
+          format: double
+          nullable: true
+        sum:
+          type: number
+          format: double
+          nullable: true
+        state:
+          type: number
+          format: double
+          nullable: true
+
+    StatisticSummaryDto:
+      type: object
+      properties:
+        statisticId:
+          type: string
+        from:
+          type: string
+          format: date-time
+        to:
+          type: string
+          format: date-time
+        min:
+          type: number
+          format: double
+          nullable: true
+        max:
+          type: number
+          format: double
+          nullable: true
+        avg:
+          type: number
+          format: double
+          nullable: true
+        sum:
+          type: number
+          format: double
+          nullable: true
+
+    EntityDto:
+      type: object
+      required: [id, entityId]
+      properties:
+        id:
+          type: integer
+        entityId:
+          type: string

@@ -8,7 +8,7 @@ object Statistic : Table("statistics") {
     val id = integer("id")
     val created = timestampWithTimeZone("created").nullable()
     val createdTs = epochSeconds("created_ts").nullable()
-    val metadataId = integer("metadata_id").references(StateMetadata.id).nullable()
+    val metadataId = integer("metadata_id").references(StatisticMetaData.id).nullable()
     val start = timestampWithTimeZone("start").nullable()
     val startTs = epochSeconds("start_ts").nullable()
     val mean = double("mean").nullable()
@@ -28,6 +28,7 @@ object StatisticMetaData : Table("statistics_meta") {
     val hasMean = bool("has_mean").nullable()
     val hasSum = bool("has_sum").nullable()
     val name = varchar("name", 255).nullable()
+    override val primaryKey = PrimaryKey(id)
 }
 
 object StatisticRun : Table("statistics_runs") {
