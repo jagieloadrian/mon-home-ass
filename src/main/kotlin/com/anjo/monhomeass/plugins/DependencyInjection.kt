@@ -4,6 +4,7 @@ import com.anjo.monhomeass.repository.EventRepo
 import com.anjo.monhomeass.repository.MigrationRepo
 import com.anjo.monhomeass.repository.RecorderRepo
 import com.anjo.monhomeass.repository.SchemaChangesRepo
+import com.anjo.monhomeass.repository.StateMetadataRepo
 import com.anjo.monhomeass.repository.StatisticMetaRepo
 import com.anjo.monhomeass.repository.StatisticRepo
 import com.anjo.monhomeass.service.EventService
@@ -17,6 +18,7 @@ fun Application.configureDI() {
         provide<MigrationRepo>(MigrationRepo::class)
         provide<RecorderRepo>(RecorderRepo::class)
         provide<SchemaChangesRepo>(SchemaChangesRepo::class)
+        provide<StateMetadataRepo>(StateMetadataRepo::class)
         provide<StatisticMetaRepo>(StatisticMetaRepo::class)
         provide<StatisticRepo>(StatisticRepo::class)
         provide { EventService(get(DependencyKey<EventRepo>())) }

@@ -67,15 +67,25 @@ paths:
         - $ref: "#/components/parameters/To"
       responses:
         "200":
-          description: Short-term statistic rows.
+          description: Short-term statistic rows, oldest first.
           content:
             application/json:
               schema:
                 type: array
                 items:
                   $ref: "#/components/schemas/StatisticDto"
+        "400":
+          description: from/to present but unparseable.
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorDto"
         "404":
           description: Unknown statisticId.
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorDto"
 
   /statistics/{statisticId}/summary:
     get:
@@ -108,6 +118,12 @@ paths:
                 type: array
                 items:
                   $ref: "#/components/schemas/EntityDto"
+        "503":
+          description: Recorder database unreachable or query failed.
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorDto"
 
 components:
   parameters:
@@ -232,9 +248,10 @@ components:
 
     EntityDto:
       type: object
-      required: [id, entityId]
+      required: [id]
       properties:
         id:
           type: integer
         entityId:
           type: string
+          nullable: true

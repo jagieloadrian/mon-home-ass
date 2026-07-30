@@ -3,14 +3,17 @@ package com.anjo.monhomeass.plugins
 import com.anjo.monhomeass.repository.MigrationRepo
 import com.anjo.monhomeass.repository.RecorderRepo
 import com.anjo.monhomeass.repository.SchemaChangesRepo
+import com.anjo.monhomeass.repository.StateMetadataRepo
 import com.anjo.monhomeass.repository.StatisticMetaRepo
 import com.anjo.monhomeass.repository.StatisticRepo
+import com.anjo.monhomeass.routing.entitiesRoute
 import com.anjo.monhomeass.routing.eventsRoute
 import com.anjo.monhomeass.routing.migrationRoute
 import com.anjo.monhomeass.routing.recorderRout
 import com.anjo.monhomeass.routing.schemaChangesRout
 import com.anjo.monhomeass.routing.statisticMetaRoute
 import com.anjo.monhomeass.routing.statisticRoute
+import com.anjo.monhomeass.routing.statisticShortTermRoute
 import com.anjo.monhomeass.service.EventService
 import io.ktor.http.ContentType
 import io.ktor.openapi.OpenApiInfo
@@ -27,6 +30,7 @@ fun Application.configureRouting() {
     val migrationRepo: MigrationRepo by dependencies
     val recorderRepo: RecorderRepo by dependencies
     val schemaChangesRepo: SchemaChangesRepo by dependencies
+    val stateMetadataRepo: StateMetadataRepo by dependencies
     val statisticMetaRepo: StatisticMetaRepo by dependencies
     val statisticRepo: StatisticRepo by dependencies
     routing {
@@ -40,7 +44,9 @@ fun Application.configureRouting() {
         recorderRout(recorderRepo)
         schemaChangesRout(schemaChangesRepo)
         eventsRoute(eventService)
+        entitiesRoute(stateMetadataRepo)
         statisticMetaRoute(statisticMetaRepo)
         statisticRoute(statisticRepo)
+        statisticShortTermRoute(statisticRepo)
     }
 }
