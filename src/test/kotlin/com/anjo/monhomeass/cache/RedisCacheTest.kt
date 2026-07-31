@@ -2,24 +2,23 @@ package com.anjo.monhomeass.cache
 
 import com.anjo.monhomeass.testutils.flushRedis
 import com.anjo.monhomeass.testutils.testRedisHostPort
+import io.kotest.core.spec.style.StringSpec
+import io.kotest.matchers.nulls.shouldBeNull
 import io.kotest.matchers.shouldBe
 import io.mockk.every
 import io.mockk.mockk
 import redis.clients.jedis.RedisClient
 import redis.clients.jedis.exceptions.JedisConnectionException
-import kotlin.test.Test
-import kotlin.test.assertNull
 
-class RedisCacheTest {
+class RedisCacheTest : StringSpec({
 
-    private fun newCache(ttlMillis: Long): RedisCache {
+    fun newCache(ttlMillis: Long): RedisCache {
         flushRedis()
         val (host, port) = testRedisHostPort()
         return RedisCache(RedisClient.create(host, port), ttlMillis)
     }
 
-    @Test
-    fun `given cached key when getOrPut repeated then loader not invoked again`() {
+    "given cached key when getOrPut repeated then loader not invoked again" {
         val cache = newCache(ttlMillis = 60_000)
         var loaderCalls = 0
 
@@ -31,8 +30,7 @@ class RedisCacheTest {
         loaderCalls shouldBe 1
     }
 
-    @Test
-    fun `given different keys when getOrPut then each is isolated`() {
+    "given different keys when getOrPut then each is isolated" {
         val cache = newCache(ttlMillis = 60_000)
 
         val a = cache.getOrPut("key-a") { "value-a" }
@@ -42,8 +40,7 @@ class RedisCacheTest {
         b shouldBe "value-b"
     }
 
-    @Test
-    fun `given expired ttl when getOrPut then loader invoked again`() {
+    "given expired ttl when getOrPut then loader invoked again" {
         val cache = newCache(ttlMillis = 50)
         var loaderCalls = 0
 
@@ -55,21 +52,19 @@ class RedisCacheTest {
         loaderCalls shouldBe 2
     }
 
-    @Test
-    fun `given loader returns null when getOrPut then result not cached`() {
+    "given loader returns null when getOrPut then result not cached" {
         val cache = newCache(ttlMillis = 60_000)
         var loaderCalls = 0
 
         val first = cache.getOrPut<String>("k3") { loaderCalls++; null }
         val second = cache.getOrPut<String>("k3") { loaderCalls++; null }
 
-        assertNull(first)
-        assertNull(second)
+        first.shouldBeNull()
+        second.shouldBeNull()
         loaderCalls shouldBe 2
     }
 
-    @Test
-    fun `given redis unreachable when getOrPut then falls back to in-memory cache and retries with backoff`() {
+    "given redis unreachable when getOrPut then falls back to in-memory cache and retries with backoff" {
         val client = mockk<RedisClient>()
         every { client.get(any<String>()) } throws JedisConnectionException("down")
         val cache = RedisCache(client, ttlMillis = 60_000)
@@ -100,4 +95,4 @@ class RedisCacheTest {
         afterRecovery shouldBe "fresh"
         cache.down shouldBe false
     }
-}
+})

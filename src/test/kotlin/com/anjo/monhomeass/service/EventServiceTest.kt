@@ -2,16 +2,15 @@ package com.anjo.monhomeass.service
 
 import com.anjo.monhomeass.model.dto.EventDto
 import com.anjo.monhomeass.repository.EventRepo
+import io.kotest.core.spec.style.StringSpec
 import io.kotest.matchers.shouldBe
 import io.mockk.every
 import io.mockk.mockk
 import io.mockk.verify
-import kotlin.test.Test
 
-class EventServiceTest {
+class EventServiceTest : StringSpec({
 
-    @Test
-    fun `given mock repo and null args when get all then verify using of specific method`() {
+    "given mock repo and null args when get all then verify using of specific method" {
         //given
         val mockRepo = mockk<EventRepo>()
         val service = EventService(mockRepo)
@@ -27,8 +26,7 @@ class EventServiceTest {
         verify { mockRepo.getAll() }
     }
 
-    @Test
-    fun `given mock repo and contain arg and exclude null when get all then verify using of specific method`() {
+    "given mock repo and contain arg and exclude null when get all then verify using of specific method" {
         //given
         val mockRepo = mockk<EventRepo>()
         val service = EventService(mockRepo)
@@ -45,8 +43,7 @@ class EventServiceTest {
         verify { mockRepo.getAllWithContain(containArg) }
     }
 
-    @Test
-    fun `given mock repo and exclude arg and contain null when get all then verify using of specific method`() {
+    "given mock repo and exclude arg and contain null when get all then verify using of specific method" {
         //given
         val mockRepo = mockk<EventRepo>()
         val service = EventService(mockRepo)
@@ -63,8 +60,7 @@ class EventServiceTest {
         verify { mockRepo.getAllWithExclude(excludeArg) }
     }
 
-    @Test
-    fun `given mock repo and non null args when get all then verify using of specific method`() {
+    "given mock repo and non null args when get all then verify using of specific method" {
         //given
         val mockRepo = mockk<EventRepo>()
         val service = EventService(mockRepo)
@@ -81,5 +77,4 @@ class EventServiceTest {
         actual shouldBe expected
         verify { mockRepo.getAllWithContainAndExclude(containArg, excludeArg) }
     }
-
-}
+})

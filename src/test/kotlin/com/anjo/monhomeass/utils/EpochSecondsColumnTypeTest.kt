@@ -1,15 +1,14 @@
 package com.anjo.monhomeass.utils
 
+import io.kotest.core.spec.style.StringSpec
 import io.kotest.matchers.nulls.shouldBeNull
 import io.kotest.matchers.shouldBe
 import io.kotest.matchers.types.shouldBeInstanceOf
-import kotlin.test.Test
 import kotlin.time.Instant
 
-class EpochSecondsColumnTypeTest {
+class EpochSecondsColumnTypeTest : StringSpec({
 
-    @Test
-    fun `given class instance when check return type then assert response`() {
+    "given class instance when check return type then assert response" {
         //given
         val epochSecondsColumnType = EpochSecondsColumnType()
         val expected = "DOUBLE PRECISION"
@@ -22,8 +21,7 @@ class EpochSecondsColumnTypeTest {
         actual.shouldBeInstanceOf<String>()
     }
 
-    @Test
-    fun `given double value when transform value then return new instant`() {
+    "given double value when transform value then return new instant" {
         //given
         val doubleNumer = 1713132010.2021418
         val epochSecondsColumnType = EpochSecondsColumnType()
@@ -35,8 +33,7 @@ class EpochSecondsColumnTypeTest {
         actual shouldBe expected
     }
 
-    @Test
-    fun `given different type when transform value then return null`() {
+    "given different type when transform value then return null" {
         //given
         val epochSecondsColumnType = EpochSecondsColumnType()
         val differentType = 123
@@ -47,4 +44,4 @@ class EpochSecondsColumnTypeTest {
         //then
         actual.shouldBeNull()
     }
-}
+})

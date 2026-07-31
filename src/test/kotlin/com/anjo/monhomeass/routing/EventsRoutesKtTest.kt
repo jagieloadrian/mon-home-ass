@@ -9,6 +9,7 @@ import com.anjo.monhomeass.model.tables.EventType
 import com.anjo.monhomeass.plugins.configureDatabases
 import com.anjo.monhomeass.plugins.configureRouting
 import com.anjo.monhomeass.testutils.prepareDatabase
+import io.kotest.core.spec.style.StringSpec
 import io.kotest.matchers.shouldBe
 import io.ktor.client.call.body
 import io.ktor.client.plugins.contentnegotiation.ContentNegotiation
@@ -28,119 +29,12 @@ import org.jetbrains.exposed.v1.jdbc.insert
 import org.jetbrains.exposed.v1.jdbc.transactions.transaction
 import java.time.OffsetDateTime
 import java.time.ZoneOffset
-import kotlin.test.AfterTest
-import kotlin.test.BeforeTest
-import kotlin.test.Test
 import kotlin.time.Instant
 import java.time.Instant as jInstant
 
-class EventsRoutesKtTest {
+class EventsRoutesKtTest : StringSpec({
 
-    @BeforeTest
-    fun setup() {
-        setupWithRecord()
-    }
-
-    @AfterTest
-    fun teardown() {
-        transaction {
-            Event.deleteAll()
-            EventType.deleteAll()
-            EventData.deleteAll()
-        }
-    }
-
-    @Test
-    fun `given event routes when get the return events`() = testApplication {
-        //given
-        environment {
-            config = testApplicationConfig()
-        }
-        application {
-            configureDatabases()
-            configureRouting()
-        }
-
-        val client = createClient {
-            install(ContentNegotiation) {
-                json()
-            }
-        }
-        val dateTime = Instant.fromEpochSeconds(1).toLocalDateTime(TimeZone.UTC)
-        val eventDto = EventDto(1, "T", "D", "O", 1, dateTime, Instant.fromEpochSeconds(1),
-                "C", "U", "P", DataContentDto(2, 2L, "This is sharedData, exclude something"),
-                EventTypeDto(3, "Type of eventType"))
-        val expected = listOf(eventDto)
-
-        //when and then
-       client.get("/events") {
-            header(HttpHeaders.ContentType, "application/json")
-            header(HttpHeaders.Accept, "application/json")
-        }.apply {
-            status shouldBe HttpStatusCode.OK
-            body<List<EventDto>>() shouldBe expected
-        }
-    }
-
-    @Test
-    fun `given event routes with exclude when get then return empty list`() = testApplication {
-        //given
-        environment {
-            config = testApplicationConfig()
-        }
-        application {
-            configureDatabases()
-            configureRouting()
-        }
-        val client = createClient {
-            install(ContentNegotiation) {
-                json()
-            }
-        }
-
-        //when and then
-        client.get("/events") {
-            header(HttpHeaders.ContentType, "application/json")
-            header(HttpHeaders.Accept, "application/json")
-            parameter("exclude", "exclude")
-        }.apply {
-            status shouldBe HttpStatusCode.OK
-            body<List<EventDto>>() shouldBe emptyList()
-        }
-    }
-
-    @Test
-    fun `given event routes with contain when get then returns only matching event`() = testApplication {
-        //given
-        environment {
-            config = testApplicationConfig()
-        }
-        application {
-            configureDatabases()
-            configureRouting()
-        }
-        val client = createClient {
-            install(ContentNegotiation) {
-                json()
-            }
-        }
-        val dateTime = Instant.fromEpochSeconds(1).toLocalDateTime(TimeZone.UTC)
-        val eventDto = EventDto(1, "T", "D", "O", 1, dateTime, Instant.fromEpochSeconds(1),
-                "C", "U", "P", DataContentDto(2, 2L, "This is sharedData, exclude something"),
-                EventTypeDto(3, "Type of eventType"))
-
-        //when and then
-        client.get("/events") {
-            header(HttpHeaders.ContentType, "application/json")
-            header(HttpHeaders.Accept, "application/json")
-            parameter("contain", "exclude something")
-        }.apply {
-            status shouldBe HttpStatusCode.OK
-            body<List<EventDto>>() shouldBe listOf(eventDto)
-        }
-    }
-
-    private fun setupWithRecord() {
+    fun setupWithRecord() {
         prepareDatabase()
         transaction {
             SchemaUtils.create(EventData)
@@ -196,4 +90,109 @@ class EventsRoutesKtTest {
             }
         }
     }
-}
+
+    beforeTest {
+        setupWithRecord()
+    }
+
+    afterTest {
+        transaction {
+            Event.deleteAll()
+            EventType.deleteAll()
+            EventData.deleteAll()
+        }
+    }
+
+    "given event routes when get the return events" {
+        testApplication {
+            //given
+            environment {
+                config = testApplicationConfig()
+            }
+            application {
+                configureDatabases()
+                configureRouting()
+            }
+
+            val client = createClient {
+                install(ContentNegotiation) {
+                    json()
+                }
+            }
+            val dateTime = Instant.fromEpochSeconds(1).toLocalDateTime(TimeZone.UTC)
+            val eventDto = EventDto(1, "T", "D", "O", 1, dateTime, Instant.fromEpochSeconds(1),
+                    "C", "U", "P", DataContentDto(2, 2L, "This is sharedData, exclude something"),
+                    EventTypeDto(3, "Type of eventType"))
+            val expected = listOf(eventDto)
+
+            //when and then
+            client.get("/events") {
+                header(HttpHeaders.ContentType, "application/json")
+                header(HttpHeaders.Accept, "application/json")
+            }.apply {
+                status shouldBe HttpStatusCode.OK
+                body<List<EventDto>>() shouldBe expected
+            }
+        }
+    }
+
+    "given event routes with exclude when get then return empty list" {
+        testApplication {
+            //given
+            environment {
+                config = testApplicationConfig()
+            }
+            application {
+                configureDatabases()
+                configureRouting()
+            }
+            val client = createClient {
+                install(ContentNegotiation) {
+                    json()
+                }
+            }
+
+            //when and then
+            client.get("/events") {
+                header(HttpHeaders.ContentType, "application/json")
+                header(HttpHeaders.Accept, "application/json")
+                parameter("exclude", "exclude")
+            }.apply {
+                status shouldBe HttpStatusCode.OK
+                body<List<EventDto>>() shouldBe emptyList()
+            }
+        }
+    }
+
+    "given event routes with contain when get then returns only matching event" {
+        testApplication {
+            //given
+            environment {
+                config = testApplicationConfig()
+            }
+            application {
+                configureDatabases()
+                configureRouting()
+            }
+            val client = createClient {
+                install(ContentNegotiation) {
+                    json()
+                }
+            }
+            val dateTime = Instant.fromEpochSeconds(1).toLocalDateTime(TimeZone.UTC)
+            val eventDto = EventDto(1, "T", "D", "O", 1, dateTime, Instant.fromEpochSeconds(1),
+                    "C", "U", "P", DataContentDto(2, 2L, "This is sharedData, exclude something"),
+                    EventTypeDto(3, "Type of eventType"))
+
+            //when and then
+            client.get("/events") {
+                header(HttpHeaders.ContentType, "application/json")
+                header(HttpHeaders.Accept, "application/json")
+                parameter("contain", "exclude something")
+            }.apply {
+                status shouldBe HttpStatusCode.OK
+                body<List<EventDto>>() shouldBe listOf(eventDto)
+            }
+        }
+    }
+})
