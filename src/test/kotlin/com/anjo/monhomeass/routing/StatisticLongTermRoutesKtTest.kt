@@ -56,6 +56,92 @@ class StatisticLongTermRoutesKtTest {
     }
 
     @Test
+    fun `given limit when get statistics id then returns only first N rows`() = testApplication {
+        //given
+        setupWithRecords()
+        environment {
+            config = ApplicationConfig("application-test.yaml")
+        }
+        application {
+            configureDatabases()
+            configureStatusPages()
+            configureRouting()
+        }
+
+        //when
+        val response = client.get("/statistics/sensor.living_room_temperature?limit=1")
+        val decodedJson = Json.decodeFromString<List<StatisticDto>>(response.bodyAsText())
+
+        //then
+        response.status shouldBe HttpStatusCode.OK
+        decodedJson shouldBe listOf(StatisticDto(1_700_000_000L, 10.0, 5.0, 15.0, null, null))
+    }
+
+    @Test
+    fun `given limit and offset when get statistics id then returns next page`() = testApplication {
+        //given
+        setupWithRecords()
+        environment {
+            config = ApplicationConfig("application-test.yaml")
+        }
+        application {
+            configureDatabases()
+            configureStatusPages()
+            configureRouting()
+        }
+
+        //when
+        val response = client.get("/statistics/sensor.living_room_temperature?limit=1&offset=1")
+        val decodedJson = Json.decodeFromString<List<StatisticDto>>(response.bodyAsText())
+
+        //then
+        response.status shouldBe HttpStatusCode.OK
+        decodedJson shouldBe listOf(StatisticDto(1_700_003_600L, 12.0, 6.0, 18.0, null, null))
+    }
+
+    @Test
+    fun `given offset beyond total rows when get statistics id then returns empty list`() = testApplication {
+        //given
+        setupWithRecords()
+        environment {
+            config = ApplicationConfig("application-test.yaml")
+        }
+        application {
+            configureDatabases()
+            configureStatusPages()
+            configureRouting()
+        }
+
+        //when
+        val response = client.get("/statistics/sensor.living_room_temperature?offset=9999")
+        val decodedJson = Json.decodeFromString<List<StatisticDto>>(response.bodyAsText())
+
+        //then
+        response.status shouldBe HttpStatusCode.OK
+        decodedJson shouldBe emptyList()
+    }
+
+    @Test
+    fun `given negative limit when get statistics id then returns 400`() = testApplication {
+        //given
+        setupWithRecords()
+        environment {
+            config = ApplicationConfig("application-test.yaml")
+        }
+        application {
+            configureDatabases()
+            configureStatusPages()
+            configureRouting()
+        }
+
+        //when
+        val response = client.get("/statistics/sensor.living_room_temperature?limit=-1")
+
+        //then
+        response.status shouldBe HttpStatusCode.BadRequest
+    }
+
+    @Test
     fun `given from and to query params when get statistics id then returns only in-range rows`() = testApplication {
         //given
         setupWithRecords()

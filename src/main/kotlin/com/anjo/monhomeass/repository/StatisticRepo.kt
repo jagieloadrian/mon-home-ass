@@ -26,7 +26,7 @@ import kotlin.time.Instant
 
 class StatisticRepo {
 
-    fun getLongTerm(statisticId: String, from: Instant?, to: Instant?): List<StatisticDto>? {
+    fun getLongTerm(statisticId: String, from: Instant?, to: Instant?, limit: Int? = null, offset: Long? = null): List<StatisticDto>? {
         return transaction {
             val exists = StatisticMetaData
                     .select(StatisticMetaData.id)
@@ -48,12 +48,15 @@ class StatisticRepo {
             if (from != null) query = query.andWhere { Statistic.startTs greaterEq from }
             if (to != null) query = query.andWhere { Statistic.startTs lessEq to }
 
-            query.orderBy(Statistic.startTs, SortOrder.ASC)
-                    .map { it.toStatisticDto() }
+            query = query.orderBy(Statistic.startTs, SortOrder.ASC)
+            if (limit != null) query = query.limit(limit)
+            if (offset != null) query = query.offset(offset)
+
+            query.map { it.toStatisticDto() }
         }
     }
 
-    fun getShortTerm(statisticId: String, from: Instant?, to: Instant?): List<StatisticDto>? {
+    fun getShortTerm(statisticId: String, from: Instant?, to: Instant?, limit: Int? = null, offset: Long? = null): List<StatisticDto>? {
         return transaction {
             val exists = StatisticMetaData
                     .select(StatisticMetaData.id)
@@ -75,8 +78,11 @@ class StatisticRepo {
             if (from != null) query = query.andWhere { StatisticShortTem.startTs greaterEq from }
             if (to != null) query = query.andWhere { StatisticShortTem.startTs lessEq to }
 
-            query.orderBy(StatisticShortTem.startTs, SortOrder.ASC)
-                    .map { it.toStatisticDtoShortTerm() }
+            query = query.orderBy(StatisticShortTem.startTs, SortOrder.ASC)
+            if (limit != null) query = query.limit(limit)
+            if (offset != null) query = query.offset(offset)
+
+            query.map { it.toStatisticDtoShortTerm() }
         }
     }
 

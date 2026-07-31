@@ -126,7 +126,18 @@ fun Route.statisticRoute(repo: StatisticRepo) {
                 parseInstant(it) ?: return@get call.respond(HttpStatusCode.BadRequest, ErrorDto("Invalid 'to' value"))
             }
 
-            val rows = repo.getLongTerm(statisticId, from, to)
+            val limit = call.request.queryParameters["limit"]?.let {
+                val v = it.toIntOrNull()
+                if (v == null || v < 0) return@get call.respond(HttpStatusCode.BadRequest, ErrorDto("Invalid 'limit' value"))
+                v
+            }
+            val offset = call.request.queryParameters["offset"]?.let {
+                val v = it.toLongOrNull()
+                if (v == null || v < 0) return@get call.respond(HttpStatusCode.BadRequest, ErrorDto("Invalid 'offset' value"))
+                v
+            }
+
+            val rows = repo.getLongTerm(statisticId, from, to, limit, offset)
             if (rows == null) {
                 call.respond(HttpStatusCode.NotFound, ErrorDto("Unknown statisticId"))
             } else {
@@ -148,15 +159,23 @@ fun Route.statisticRoute(repo: StatisticRepo) {
                     required = false
                     schema = jsonSchema<Long>()
                 }
+                query("limit") {
+                    required = false
+                    schema = jsonSchema<Int>()
+                }
+                query("offset") {
+                    required = false
+                    schema = jsonSchema<Long>()
+                }
             }
 
             responses {
                 HttpStatusCode.OK {
-                    description = "Long-term statistic rows, oldest first."
+                    description = "Long-term statistic rows, oldest first, optionally paginated."
                     schema = jsonSchema<List<StatisticDto>>()
                 }
                 HttpStatusCode.BadRequest {
-                    description = "from/to present but unparseable."
+                    description = "from/to/limit/offset present but unparseable or negative."
                     schema = jsonSchema<ErrorDto>()
                 }
                 HttpStatusCode.NotFound {
@@ -183,8 +202,18 @@ fun Route.statisticShortTermRoute(repo: StatisticRepo) {
             val to = call.request.queryParameters["to"]?.let {
                 parseInstant(it) ?: return@get call.respond(HttpStatusCode.BadRequest, ErrorDto("Invalid 'to' value"))
             }
+            val limit = call.request.queryParameters["limit"]?.let {
+                val v = it.toIntOrNull()
+                if (v == null || v < 0) return@get call.respond(HttpStatusCode.BadRequest, ErrorDto("Invalid 'limit' value"))
+                v
+            }
+            val offset = call.request.queryParameters["offset"]?.let {
+                val v = it.toLongOrNull()
+                if (v == null || v < 0) return@get call.respond(HttpStatusCode.BadRequest, ErrorDto("Invalid 'offset' value"))
+                v
+            }
 
-            val rows = repo.getShortTerm(statisticId, from, to)
+            val rows = repo.getShortTerm(statisticId, from, to, limit, offset)
             if (rows == null) {
                 call.respond(HttpStatusCode.NotFound, ErrorDto("Unknown statisticId"))
             } else {
@@ -206,15 +235,23 @@ fun Route.statisticShortTermRoute(repo: StatisticRepo) {
                     required = false
                     schema = jsonSchema<Long>()
                 }
+                query("limit") {
+                    required = false
+                    schema = jsonSchema<Int>()
+                }
+                query("offset") {
+                    required = false
+                    schema = jsonSchema<Long>()
+                }
             }
 
             responses {
                 HttpStatusCode.OK {
-                    description = "Short-term statistic rows, oldest first."
+                    description = "Short-term statistic rows, oldest first, optionally paginated."
                     schema = jsonSchema<List<StatisticDto>>()
                 }
                 HttpStatusCode.BadRequest {
-                    description = "from/to present but unparseable."
+                    description = "from/to/limit/offset present but unparseable or negative."
                     schema = jsonSchema<ErrorDto>()
                 }
                 HttpStatusCode.NotFound {
