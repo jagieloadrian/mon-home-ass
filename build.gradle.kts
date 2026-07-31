@@ -41,8 +41,6 @@ dependencies {
 
     //swagger
     implementation("io.ktor:ktor-server-swagger:${ktor_version}")
-    // will be removed with ktor 3.4.1
-    implementation("io.ktor:ktor-server-routing-openapi:${ktor_version}")
     //error handling
     implementation("io.ktor:ktor-server-status-pages-jvm")
 
