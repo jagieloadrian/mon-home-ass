@@ -4,6 +4,7 @@ import com.anjo.monhomeass.model.dto.MigrationDto
 import com.anjo.monhomeass.model.tables.MigrationChanges
 import com.anjo.monhomeass.plugins.configureDatabases
 import com.anjo.monhomeass.plugins.configureRouting
+import com.anjo.monhomeass.plugins.configureStatusPages
 import com.anjo.monhomeass.testutils.addRecords
 import com.anjo.monhomeass.testutils.prepareDatabase
 import io.kotest.matchers.shouldBe
@@ -46,6 +47,29 @@ class MigrationRoutesKtTest {
         //then
         response.status shouldBe HttpStatusCode.OK
         decodedJson shouldBe expected
+    }
+
+    @Test
+    fun `given recorder database query fails when get migrations then returns 503`() = testApplication {
+        //given - table intentionally (re)dropped, so the query fails
+        prepareDatabase()
+        transaction {
+            runCatching { SchemaUtils.drop(MigrationChanges) }
+        }
+        environment {
+            config = testApplicationConfig()
+        }
+        application {
+            configureDatabases()
+            configureStatusPages()
+            configureRouting()
+        }
+
+        //when
+        val response = client.get("/migrations")
+
+        //then
+        response.status shouldBe HttpStatusCode.ServiceUnavailable
     }
 
     private fun setupWithInsert() {

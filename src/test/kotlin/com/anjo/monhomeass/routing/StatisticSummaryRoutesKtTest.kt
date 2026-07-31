@@ -167,6 +167,26 @@ class StatisticSummaryRoutesKtTest {
     }
 
     @Test
+    fun `given unparseable to when get summary then returns 400`() = testApplication {
+        //given
+        setupWithRecords()
+        environment {
+            config = testApplicationConfig()
+        }
+        application {
+            configureDatabases()
+            configureStatusPages()
+            configureRouting()
+        }
+
+        //when
+        val response = client.get("/statistics/sensor.living_room_temperature/summary?to=not-a-date")
+
+        //then
+        response.status shouldBe HttpStatusCode.BadRequest
+    }
+
+    @Test
     fun `given recorder database query fails when get summary then returns 503`() = testApplication {
         //given - table intentionally not (re)created, so the query fails
         prepareDatabase()

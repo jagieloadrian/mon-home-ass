@@ -143,6 +143,86 @@ class StatisticShortTermRoutesKtTest {
     }
 
     @Test
+    fun `given non-numeric limit when get statistics id short-term then returns 400`() = testApplication {
+        //given
+        setupWithRecords()
+        environment {
+            config = testApplicationConfig()
+        }
+        application {
+            configureDatabases()
+            configureStatusPages()
+            configureRouting()
+        }
+
+        //when
+        val response = client.get("/statistics/sensor.living_room_temperature/short-term?limit=abc")
+
+        //then
+        response.status shouldBe HttpStatusCode.BadRequest
+    }
+
+    @Test
+    fun `given negative offset when get statistics id short-term then returns 400`() = testApplication {
+        //given
+        setupWithRecords()
+        environment {
+            config = testApplicationConfig()
+        }
+        application {
+            configureDatabases()
+            configureStatusPages()
+            configureRouting()
+        }
+
+        //when
+        val response = client.get("/statistics/sensor.living_room_temperature/short-term?offset=-1")
+
+        //then
+        response.status shouldBe HttpStatusCode.BadRequest
+    }
+
+    @Test
+    fun `given non-numeric offset when get statistics id short-term then returns 400`() = testApplication {
+        //given
+        setupWithRecords()
+        environment {
+            config = testApplicationConfig()
+        }
+        application {
+            configureDatabases()
+            configureStatusPages()
+            configureRouting()
+        }
+
+        //when
+        val response = client.get("/statistics/sensor.living_room_temperature/short-term?offset=abc")
+
+        //then
+        response.status shouldBe HttpStatusCode.BadRequest
+    }
+
+    @Test
+    fun `given unparseable to when get statistics id short-term then returns 400`() = testApplication {
+        //given
+        setupWithRecords()
+        environment {
+            config = testApplicationConfig()
+        }
+        application {
+            configureDatabases()
+            configureStatusPages()
+            configureRouting()
+        }
+
+        //when
+        val response = client.get("/statistics/sensor.living_room_temperature/short-term?to=not-a-date")
+
+        //then
+        response.status shouldBe HttpStatusCode.BadRequest
+    }
+
+    @Test
     fun `given repeated call after direct row mutation when get statistics id short-term then returns cached value`() = testApplication {
         //given
         setupWithRecords()

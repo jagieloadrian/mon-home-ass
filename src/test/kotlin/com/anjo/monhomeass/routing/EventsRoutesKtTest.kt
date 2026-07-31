@@ -109,6 +109,37 @@ class EventsRoutesKtTest {
         }
     }
 
+    @Test
+    fun `given event routes with contain when get then returns only matching event`() = testApplication {
+        //given
+        environment {
+            config = testApplicationConfig()
+        }
+        application {
+            configureDatabases()
+            configureRouting()
+        }
+        val client = createClient {
+            install(ContentNegotiation) {
+                json()
+            }
+        }
+        val dateTime = Instant.fromEpochSeconds(1).toLocalDateTime(TimeZone.UTC)
+        val eventDto = EventDto(1, "T", "D", "O", 1, dateTime, Instant.fromEpochSeconds(1),
+                "C", "U", "P", DataContentDto(2, 2L, "This is sharedData, exclude something"),
+                EventTypeDto(3, "Type of eventType"))
+
+        //when and then
+        client.get("/events") {
+            header(HttpHeaders.ContentType, "application/json")
+            header(HttpHeaders.Accept, "application/json")
+            parameter("contain", "exclude something")
+        }.apply {
+            status shouldBe HttpStatusCode.OK
+            body<List<EventDto>>() shouldBe listOf(eventDto)
+        }
+    }
+
     private fun setupWithRecord() {
         prepareDatabase()
         transaction {

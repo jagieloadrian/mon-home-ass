@@ -1,5 +1,6 @@
 package com.anjo.monhomeass.routing
 
+import com.anjo.monhomeass.model.dto.ErrorDto
 import com.anjo.monhomeass.model.dto.StatisticDto
 import com.anjo.monhomeass.model.tables.Statistic
 import com.anjo.monhomeass.model.tables.StatisticMetaData
@@ -140,6 +141,87 @@ class StatisticLongTermRoutesKtTest {
 
         //then
         response.status shouldBe HttpStatusCode.BadRequest
+        Json.decodeFromString<ErrorDto>(response.bodyAsText()) shouldBe ErrorDto("Invalid 'limit' value")
+    }
+
+    @Test
+    fun `given non-numeric limit when get statistics id then returns 400`() = testApplication {
+        //given
+        setupWithRecords()
+        environment {
+            config = testApplicationConfig()
+        }
+        application {
+            configureDatabases()
+            configureStatusPages()
+            configureRouting()
+        }
+
+        //when
+        val response = client.get("/statistics/sensor.living_room_temperature?limit=abc")
+
+        //then
+        response.status shouldBe HttpStatusCode.BadRequest
+    }
+
+    @Test
+    fun `given negative offset when get statistics id then returns 400`() = testApplication {
+        //given
+        setupWithRecords()
+        environment {
+            config = testApplicationConfig()
+        }
+        application {
+            configureDatabases()
+            configureStatusPages()
+            configureRouting()
+        }
+
+        //when
+        val response = client.get("/statistics/sensor.living_room_temperature?offset=-1")
+
+        //then
+        response.status shouldBe HttpStatusCode.BadRequest
+    }
+
+    @Test
+    fun `given non-numeric offset when get statistics id then returns 400`() = testApplication {
+        //given
+        setupWithRecords()
+        environment {
+            config = testApplicationConfig()
+        }
+        application {
+            configureDatabases()
+            configureStatusPages()
+            configureRouting()
+        }
+
+        //when
+        val response = client.get("/statistics/sensor.living_room_temperature?offset=abc")
+
+        //then
+        response.status shouldBe HttpStatusCode.BadRequest
+    }
+
+    @Test
+    fun `given unparseable to when get statistics id then returns 400`() = testApplication {
+        //given
+        setupWithRecords()
+        environment {
+            config = testApplicationConfig()
+        }
+        application {
+            configureDatabases()
+            configureStatusPages()
+            configureRouting()
+        }
+
+        //when
+        val response = client.get("/statistics/sensor.living_room_temperature?to=not-a-date")
+
+        //then
+        response.status shouldBe HttpStatusCode.BadRequest
     }
 
     @Test
@@ -251,6 +333,7 @@ class StatisticLongTermRoutesKtTest {
 
         //then
         response.status shouldBe HttpStatusCode.BadRequest
+        Json.decodeFromString<ErrorDto>(response.bodyAsText()) shouldBe ErrorDto("Invalid 'from' value")
     }
 
     @Test
@@ -271,6 +354,7 @@ class StatisticLongTermRoutesKtTest {
 
         //then
         response.status shouldBe HttpStatusCode.NotFound
+        Json.decodeFromString<ErrorDto>(response.bodyAsText()) shouldBe ErrorDto("Unknown statisticId")
     }
 
     @Test
