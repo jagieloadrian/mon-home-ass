@@ -8,6 +8,7 @@ import com.anjo.monhomeass.plugins.configureDatabases
 import com.anjo.monhomeass.plugins.configureRouting
 import com.anjo.monhomeass.plugins.configureStatusPages
 import com.anjo.monhomeass.testutils.addRecords
+import com.anjo.monhomeass.testutils.directUpdate
 import com.anjo.monhomeass.testutils.prepareDatabase
 import io.kotest.matchers.shouldBe
 import io.ktor.client.request.get
@@ -15,7 +16,7 @@ import io.ktor.client.request.header
 import io.ktor.client.statement.bodyAsText
 import io.ktor.http.HttpHeaders
 import io.ktor.http.HttpStatusCode
-import io.ktor.server.config.ApplicationConfig
+import com.anjo.monhomeass.testutils.testApplicationConfig
 import io.ktor.server.testing.testApplication
 import kotlinx.serialization.json.Json
 import org.jetbrains.exposed.v1.jdbc.SchemaUtils
@@ -31,7 +32,7 @@ class StatisticShortTermRoutesKtTest {
         //given
         setupWithRecords()
         environment {
-            config = ApplicationConfig("application-test.yaml")
+            config = testApplicationConfig()
         }
         application {
             configureDatabases()
@@ -60,7 +61,7 @@ class StatisticShortTermRoutesKtTest {
         //given
         setupWithRecords()
         environment {
-            config = ApplicationConfig("application-test.yaml")
+            config = testApplicationConfig()
         }
         application {
             configureDatabases()
@@ -82,7 +83,7 @@ class StatisticShortTermRoutesKtTest {
         //given
         setupWithRecords()
         environment {
-            config = ApplicationConfig("application-test.yaml")
+            config = testApplicationConfig()
         }
         application {
             configureDatabases()
@@ -104,7 +105,7 @@ class StatisticShortTermRoutesKtTest {
         //given
         setupWithRecords()
         environment {
-            config = ApplicationConfig("application-test.yaml")
+            config = testApplicationConfig()
         }
         application {
             configureDatabases()
@@ -126,7 +127,7 @@ class StatisticShortTermRoutesKtTest {
         //given
         setupWithRecords()
         environment {
-            config = ApplicationConfig("application-test.yaml")
+            config = testApplicationConfig()
         }
         application {
             configureDatabases()
@@ -142,11 +143,36 @@ class StatisticShortTermRoutesKtTest {
     }
 
     @Test
+    fun `given repeated call after direct row mutation when get statistics id short-term then returns cached value`() = testApplication {
+        //given
+        setupWithRecords()
+        environment {
+            config = testApplicationConfig()
+        }
+        application {
+            configureDatabases()
+            configureStatusPages()
+            configureRouting()
+        }
+
+        //when
+        val first = client.get("/statistics/sensor.living_room_temperature/short-term")
+        directUpdate("UPDATE statistics_short_term SET mean = 999 WHERE id = 1")
+        val second = client.get("/statistics/sensor.living_room_temperature/short-term")
+
+        //then
+        first.status shouldBe HttpStatusCode.OK
+        second.status shouldBe HttpStatusCode.OK
+        Json.decodeFromString<List<StatisticDto>>(second.bodyAsText()) shouldBe
+                Json.decodeFromString<List<StatisticDto>>(first.bodyAsText())
+    }
+
+    @Test
     fun `given from and to query params when get statistics id short-term then returns only in-range rows`() = testApplication {
         //given
         setupWithRecords()
         environment {
-            config = ApplicationConfig("application-test.yaml")
+            config = testApplicationConfig()
         }
         application {
             configureDatabases()
@@ -168,7 +194,7 @@ class StatisticShortTermRoutesKtTest {
         //given
         setupWithRecords()
         environment {
-            config = ApplicationConfig("application-test.yaml")
+            config = testApplicationConfig()
         }
         application {
             configureDatabases()
@@ -190,7 +216,7 @@ class StatisticShortTermRoutesKtTest {
         //given
         setupWithRecords()
         environment {
-            config = ApplicationConfig("application-test.yaml")
+            config = testApplicationConfig()
         }
         application {
             configureDatabases()
@@ -212,7 +238,7 @@ class StatisticShortTermRoutesKtTest {
         //given
         setupWithRecords()
         environment {
-            config = ApplicationConfig("application-test.yaml")
+            config = testApplicationConfig()
         }
         application {
             configureDatabases()
@@ -232,7 +258,7 @@ class StatisticShortTermRoutesKtTest {
         //given
         setupWithRecords()
         environment {
-            config = ApplicationConfig("application-test.yaml")
+            config = testApplicationConfig()
         }
         application {
             configureDatabases()
@@ -252,7 +278,7 @@ class StatisticShortTermRoutesKtTest {
         //given
         setupWithRecords()
         environment {
-            config = ApplicationConfig("application-test.yaml")
+            config = testApplicationConfig()
         }
         application {
             configureDatabases()

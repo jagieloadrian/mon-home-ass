@@ -8,12 +8,13 @@ import com.anjo.monhomeass.plugins.configureDatabases
 import com.anjo.monhomeass.plugins.configureRouting
 import com.anjo.monhomeass.plugins.configureStatusPages
 import com.anjo.monhomeass.testutils.addRecords
+import com.anjo.monhomeass.testutils.directUpdate
 import com.anjo.monhomeass.testutils.prepareDatabase
 import io.kotest.matchers.shouldBe
 import io.ktor.client.request.get
 import io.ktor.client.statement.bodyAsText
 import io.ktor.http.HttpStatusCode
-import io.ktor.server.config.ApplicationConfig
+import com.anjo.monhomeass.testutils.testApplicationConfig
 import io.ktor.server.testing.testApplication
 import kotlinx.serialization.json.Json
 import org.jetbrains.exposed.v1.jdbc.SchemaUtils
@@ -29,7 +30,7 @@ class StatisticSummaryRoutesKtTest {
         //given
         setupWithRecords()
         environment {
-            config = ApplicationConfig("application-test.yaml")
+            config = testApplicationConfig()
         }
         application {
             configureDatabases()
@@ -51,7 +52,7 @@ class StatisticSummaryRoutesKtTest {
         //given
         setupWithRecords()
         environment {
-            config = ApplicationConfig("application-test.yaml")
+            config = testApplicationConfig()
         }
         application {
             configureDatabases()
@@ -78,7 +79,7 @@ class StatisticSummaryRoutesKtTest {
         //given
         setupWithRecords()
         environment {
-            config = ApplicationConfig("application-test.yaml")
+            config = testApplicationConfig()
         }
         application {
             configureDatabases()
@@ -101,11 +102,36 @@ class StatisticSummaryRoutesKtTest {
     }
 
     @Test
+    fun `given repeated call after direct row mutation when get summary then returns cached value`() = testApplication {
+        //given
+        setupWithRecords()
+        environment {
+            config = testApplicationConfig()
+        }
+        application {
+            configureDatabases()
+            configureStatusPages()
+            configureRouting()
+        }
+
+        //when
+        val first = client.get("/statistics/sensor.living_room_temperature/summary")
+        directUpdate("UPDATE statistics SET state = 999 WHERE id = 1")
+        val second = client.get("/statistics/sensor.living_room_temperature/summary")
+
+        //then
+        first.status shouldBe HttpStatusCode.OK
+        second.status shouldBe HttpStatusCode.OK
+        Json.decodeFromString<StatisticSummaryDto>(second.bodyAsText()) shouldBe
+                Json.decodeFromString<StatisticSummaryDto>(first.bodyAsText())
+    }
+
+    @Test
     fun `given unknown statisticId when get summary then returns 404`() = testApplication {
         //given
         setupWithRecords()
         environment {
-            config = ApplicationConfig("application-test.yaml")
+            config = testApplicationConfig()
         }
         application {
             configureDatabases()
@@ -125,7 +151,7 @@ class StatisticSummaryRoutesKtTest {
         //given
         setupWithRecords()
         environment {
-            config = ApplicationConfig("application-test.yaml")
+            config = testApplicationConfig()
         }
         application {
             configureDatabases()
@@ -148,7 +174,7 @@ class StatisticSummaryRoutesKtTest {
             dropTablesIfExists()
         }
         environment {
-            config = ApplicationConfig("application-test.yaml")
+            config = testApplicationConfig()
         }
         application {
             configureDatabases()

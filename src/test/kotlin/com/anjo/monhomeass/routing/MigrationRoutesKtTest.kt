@@ -12,7 +12,7 @@ import io.ktor.client.request.header
 import io.ktor.client.statement.bodyAsText
 import io.ktor.http.HttpHeaders
 import io.ktor.http.HttpStatusCode
-import io.ktor.server.config.ApplicationConfig
+import com.anjo.monhomeass.testutils.testApplicationConfig
 import io.ktor.server.testing.testApplication
 import kotlinx.serialization.json.Json
 import org.jetbrains.exposed.v1.jdbc.SchemaUtils
@@ -27,7 +27,7 @@ class MigrationRoutesKtTest {
         //given
         setupWithInsert()
         environment {
-            config = ApplicationConfig("application-test.yaml")
+            config = testApplicationConfig()
         }
         application {
             configureDatabases()

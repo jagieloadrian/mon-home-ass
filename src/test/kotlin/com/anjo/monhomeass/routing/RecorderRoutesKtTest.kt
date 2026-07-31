@@ -12,7 +12,7 @@ import io.ktor.client.request.header
 import io.ktor.client.statement.bodyAsText
 import io.ktor.http.HttpHeaders
 import io.ktor.http.HttpStatusCode
-import io.ktor.server.config.ApplicationConfig
+import com.anjo.monhomeass.testutils.testApplicationConfig
 import io.ktor.server.testing.testApplication
 import kotlinx.datetime.TimeZone
 import kotlinx.datetime.toLocalDateTime
@@ -33,7 +33,7 @@ class RecorderRoutesKtTest {
         //given
         setupWithRecord()
         environment {
-            config = ApplicationConfig("application-test.yaml")
+            config = testApplicationConfig()
         }
         application {
             configureDatabases()

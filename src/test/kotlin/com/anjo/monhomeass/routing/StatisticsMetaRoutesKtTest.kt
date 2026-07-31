@@ -8,6 +8,7 @@ import com.anjo.monhomeass.plugins.configureDatabases
 import com.anjo.monhomeass.plugins.configureRouting
 import com.anjo.monhomeass.plugins.configureStatusPages
 import com.anjo.monhomeass.testutils.addRecords
+import com.anjo.monhomeass.testutils.directUpdate
 import com.anjo.monhomeass.testutils.prepareDatabase
 import io.kotest.matchers.shouldBe
 import io.ktor.client.request.get
@@ -15,7 +16,7 @@ import io.ktor.client.request.header
 import io.ktor.client.statement.bodyAsText
 import io.ktor.http.HttpHeaders
 import io.ktor.http.HttpStatusCode
-import io.ktor.server.config.ApplicationConfig
+import com.anjo.monhomeass.testutils.testApplicationConfig
 import io.ktor.server.testing.testApplication
 import kotlinx.serialization.json.Json
 import org.jetbrains.exposed.v1.jdbc.SchemaUtils
@@ -30,7 +31,7 @@ class StatisticsMetaRoutesKtTest {
         //given
         setupWithRecords()
         environment {
-            config = ApplicationConfig("application-test.yaml")
+            config = testApplicationConfig()
         }
         application {
             configureDatabases()
@@ -59,7 +60,7 @@ class StatisticsMetaRoutesKtTest {
         //given
         setupWithRecords()
         environment {
-            config = ApplicationConfig("application-test.yaml")
+            config = testApplicationConfig()
         }
         application {
             configureDatabases()
@@ -84,7 +85,7 @@ class StatisticsMetaRoutesKtTest {
         //given
         setupWithRecords()
         environment {
-            config = ApplicationConfig("application-test.yaml")
+            config = testApplicationConfig()
         }
         application {
             configureDatabases()
@@ -111,7 +112,7 @@ class StatisticsMetaRoutesKtTest {
         //given
         setupWithRecords()
         environment {
-            config = ApplicationConfig("application-test.yaml")
+            config = testApplicationConfig()
         }
         application {
             configureDatabases()
@@ -136,7 +137,7 @@ class StatisticsMetaRoutesKtTest {
         //given
         setupWithRecords()
         environment {
-            config = ApplicationConfig("application-test.yaml")
+            config = testApplicationConfig()
         }
         application {
             configureDatabases()
@@ -161,6 +162,31 @@ class StatisticsMetaRoutesKtTest {
     }
 
     @Test
+    fun `given repeated call after direct row mutation when get statistics-meta then returns cached value`() = testApplication {
+        //given
+        setupWithRecords()
+        environment {
+            config = testApplicationConfig()
+        }
+        application {
+            configureDatabases()
+            configureStatusPages()
+            configureRouting()
+        }
+
+        //when
+        val first = client.get("/statistics-meta")
+        directUpdate("UPDATE statistics_meta SET name = 'changed' WHERE data_id = 1")
+        val second = client.get("/statistics-meta")
+
+        //then
+        first.status shouldBe HttpStatusCode.OK
+        second.status shouldBe HttpStatusCode.OK
+        Json.decodeFromString<List<StatisticMetaDto>>(second.bodyAsText()) shouldBe
+                Json.decodeFromString<List<StatisticMetaDto>>(first.bodyAsText())
+    }
+
+    @Test
     fun `given no statistics meta when get statistics-meta then returns empty list`() = testApplication {
         //given
         prepareDatabase()
@@ -169,7 +195,7 @@ class StatisticsMetaRoutesKtTest {
             SchemaUtils.create(StatisticMetaData)
         }
         environment {
-            config = ApplicationConfig("application-test.yaml")
+            config = testApplicationConfig()
         }
         application {
             configureDatabases()
@@ -197,7 +223,7 @@ class StatisticsMetaRoutesKtTest {
             dropTableIfExists()
         }
         environment {
-            config = ApplicationConfig("application-test.yaml")
+            config = testApplicationConfig()
         }
         application {
             configureDatabases()

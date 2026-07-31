@@ -55,6 +55,8 @@ dependencies {
     implementation("org.jetbrains.exposed:exposed-kotlin-datetime:$exposed_version")
     //health
     implementation("dev.hayden:khealth:3.0.0")
+    //cache
+    implementation("redis.clients:jedis:7.5.3")
     //logging
     implementation("io.github.oshai:kotlin-logging-jvm:7.0.14")
     implementation("ch.qos.logback:logback-classic:$logback_version")
@@ -64,6 +66,8 @@ dependencies {
     testImplementation("io.kotest:kotest-assertions-core:5.9.1")
     testImplementation("io.mockk:mockk:1.13.13")
     testImplementation("io.ktor:ktor-client-content-negotiation:${ktor_version}")
+    testImplementation("org.testcontainers:testcontainers:1.21.4")
+    testImplementation("org.testcontainers:postgresql:1.21.4")
 }
 
 ktor {

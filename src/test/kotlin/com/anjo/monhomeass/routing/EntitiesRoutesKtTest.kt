@@ -6,6 +6,7 @@ import com.anjo.monhomeass.plugins.configureDatabases
 import com.anjo.monhomeass.plugins.configureRouting
 import com.anjo.monhomeass.plugins.configureStatusPages
 import com.anjo.monhomeass.testutils.addRecords
+import com.anjo.monhomeass.testutils.directUpdate
 import com.anjo.monhomeass.testutils.prepareDatabase
 import io.kotest.matchers.shouldBe
 import io.ktor.client.request.get
@@ -13,7 +14,7 @@ import io.ktor.client.request.header
 import io.ktor.client.statement.bodyAsText
 import io.ktor.http.HttpHeaders
 import io.ktor.http.HttpStatusCode
-import io.ktor.server.config.ApplicationConfig
+import com.anjo.monhomeass.testutils.testApplicationConfig
 import io.ktor.server.testing.testApplication
 import kotlinx.serialization.json.Json
 import org.jetbrains.exposed.v1.jdbc.SchemaUtils
@@ -28,7 +29,7 @@ class EntitiesRoutesKtTest {
         //given
         setupWithRecords()
         environment {
-            config = ApplicationConfig("application-test.yaml")
+            config = testApplicationConfig()
         }
         application {
             configureDatabases()
@@ -53,6 +54,31 @@ class EntitiesRoutesKtTest {
     }
 
     @Test
+    fun `given repeated call after direct row mutation when get entities then returns cached value`() = testApplication {
+        //given
+        setupWithRecords()
+        environment {
+            config = testApplicationConfig()
+        }
+        application {
+            configureDatabases()
+            configureStatusPages()
+            configureRouting()
+        }
+
+        //when
+        val first = client.get("/entities")
+        directUpdate("UPDATE states_meta SET entity_id = 'changed' WHERE metadata_id = 1")
+        val second = client.get("/entities")
+
+        //then
+        first.status shouldBe HttpStatusCode.OK
+        second.status shouldBe HttpStatusCode.OK
+        Json.decodeFromString<List<EntityDto>>(second.bodyAsText()) shouldBe
+                Json.decodeFromString<List<EntityDto>>(first.bodyAsText())
+    }
+
+    @Test
     fun `given no entities when get entities then returns empty list`() = testApplication {
         //given
         prepareDatabase()
@@ -61,7 +87,7 @@ class EntitiesRoutesKtTest {
             SchemaUtils.create(StateMetadata)
         }
         environment {
-            config = ApplicationConfig("application-test.yaml")
+            config = testApplicationConfig()
         }
         application {
             configureDatabases()
@@ -89,7 +115,7 @@ class EntitiesRoutesKtTest {
             dropTableIfExists()
         }
         environment {
-            config = ApplicationConfig("application-test.yaml")
+            config = testApplicationConfig()
         }
         application {
             configureDatabases()

@@ -18,7 +18,7 @@ import io.ktor.client.request.parameter
 import io.ktor.http.HttpHeaders
 import io.ktor.http.HttpStatusCode
 import io.ktor.serialization.kotlinx.json.json
-import io.ktor.server.config.ApplicationConfig
+import com.anjo.monhomeass.testutils.testApplicationConfig
 import io.ktor.server.testing.testApplication
 import kotlinx.datetime.TimeZone
 import kotlinx.datetime.toLocalDateTime
@@ -54,7 +54,7 @@ class EventsRoutesKtTest {
     fun `given event routes when get the return events`() = testApplication {
         //given
         environment {
-            config = ApplicationConfig("application-test.yaml")
+            config = testApplicationConfig()
         }
         application {
             configureDatabases()
@@ -86,7 +86,7 @@ class EventsRoutesKtTest {
     fun `given event routes with exclude when get then return empty list`() = testApplication {
         //given
         environment {
-            config = ApplicationConfig("application-test.yaml")
+            config = testApplicationConfig()
         }
         application {
             configureDatabases()
