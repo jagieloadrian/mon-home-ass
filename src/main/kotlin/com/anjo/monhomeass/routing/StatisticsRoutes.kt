@@ -23,15 +23,23 @@ fun Route.statisticMetaRoute(repo: StatisticMetaRepo) {
 
     route("/statistics-meta") {
         get {
-            call.respond(repo.getAll(),
+            val search = call.request.queryParameters["search"]
+            call.respond(repo.getAll(search),
                     typeInfo = TypeInfo(ArrayList::class))
         }.describe {
             tag("Statistics")
             summary = "List trackable statistic entities"
 
+            parameters {
+                query("search") {
+                    required = false
+                    schema = jsonSchema<String>()
+                }
+            }
+
             responses {
                 HttpStatusCode.OK {
-                    description = "List of statistic metadata entries."
+                    description = "List of statistic metadata entries, optionally filtered by search."
                     schema = jsonSchema<List<StatisticMetaDto>>()
                 }
                 HttpStatusCode.ServiceUnavailable {

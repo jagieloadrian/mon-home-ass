@@ -55,6 +55,112 @@ class StatisticsMetaRoutesKtTest {
     }
 
     @Test
+    fun `given search matching statistic_id case-insensitively when get statistics-meta then returns only matching entry`() = testApplication {
+        //given
+        setupWithRecords()
+        environment {
+            config = ApplicationConfig("application-test.yaml")
+        }
+        application {
+            configureDatabases()
+            configureStatusPages()
+            configureRouting()
+        }
+
+        //when
+        val response = client.get("/statistics-meta?search=ENERGY") {
+            header(HttpHeaders.ContentType, "application/json")
+            header(HttpHeaders.Accept, "application/json")
+        }
+        val decodedJson = Json.decodeFromString<List<StatisticMetaDto>>(response.bodyAsText())
+
+        //then
+        response.status shouldBe HttpStatusCode.OK
+        decodedJson shouldBe listOf(StatisticMetaDto(2, "sensor.energy_usage", null, null, null, null, null))
+    }
+
+    @Test
+    fun `given search matching name case-insensitively when get statistics-meta then returns only matching entry`() = testApplication {
+        //given
+        setupWithRecords()
+        environment {
+            config = ApplicationConfig("application-test.yaml")
+        }
+        application {
+            configureDatabases()
+            configureStatusPages()
+            configureRouting()
+        }
+
+        //when
+        val response = client.get("/statistics-meta?search=room") {
+            header(HttpHeaders.ContentType, "application/json")
+            header(HttpHeaders.Accept, "application/json")
+        }
+        val decodedJson = Json.decodeFromString<List<StatisticMetaDto>>(response.bodyAsText())
+
+        //then
+        response.status shouldBe HttpStatusCode.OK
+        decodedJson shouldBe listOf(
+                StatisticMetaDto(1, "sensor.living_room_temperature", "Living Room Temperature", "°C", "recorder", true, false)
+        )
+    }
+
+    @Test
+    fun `given search matching nothing when get statistics-meta then returns empty list`() = testApplication {
+        //given
+        setupWithRecords()
+        environment {
+            config = ApplicationConfig("application-test.yaml")
+        }
+        application {
+            configureDatabases()
+            configureStatusPages()
+            configureRouting()
+        }
+
+        //when
+        val response = client.get("/statistics-meta?search=nope-not-here") {
+            header(HttpHeaders.ContentType, "application/json")
+            header(HttpHeaders.Accept, "application/json")
+        }
+        val decodedJson = Json.decodeFromString<List<StatisticMetaDto>>(response.bodyAsText())
+
+        //then
+        response.status shouldBe HttpStatusCode.OK
+        decodedJson shouldBe emptyList()
+    }
+
+    @Test
+    fun `given blank search when get statistics-meta then returns all entries unchanged`() = testApplication {
+        //given
+        setupWithRecords()
+        environment {
+            config = ApplicationConfig("application-test.yaml")
+        }
+        application {
+            configureDatabases()
+            configureStatusPages()
+            configureRouting()
+        }
+        val expected = listOf(
+                StatisticMetaDto(1, "sensor.living_room_temperature", "Living Room Temperature", "°C", "recorder", true, false),
+                StatisticMetaDto(2, "sensor.energy_usage", null, null, null, null, null)
+        )
+
+        //when
+        val response = client.get("/statistics-meta?search=") {
+            header(HttpHeaders.ContentType, "application/json")
+            header(HttpHeaders.Accept, "application/json")
+        }
+        val decodedJson = Json.decodeFromString<List<StatisticMetaDto>>(response.bodyAsText())
+
+        //then
+        response.status shouldBe HttpStatusCode.OK
+        decodedJson shouldBe expected
+    }
+
+    @Test
     fun `given no statistics meta when get statistics-meta then returns empty list`() = testApplication {
         //given
         prepareDatabase()

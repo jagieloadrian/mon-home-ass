@@ -11,9 +11,18 @@ paths:
     get:
       tags: [Statistics]
       summary: List trackable statistic entities
+      parameters:
+        - name: search
+          in: query
+          required: false
+          schema:
+            type: string
+          description: >-
+            Case-insensitive substring match against statistic_id or name.
+            Absent or empty returns every entry, unchanged.
       responses:
         "200":
-          description: List of statistic metadata entries.
+          description: List of statistic metadata entries, optionally filtered by `search`.
           content:
             application/json:
               schema:
