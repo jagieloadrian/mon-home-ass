@@ -6,7 +6,7 @@
 |---|---|---|---|
 | Kotlin | 2.3.0 | 2.4.0 | minor |
 | Ktor | 3.4.0 | 3.5.1 | minor |
-| Exposed | 1.0.0 | 1.0.0 | none — already latest |
+| Exposed | 1.0.0 | 1.3.1 | minor |
 | PostgreSQL JDBC | 42.7.2 | 42.7.13 | patch |
 | H2 | 2.2.224 | 2.4.240 | minor |
 | Logback | 1.5.13 | 1.6.1 | minor |
@@ -47,11 +47,15 @@ becomes available.
   routing-openapi coupling fix above.
 - Alternatives considered: none — single newest stable line available.
 
-## Exposed 1.0.0
+## Exposed 1.0.0 → 1.3.1
 
-- Decision: no change, already on latest stable (1.0.0, released Jan 2026).
-- Rationale: nothing to bump; FR-001/SC-001 already satisfied for this
-  dependency.
+- Decision: bump `exposed_version` to 1.3.1.
+- Rationale: latest stable (released 2026-07-01, after this plan's initial
+  research pass which had only found 1.0.0 from January); 1.0.0 established
+  a stable API with no breaking changes guaranteed until the next major
+  release, so 1.x → 1.3.1 is a safe in-line bump.
+- Breaking changes checked: none — covered by Exposed's own 1.0 stability
+  guarantee; confirmed by the full test suite (61/61 passing unchanged).
 
 ## PostgreSQL JDBC 42.7.2 → 42.7.13
 

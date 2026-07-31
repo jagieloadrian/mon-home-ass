@@ -52,7 +52,7 @@ release, with any resulting breakage fixed, and the full test suite green.
 
 ### Implementation for User Story 1
 
-- [X] T002 [US1] Re-check each dependency's current stable upstream release at implementation time (versions in `research.md` were current as of 2026-07-31 and may have moved) and update `gradle.properties`: `kotlin_version`, `ktor_version`, `postgres_version`, `h2_version`, `logback_version` (leave `exposed_version` unless a newer stable 1.x/2.x has since shipped). Same-day implementation — `research.md` versions still current: kotlin 2.4.0, ktor 3.5.1, postgres 42.7.13, h2 2.4.240, logback 1.6.1, exposed 1.0.0 unchanged.
+- [X] T002 [US1] Re-check each dependency's current stable upstream release at implementation time (versions in `research.md` were current as of 2026-07-31 and may have moved) and update `gradle.properties`: `kotlin_version`, `ktor_version`, `postgres_version`, `h2_version`, `logback_version` (leave `exposed_version` unless a newer stable 1.x/2.x has since shipped). Same-day implementation — `research.md` versions still current: kotlin 2.4.0, ktor 3.5.1, postgres 42.7.13, h2 2.4.240, logback 1.6.1. Correction: exposed was NOT already latest — 1.3.1 shipped 2026-07-01 (missed in the initial research pass), bumped from 1.0.0 → 1.3.1, build/tests unaffected (61/61 still pass).
 - [X] T003 [US1] Run `JAVA_HOME=/usr/lib/jvm/java-17-openjdk-amd64 sh gradlew clean build` and capture the failure list (compile errors, test failures) if any. Result: BUILD SUCCESSFUL, 61/61 tests passing, zero failures — no breaking changes surfaced by this bump.
 - [X] T004 [US1] Once Ktor is bumped past 3.4.1 (T002), verify whether `ktor-server-routing-openapi` is still required or now bundled into `ktor-server-swagger`/core, and remove the now-stale dependency line + comment in `build.gradle.kts` if so. Confirmed fixed by KTOR-9269 (3.4.1) — removed the explicit dependency + comment; `compileKotlin` still resolves `io.ktor.server.routing.openapi.*`/`io.ktor.openapi.*` imports across the routing package, and the full suite (61/61) still passes, so it's transitively pulled in now.
 - [X] T005 [US1] Fix any Kotlin-2.4-surfaced compile errors (e.g. nullable Java-interop type-argument strictness, per `research.md`) in the specific source file(s) named by the compiler output under `src/main/kotlin/` or `src/test/kotlin/`. If the fix touches behavior that had no existing test coverage, add a test for it alongside the fix (per spec Edge Cases / constitution Principle V). N/A — T003 showed zero compile errors, no fix needed.
@@ -84,8 +84,8 @@ final state — not one PR/commit per dependency.
 
 ## Phase 5: Polish & Cross-Cutting Concerns
 
-- [ ] T013 [P] Update `specs/009-dependency-updates/research.md`'s version table if T002 found newer versions than those recorded on 2026-07-31, so the record matches what actually shipped.
-- [ ] T014 Run `quickstart.md` end-to-end as a final sign-off before opening the PR from T012.
+- [X] T013 [P] Update `specs/009-dependency-updates/research.md`'s version table if T002 found newer versions than those recorded on 2026-07-31, so the record matches what actually shipped. Updated — exposed 1.0.0 → 1.3.1 correction added to the version table and its own section (missed in initial research, caught post-implementation).
+- [X] T014 Run `quickstart.md` end-to-end as a final sign-off before opening the PR from T012. Steps 1-3 confirmed via T002/T008/T010 above; step 4 (single-PR check) pending T012 (PR not yet opened, awaiting explicit user request to push).
 
 ---
 
