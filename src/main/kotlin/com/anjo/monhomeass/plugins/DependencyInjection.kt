@@ -13,7 +13,7 @@ import com.anjo.monhomeass.utils.Constants.REDIS_CONFIG_PREFIX
 import io.ktor.server.application.Application
 import io.ktor.server.plugins.di.DependencyKey
 import io.ktor.server.plugins.di.dependencies
-import redis.clients.jedis.JedisPooled
+import redis.clients.jedis.RedisClient
 
 fun Application.configureDI() {
     val redisConfig = environment.config.config(REDIS_CONFIG_PREFIX)
@@ -26,7 +26,7 @@ fun Application.configureDI() {
         provide<MigrationRepo>(MigrationRepo::class)
         provide<RecorderRepo>(RecorderRepo::class)
         provide<SchemaChangesRepo>(SchemaChangesRepo::class)
-        provide { RedisCache(JedisPooled(redisHost, redisPort), redisTtlMillis) }
+        provide { RedisCache(RedisClient.create(redisHost, redisPort), redisTtlMillis) }
         provide { StateMetadataRepo(get(DependencyKey<RedisCache>())) }
         provide { StatisticMetaRepo(get(DependencyKey<RedisCache>())) }
         provide { StatisticRepo(get(DependencyKey<RedisCache>())) }

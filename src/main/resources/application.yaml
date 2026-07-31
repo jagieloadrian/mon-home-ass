@@ -11,3 +11,7 @@ ktor:
         database_name: "db_name"
         driver: "org.postgresql.Driver"
         database_type: "postgres"
+    redis:
+        host: "localhost"
+        port: 6379
+        ttlMillis: 300000

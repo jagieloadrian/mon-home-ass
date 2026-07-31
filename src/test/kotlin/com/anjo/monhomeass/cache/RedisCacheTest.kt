@@ -3,7 +3,7 @@ package com.anjo.monhomeass.cache
 import com.anjo.monhomeass.testutils.flushRedis
 import com.anjo.monhomeass.testutils.testRedisHostPort
 import io.kotest.matchers.shouldBe
-import redis.clients.jedis.JedisPooled
+import redis.clients.jedis.RedisClient
 import kotlin.test.Test
 import kotlin.test.assertNull
 
@@ -12,7 +12,7 @@ class RedisCacheTest {
     private fun newCache(ttlMillis: Long): RedisCache {
         flushRedis()
         val (host, port) = testRedisHostPort()
-        return RedisCache(JedisPooled(host, port), ttlMillis)
+        return RedisCache(RedisClient.create(host, port), ttlMillis)
     }
 
     @Test
