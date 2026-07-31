@@ -3,7 +3,10 @@ package com.anjo.monhomeass.cache
 import com.anjo.monhomeass.testutils.flushRedis
 import com.anjo.monhomeass.testutils.testRedisHostPort
 import io.kotest.matchers.shouldBe
+import io.mockk.every
+import io.mockk.mockk
 import redis.clients.jedis.RedisClient
+import redis.clients.jedis.exceptions.JedisConnectionException
 import kotlin.test.Test
 import kotlin.test.assertNull
 
@@ -63,5 +66,38 @@ class RedisCacheTest {
         assertNull(first)
         assertNull(second)
         loaderCalls shouldBe 2
+    }
+
+    @Test
+    fun `given redis unreachable when getOrPut then falls back to in-memory cache and retries with backoff`() {
+        val client = mockk<RedisClient>()
+        every { client.get(any<String>()) } throws JedisConnectionException("down")
+        val cache = RedisCache(client, ttlMillis = 60_000)
+        var loaderCalls = 0
+
+        val first = cache.getOrPut("k") { loaderCalls++; "value" }
+        cache.down shouldBe true
+        val backoffAfterFirstFailure = cache.backoffMillis
+
+        // still within backoff window: served from local cache, no retry against redis
+        val second = cache.getOrPut("k") { loaderCalls++; "should-not-be-used" }
+
+        first shouldBe "value"
+        second shouldBe "value"
+        loaderCalls shouldBe 1
+
+        // force the backoff window to have elapsed: retries redis, fails again, backoff doubles
+        cache.nextCheckAt = 0
+        cache.getOrPut("k") { loaderCalls++; "value" }
+        cache.backoffMillis shouldBe backoffAfterFirstFailure * 2
+
+        // redis recovers: next retry succeeds and clears the local fallback state
+        every { client.get(any<String>()) } returns null
+        every { client.set(any<String>(), any<String>(), any()) } returns "OK"
+        cache.nextCheckAt = 0
+        val afterRecovery = cache.getOrPut("k") { loaderCalls++; "fresh" }
+
+        afterRecovery shouldBe "fresh"
+        cache.down shouldBe false
     }
 }
