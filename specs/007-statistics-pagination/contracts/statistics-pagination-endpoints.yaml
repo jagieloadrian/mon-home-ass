@@ -1,0 +1,90 @@
+# Contract delta for this feature — merge into repo-root openapi.yaml during implementation.
+# /statistics/{statisticId} and its /short-term variant already exist with
+# From/To params and 200/400/404/503 responses; this adds the Limit/Offset
+# query parameters (400 also now covers invalid limit/offset).
+
+components:
+  parameters:
+    Limit:
+      name: limit
+      in: query
+      required: false
+      schema:
+        type: integer
+        format: int32
+        minimum: 0
+      description: Max number of rows to return. Omit for no limit (all matching rows).
+    Offset:
+      name: offset
+      in: query
+      required: false
+      schema:
+        type: integer
+        format: int64
+        minimum: 0
+      description: Number of rows to skip before applying limit. Omit for 0.
+
+paths:
+  /statistics/{statisticId}:
+    get:
+      tags: [Statistics]
+      summary: Long-term statistics for one entity
+      parameters:
+        - $ref: "#/components/parameters/StatisticId"
+        - $ref: "#/components/parameters/From"
+        - $ref: "#/components/parameters/To"
+        - $ref: "#/components/parameters/Limit"
+        - $ref: "#/components/parameters/Offset"
+      responses:
+        "200":
+          description: Long-term statistic rows, oldest first, optionally paginated.
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/StatisticDto"
+        "400":
+          description: from/to/limit/offset present but unparseable or negative.
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorDto"
+        "404":
+          description: Unknown statisticId.
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorDto"
+
+  /statistics/{statisticId}/short-term:
+    get:
+      tags: [Statistics]
+      summary: Short-term (5-minute) statistics for one entity
+      parameters:
+        - $ref: "#/components/parameters/StatisticId"
+        - $ref: "#/components/parameters/From"
+        - $ref: "#/components/parameters/To"
+        - $ref: "#/components/parameters/Limit"
+        - $ref: "#/components/parameters/Offset"
+      responses:
+        "200":
+          description: Short-term statistic rows, oldest first, optionally paginated.
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/StatisticDto"
+        "400":
+          description: from/to/limit/offset present but unparseable or negative.
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorDto"
+        "404":
+          description: Unknown statisticId.
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorDto"

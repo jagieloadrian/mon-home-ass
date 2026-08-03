@@ -1,14 +1,13 @@
 package com.anjo.monhomeass.utils
 
+import io.kotest.core.spec.style.StringSpec
 import io.kotest.matchers.types.shouldBeInstanceOf
 import kotlinx.datetime.LocalDateTime
 import java.time.OffsetDateTime
-import kotlin.test.Test
 
-class DateTimeUtilsKtTest {
+class DateTimeUtilsKtTest : StringSpec({
 
-    @Test
-    fun `given a offsetdatetime when convert to kotlindatetime then return properly type of object`() {
+    "given a offsetdatetime when convert to kotlindatetime then return properly type of object" {
         //given
         val date = OffsetDateTime.now()
 
@@ -18,4 +17,4 @@ class DateTimeUtilsKtTest {
         //then
         actual.shouldBeInstanceOf<LocalDateTime>()
     }
-}
+})

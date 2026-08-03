@@ -1,8 +1,8 @@
 package com.anjo.monhomeass.plugins
 
 import com.anjo.monhomeass.utils.Constants.DATABASE_CONFIG_PREFIX
-import io.ktor.server.application.*
-import org.jetbrains.exposed.sql.Database
+import io.ktor.server.application.Application
+import org.jetbrains.exposed.v1.jdbc.Database
 
 fun Application.configureDatabases() {
     val dbConfig = environment.config.config(DATABASE_CONFIG_PREFIX)
@@ -21,7 +21,6 @@ fun Application.configureDatabases() {
             password = dbPassword,
             setupConnection = {
                 it.isReadOnly = true
-
             }
     )
 }

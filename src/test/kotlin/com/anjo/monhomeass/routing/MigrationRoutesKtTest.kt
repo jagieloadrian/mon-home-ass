@@ -4,58 +4,86 @@ import com.anjo.monhomeass.model.dto.MigrationDto
 import com.anjo.monhomeass.model.tables.MigrationChanges
 import com.anjo.monhomeass.plugins.configureDatabases
 import com.anjo.monhomeass.plugins.configureRouting
+import com.anjo.monhomeass.plugins.configureStatusPages
 import com.anjo.monhomeass.testutils.addRecords
 import com.anjo.monhomeass.testutils.prepareDatabase
+import io.kotest.core.spec.style.StringSpec
 import io.kotest.matchers.shouldBe
-import io.ktor.client.request.*
-import io.ktor.client.statement.*
-import io.ktor.http.*
-import io.ktor.server.config.*
-import io.ktor.server.testing.*
+import io.ktor.client.request.get
+import io.ktor.client.request.header
+import io.ktor.client.statement.bodyAsText
+import io.ktor.http.HttpHeaders
+import io.ktor.http.HttpStatusCode
+import com.anjo.monhomeass.testutils.testApplicationConfig
+import io.ktor.server.testing.testApplication
 import kotlinx.serialization.json.Json
-import org.jetbrains.exposed.sql.SchemaUtils
-import org.jetbrains.exposed.sql.insert
-import org.jetbrains.exposed.sql.transactions.transaction
-import kotlin.test.Test
+import org.jetbrains.exposed.v1.jdbc.SchemaUtils
+import org.jetbrains.exposed.v1.jdbc.insert
+import org.jetbrains.exposed.v1.jdbc.transactions.transaction
 
-class MigrationRoutesKtTest {
+class MigrationRoutesKtTest : StringSpec({
 
-    @Test
-    fun `given migration routes when get the return migration dto`() = testApplication {
-        //given
-        setupWithInsert()
-        environment {
-            config = ApplicationConfig("application-test.yaml")
-        }
-        application {
-            configureDatabases()
-            configureRouting()
-        }
-        val expected = listOf(MigrationDto("new_id", 1))
-
-        //when
-        val response = client.get("/migrations/all") {
-            header(HttpHeaders.ContentType, "application/json")
-            header(HttpHeaders.Accept, "application/json")
-        }
-        val responseBody = response.bodyAsText()
-        val decodedJson = Json.decodeFromString<List<MigrationDto>>(responseBody)
-
-        //then
-        response.status shouldBe HttpStatusCode.OK
-        decodedJson shouldBe expected
-    }
-
-    private fun setupWithInsert() {
+    fun setupWithInsert() {
         prepareDatabase()
         transaction {
             SchemaUtils.create(MigrationChanges)
             addRecords {
                 MigrationChanges.insert {
-                    it[this.id] = "new_id"
-                    it[this.version] = 1
+                    it[id] = "new_id"
+                    it[version] = 1
                 }
             }
         }
     }
-}
+
+    "given migration routes when get the return migration dto" {
+        testApplication {
+            //given
+            setupWithInsert()
+            environment {
+                config = testApplicationConfig()
+            }
+            application {
+                configureDatabases()
+                configureRouting()
+            }
+            val expected = listOf(MigrationDto("new_id", 1))
+
+            //when
+            val response = client.get("/migrations") {
+                header(HttpHeaders.ContentType, "application/json")
+                header(HttpHeaders.Accept, "application/json")
+            }
+            val responseBody = response.bodyAsText()
+            val decodedJson = Json.decodeFromString<List<MigrationDto>>(responseBody)
+
+            //then
+            response.status shouldBe HttpStatusCode.OK
+            decodedJson shouldBe expected
+        }
+    }
+
+    "given recorder database query fails when get migrations then returns 503" {
+        testApplication {
+            //given - table intentionally (re)dropped, so the query fails
+            prepareDatabase()
+            transaction {
+                runCatching { SchemaUtils.drop(MigrationChanges) }
+            }
+            environment {
+                config = testApplicationConfig()
+            }
+            application {
+                configureDatabases()
+                configureStatusPages()
+                configureRouting()
+            }
+
+            //when
+            val response = client.get("/migrations")
+
+            //then
+            response.status shouldBe HttpStatusCode.ServiceUnavailable
+        }
+    }
+})

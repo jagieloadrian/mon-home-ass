@@ -1,14 +1,17 @@
+import io.ktor.plugin.features.*
 
 val h2_version: String by project
 val kotlin_version: String by project
 val logback_version: String by project
 val postgres_version: String by project
 val exposed_version: String by project
+val ktor_version: String by project
 
 plugins {
-    kotlin("jvm") version "2.0.21"
-    id("io.ktor.plugin") version "3.0.1"
-    id("org.jetbrains.kotlin.plugin.serialization") version "2.0.21"
+    kotlin("jvm")
+    kotlin("plugin.serialization")
+    id("io.ktor.plugin")
+    jacoco
 }
 
 group = "com.anjo"
@@ -35,9 +38,12 @@ dependencies {
     implementation("io.ktor:ktor-server-default-headers-jvm")
     implementation("io.ktor:ktor-server-netty-jvm")
     implementation("io.ktor:ktor-server-config-yaml")
+    implementation("io.ktor:ktor-server-di")
 
-    //    implementation("io.ktor:ktor-server-swagger")
-    //    implementation("io.ktor:ktor-server-swagger-jvm")
+    //swagger
+    implementation("io.ktor:ktor-server-swagger:${ktor_version}")
+    //error handling
+    implementation("io.ktor:ktor-server-status-pages-jvm")
 
     //databases
     implementation("org.postgresql:postgresql:$postgres_version")
@@ -48,10 +54,58 @@ dependencies {
     implementation("org.jetbrains.exposed:exposed-kotlin-datetime:$exposed_version")
     //health
     implementation("dev.hayden:khealth:3.0.0")
+    //cache
+    implementation("redis.clients:jedis:7.5.3")
     //logging
+    implementation("io.github.oshai:kotlin-logging-jvm:7.0.14")
     implementation("ch.qos.logback:logback-classic:$logback_version")
     //test
     testImplementation("io.ktor:ktor-server-test-host-jvm")
-    testImplementation("org.jetbrains.kotlin:kotlin-test-junit:$kotlin_version")
+    testImplementation("io.kotest:kotest-runner-junit5:5.9.1")
     testImplementation("io.kotest:kotest-assertions-core:5.9.1")
+    testImplementation("io.mockk:mockk:1.13.13")
+    testImplementation("io.ktor:ktor-client-content-negotiation:${ktor_version}")
+    testImplementation("org.testcontainers:testcontainers:1.21.4")
+    testImplementation("org.testcontainers:postgresql:1.21.4")
+}
+
+tasks.test {
+    useJUnitPlatform()
+    finalizedBy(tasks.jacocoTestReport)
+}
+
+tasks.jacocoTestReport {
+    dependsOn(tasks.test)
+    reports {
+        xml.required.set(true)
+    }
+}
+
+tasks.jacocoTestCoverageVerification {
+    dependsOn(tasks.jacocoTestReport)
+    violationRules {
+        rule {
+            limit {
+                minimum = "0.70".toBigDecimal()
+            }
+        }
+    }
+}
+
+tasks.check {
+    dependsOn(tasks.jacocoTestCoverageVerification)
+}
+
+ktor {
+    docker {
+        jreVersion.set(JavaVersion.VERSION_21)
+        customBaseImage.set("eclipse-temurin:21-jre-alpine")
+        localImageName.set(rootProject.name)
+        imageTag.set(version.toString())
+        jib.container.creationTime = "USE_CURRENT_TIMESTAMP"
+        portMappings.set(listOf(
+                DockerPortMapping(outsideDocker = 8080, 8080, DockerPortMappingProtocol.TCP)
+        )
+        )
+    }
 }

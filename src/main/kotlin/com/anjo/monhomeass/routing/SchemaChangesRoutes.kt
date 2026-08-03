@@ -1,15 +1,33 @@
+@file:OptIn(ExperimentalKtorApi::class)
+
 package com.anjo.monhomeass.routing
 
+import com.anjo.monhomeass.model.dto.SchemaChangeDto
 import com.anjo.monhomeass.repository.SchemaChangesRepo
-import io.ktor.server.routing.*
-import io.ktor.util.reflect.*
+import io.ktor.http.HttpStatusCode
+import io.ktor.openapi.jsonSchema
+import io.ktor.server.response.respond
+import io.ktor.server.routing.Route
+import io.ktor.server.routing.get
+import io.ktor.server.routing.openapi.describe
+import io.ktor.server.routing.route
+import io.ktor.utils.io.ExperimentalKtorApi
 
 fun Route.schemaChangesRout(repo: SchemaChangesRepo) {
 
     route("/schemas") {
-        get("/all") {
-            call.respond(repo.getAll(),
-                    typeInfo = TypeInfo(ArrayList::class))
+        get {
+            call.respond(status = HttpStatusCode.OK, message = repo.getAll())
+        }.describe {
+            tag("Schema Changes")
+            summary = "Get info about schema changes"
+
+            responses {
+                HttpStatusCode.OK {
+                    description = "received data"
+                    schema = jsonSchema<List<SchemaChangeDto>>()
+                }
+            }
         }
     }
 }

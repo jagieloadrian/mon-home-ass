@@ -1,0 +1,40 @@
+name: Build
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: "21"
+
+      - uses: gradle/actions/setup-gradle@v5
+
+      - run: ./gradlew build
+
+      - name: Check coverage threshold (JaCoCo, min 70%)
+        run: ./gradlew jacocoTestCoverageVerification
+
+      # Collect Tests Result of failed tests
+      - name: Collect Tests Result
+        if: ${{ failure() }}
+        uses: actions/upload-artifact@v4
+        with:
+          name: tests-result
+          path: ${{ github.workspace }}/build/reports/tests
+
+      # Upload the JaCoCo report to CodeCov
+      - name: Upload Code Coverage Report
+        uses: codecov/codecov-action@v5
+        with:
+          files: ${{ github.workspace }}/build/reports/jacoco/test/jacocoTestReport.xml
+          token: ${{ secrets.CODECOV_TOKEN }}
+          fail_ci_if_error: true

@@ -1,0 +1,37 @@
+# Contract delta for this feature — merge into repo-root openapi.yaml during implementation.
+# /entities path already exists in openapi.yaml with a 200 response; this adds
+# the 503 response (matches /statistics-meta's established behavior) and
+# corrects EntityDto.entityId to nullable (matches states_meta.entity_id column).
+
+components:
+  schemas:
+    EntityDto:
+      type: object
+      required: [id]
+      properties:
+        id:
+          type: integer
+        entityId:
+          type: string
+          nullable: true
+
+paths:
+  /entities:
+    get:
+      tags: [Entities]
+      summary: List known entity ids
+      responses:
+        "200":
+          description: List of entities.
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/EntityDto"
+        "503":
+          description: Recorder database unreachable or query failed.
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorDto"

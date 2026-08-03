@@ -1,0 +1,19 @@
+replicaCount: 1
+
+image:
+  repository: mon-home-ass
+  tag: "0.0.1"
+  pullPolicy: IfNotPresent
+
+service:
+  port: 8080
+
+resources: {}
+
+db:
+  url: "postgres-host:5432"
+  name: "home_assistant"
+  user: "home_ass_user"
+  password: "CHANGE_ME"
+  driver: "org.postgresql.Driver"
+  type: "postgres"

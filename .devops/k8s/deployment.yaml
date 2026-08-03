@@ -1,0 +1,38 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: mon-home-ass
+  labels:
+    app: mon-home-ass
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: mon-home-ass
+  template:
+    metadata:
+      labels:
+        app: mon-home-ass
+    spec:
+      containers:
+        - name: mon-home-ass
+          image: mon-home-ass:0.0.1
+          args: ["-config=/config/application.yaml"]
+          ports:
+            - containerPort: 8080
+          volumeMounts:
+            - name: config
+              mountPath: /config
+              readOnly: true
+          readinessProbe:
+            httpGet:
+              path: /health
+              port: 8080
+          livenessProbe:
+            httpGet:
+              path: /health
+              port: 8080
+      volumes:
+        - name: config
+          secret:
+            secretName: mon-home-ass-config
