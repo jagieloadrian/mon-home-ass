@@ -131,6 +131,12 @@ are not acceptable. Compliance is checked at the `Constitution Check` gate in
 - **Statistics runs**: `GET /statistics-runs` — historia uruchomień
   recordera statystyk (id + czas startu), od najnowszego; opcjonalny
   `limit`. Brak wierszy → `[]`.
+- **Multi-database support**: `ktor.database.database_type` obsługuje teraz
+  4 silniki — `postgres` (bez zmian), `mariadb` (min. 10.5), `mysql`
+  (min. 8.0), `sqlite` (min. 3.35, plik przez `file_path`, wymuszone
+  `mode=ro` na poziomie JDBC URL, bo `Connection.isReadOnly` to no-op/rzuca
+  wyjątek w sqlite-jdbc). Nierozpoznany `database_type` → fail-fast przy
+  starcie z nazwą błędnej wartości i listą 4 poprawnych opcji.
 
 
-**Version**: 1.0.0 | **Ratified**: 2026-07-30 | **Last Amended**: 2026-07-30
+**Version**: 1.0.0 | **Ratified**: 2026-07-30 | **Last Amended**: 2026-08-03

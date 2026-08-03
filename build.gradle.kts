@@ -46,6 +46,9 @@ dependencies {
 
     //databases
     implementation("org.postgresql:postgresql:$postgres_version")
+    implementation("org.mariadb.jdbc:mariadb-java-client:3.5.6")
+    implementation("com.mysql:mysql-connector-j:9.5.0")
+    implementation("org.xerial:sqlite-jdbc:3.50.3.0")
     implementation("org.jetbrains.exposed:exposed-core:$exposed_version")
     implementation("org.jetbrains.exposed:exposed-jdbc:$exposed_version")
     implementation("org.jetbrains.exposed:exposed-kotlin-datetime:$exposed_version")
@@ -64,6 +67,8 @@ dependencies {
     testImplementation("io.ktor:ktor-client-content-negotiation:${ktor_version}")
     testImplementation("org.testcontainers:testcontainers:1.21.4")
     testImplementation("org.testcontainers:postgresql:1.21.4")
+    testImplementation("org.testcontainers:mariadb:1.21.4")
+    testImplementation("org.testcontainers:mysql:1.21.4")
 }
 
 tasks.test {

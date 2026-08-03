@@ -1,7 +1,7 @@
 <!-- SPECKIT START -->
 For additional context about technologies to be used, project structure,
 shell commands, and other important information, read the current plan
-at specs/001-state-statistic-run-endpoints/plan.md
+at specs/002-multi-database-support/plan.md
 <!-- SPECKIT END -->
 
 # mon-home-ass
