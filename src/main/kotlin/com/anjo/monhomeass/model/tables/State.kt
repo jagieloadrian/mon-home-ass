@@ -8,6 +8,7 @@ object StateAttributes : Table() {
     val id = integer("attributes_id")
     val hash = long("hash").nullable()
     val sharedAttributes = text("shared_attrs").nullable()
+    override val primaryKey = PrimaryKey(id)
 }
 
 object State : Table("states") {
@@ -30,9 +31,11 @@ object State : Table("states") {
     val contextUserIdBinary = binary("context_user_id_bin").nullable()
     val contextParentIdBinary = binary("context_parent_id_bin").nullable()
     val metadataId = integer("metadata_id").references(StateMetadata.id).nullable()
+    override val primaryKey = PrimaryKey(id)
 }
 
 object StateMetadata : Table("states_meta") {
     val id = integer("metadata_id")
     val entityId = varchar("entity_id", 255).nullable()
+    override val primaryKey = PrimaryKey(id)
 }

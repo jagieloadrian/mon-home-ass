@@ -109,7 +109,7 @@ fun Route.statisticSummaryRoute(repo: StatisticRepo) {
     }
 }
 
-private fun parseInstant(value: String): Instant? {
+internal fun parseInstant(value: String): Instant? {
     return value.toLongOrNull()?.let { Instant.fromEpochSeconds(it) }
             ?: runCatching { Instant.parse(value) }.getOrNull()
 }

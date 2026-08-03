@@ -4,15 +4,20 @@ import com.anjo.monhomeass.repository.MigrationRepo
 import com.anjo.monhomeass.repository.RecorderRepo
 import com.anjo.monhomeass.repository.SchemaChangesRepo
 import com.anjo.monhomeass.repository.StateMetadataRepo
+import com.anjo.monhomeass.repository.StateRepo
 import com.anjo.monhomeass.repository.StatisticMetaRepo
 import com.anjo.monhomeass.repository.StatisticRepo
+import com.anjo.monhomeass.repository.StatisticRunRepo
 import com.anjo.monhomeass.routing.entitiesRoute
 import com.anjo.monhomeass.routing.eventsRoute
 import com.anjo.monhomeass.routing.migrationRoute
 import com.anjo.monhomeass.routing.recorderRout
 import com.anjo.monhomeass.routing.schemaChangesRout
+import com.anjo.monhomeass.routing.stateHistoryRoute
+import com.anjo.monhomeass.routing.stateRoute
 import com.anjo.monhomeass.routing.statisticMetaRoute
 import com.anjo.monhomeass.routing.statisticRoute
+import com.anjo.monhomeass.routing.statisticRunRoute
 import com.anjo.monhomeass.routing.statisticShortTermRoute
 import com.anjo.monhomeass.routing.statisticSummaryRoute
 import com.anjo.monhomeass.service.EventService
@@ -34,6 +39,8 @@ fun Application.configureRouting() {
     val stateMetadataRepo: StateMetadataRepo by dependencies
     val statisticMetaRepo: StatisticMetaRepo by dependencies
     val statisticRepo: StatisticRepo by dependencies
+    val stateRepo: StateRepo by dependencies
+    val statisticRunRepo: StatisticRunRepo by dependencies
     routing {
         migrationRoute(migrationRepo)
         recorderRout(recorderRepo)
@@ -44,6 +51,9 @@ fun Application.configureRouting() {
         statisticRoute(statisticRepo)
         statisticShortTermRoute(statisticRepo)
         statisticSummaryRoute(statisticRepo)
+        stateRoute(stateRepo)
+        stateHistoryRoute(stateRepo)
+        statisticRunRoute(statisticRunRepo)
     }
 
     // ponytail: OpenApiDocSource.Routing's built-in lazy-async generation (the

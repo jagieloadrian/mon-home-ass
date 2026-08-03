@@ -122,6 +122,15 @@ are not acceptable. Compliance is checked at the `Constitution Check` gate in
   test + próg pokrycia JaCoCo/Codecov, min. 70%) na push do `main` i na PR;
   gotowe manifesty Kubernetes + Helm chart w `.devops/` (bez commitowanych
   sekretów).
+- **State latest & history**: `GET /states/{entityId}` — najnowszy
+  zarejestrowany stan encji (wartość, atrybuty, znaczniki czasu). Nieznany
+  `entityId` lub encja bez zarejestrowanych wierszy stanu → 404.
+  `GET /states/{entityId}/history` — historia stanów w opcjonalnym zakresie
+  `from`/`to`, `limit`/`offset` jak w statystykach; znana encja bez wierszy
+  w zakresie → `[]`.
+- **Statistics runs**: `GET /statistics-runs` — historia uruchomień
+  recordera statystyk (id + czas startu), od najnowszego; opcjonalny
+  `limit`. Brak wierszy → `[]`.
 
 
 **Version**: 1.0.0 | **Ratified**: 2026-07-30 | **Last Amended**: 2026-07-30
