@@ -12,7 +12,8 @@ data class StateDto(
         val state: String?,
         val attributes: String?,
         val lastChangedTs: Long?,
-        val lastUpdatedTs: Long?
+        val lastUpdatedTs: Long?,
+        val eventId: Short?
 )
 
 fun ResultRow.toStateDto(): StateDto {
@@ -21,6 +22,7 @@ fun ResultRow.toStateDto(): StateDto {
             state = this[State.state],
             attributes = this.getOrNull(StateAttributes.sharedAttributes),
             lastChangedTs = this[State.lastModifiedTs]?.epochSeconds,
-            lastUpdatedTs = this[State.lastUpdatedTs]?.epochSeconds
+            lastUpdatedTs = this[State.lastUpdatedTs]?.epochSeconds,
+            eventId = this[State.eventId]
     )
 }

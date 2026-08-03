@@ -101,7 +101,8 @@ class StateRoutesKtTest : StringSpec({
                     state = "21.5",
                     attributes = null,
                     lastChangedTs = 1_700_003_600L,
-                    lastUpdatedTs = 1_700_003_600L
+                    lastUpdatedTs = 1_700_003_600L,
+                    eventId = null
             )
         }
     }

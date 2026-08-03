@@ -51,6 +51,7 @@ class StatisticLongTermRoutesKtTest : StringSpec({
                     it[sourceOfData] = "recorder"
                     it[hasMean] = true
                     it[hasSum] = false
+                    it[meanType] = 0
                 }
             }
             addRecords {
@@ -89,8 +90,8 @@ class StatisticLongTermRoutesKtTest : StringSpec({
                 configureRouting()
             }
             val expected = listOf(
-                    StatisticDto(1_700_000_000L, 10.0, 5.0, 15.0, null, null),
-                    StatisticDto(1_700_003_600L, 12.0, 6.0, 18.0, null, null)
+                    StatisticDto(1_700_000_000L, 10.0, null, 5.0, 15.0, null, null),
+                    StatisticDto(1_700_003_600L, 12.0, null, 6.0, 18.0, null, null)
             )
 
             //when
@@ -125,7 +126,7 @@ class StatisticLongTermRoutesKtTest : StringSpec({
 
             //then
             response.status shouldBe HttpStatusCode.OK
-            decodedJson shouldBe listOf(StatisticDto(1_700_000_000L, 10.0, 5.0, 15.0, null, null))
+            decodedJson shouldBe listOf(StatisticDto(1_700_000_000L, 10.0, null, 5.0, 15.0, null, null))
         }
     }
 
@@ -148,7 +149,7 @@ class StatisticLongTermRoutesKtTest : StringSpec({
 
             //then
             response.status shouldBe HttpStatusCode.OK
-            decodedJson shouldBe listOf(StatisticDto(1_700_003_600L, 12.0, 6.0, 18.0, null, null))
+            decodedJson shouldBe listOf(StatisticDto(1_700_003_600L, 12.0, null, 6.0, 18.0, null, null))
         }
     }
 
@@ -326,7 +327,7 @@ class StatisticLongTermRoutesKtTest : StringSpec({
 
             //then
             response.status shouldBe HttpStatusCode.OK
-            decodedJson shouldBe listOf(StatisticDto(1_700_003_600L, 12.0, 6.0, 18.0, null, null))
+            decodedJson shouldBe listOf(StatisticDto(1_700_003_600L, 12.0, null, 6.0, 18.0, null, null))
         }
     }
 
@@ -349,7 +350,7 @@ class StatisticLongTermRoutesKtTest : StringSpec({
 
             //then
             response.status shouldBe HttpStatusCode.OK
-            decodedJson shouldBe listOf(StatisticDto(1_700_003_600L, 12.0, 6.0, 18.0, null, null))
+            decodedJson shouldBe listOf(StatisticDto(1_700_003_600L, 12.0, null, 6.0, 18.0, null, null))
         }
     }
 

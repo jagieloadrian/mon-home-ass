@@ -16,6 +16,7 @@ object State : Table("states") {
     val entityId = char("entity_id", 1).nullable()
     val state = varchar("state", 255).nullable()
     val attributes = char("attributes", 1).nullable()
+    val eventId = short("event_id").nullable()
     val lastModified = timestampWithTimeZone("last_changed").nullable()
     val lastModifiedTs = epochSeconds("last_changed_ts").nullable()
     val lastReportedTs = epochSeconds("last_reported_ts").nullable()

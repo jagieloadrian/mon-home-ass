@@ -81,8 +81,8 @@ class StateHistoryRoutesKtTest : StringSpec({
             //then
             response.status shouldBe HttpStatusCode.OK
             decoded shouldBe listOf(
-                    StateDto("sensor.living_room_temperature", "20.0", null, 1_700_000_000L, 1_700_000_000L),
-                    StateDto("sensor.living_room_temperature", "21.5", null, 1_700_003_600L, 1_700_003_600L)
+                    StateDto("sensor.living_room_temperature", "20.0", null, 1_700_000_000L, 1_700_000_000L, null),
+                    StateDto("sensor.living_room_temperature", "21.5", null, 1_700_003_600L, 1_700_003_600L, null)
             )
         }
     }
@@ -105,7 +105,7 @@ class StateHistoryRoutesKtTest : StringSpec({
             //then
             response.status shouldBe HttpStatusCode.OK
             decoded shouldBe listOf(
-                    StateDto("sensor.living_room_temperature", "21.5", null, 1_700_003_600L, 1_700_003_600L)
+                    StateDto("sensor.living_room_temperature", "21.5", null, 1_700_003_600L, 1_700_003_600L, null)
             )
         }
     }
@@ -128,7 +128,7 @@ class StateHistoryRoutesKtTest : StringSpec({
             //then
             response.status shouldBe HttpStatusCode.OK
             decoded shouldBe listOf(
-                    StateDto("sensor.living_room_temperature", "21.5", null, 1_700_003_600L, 1_700_003_600L)
+                    StateDto("sensor.living_room_temperature", "21.5", null, 1_700_003_600L, 1_700_003_600L, null)
             )
         }
     }

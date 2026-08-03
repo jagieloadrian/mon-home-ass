@@ -313,7 +313,7 @@ components:
 
     StatisticMetaDto:
       type: object
-      required: [id, statisticId]
+      required: [id, statisticId, meanType]
       properties:
         id:
           type: integer
@@ -325,6 +325,9 @@ components:
         unitOfMeasurement:
           type: string
           nullable: true
+        unitClass:
+          type: string
+          nullable: true
         hasMean:
           type: boolean
           nullable: true
@@ -334,6 +337,8 @@ components:
         name:
           type: string
           nullable: true
+        meanType:
+          type: integer
 
     StatisticDto:
       type: object
@@ -344,6 +349,10 @@ components:
           format: int64
           description: Period start, epoch seconds.
         mean:
+          type: number
+          format: double
+          nullable: true
+        meanWeight:
           type: number
           format: double
           nullable: true
@@ -424,6 +433,9 @@ components:
         lastUpdatedTs:
           type: integer
           format: int64
+          nullable: true
+        eventId:
+          type: integer
           nullable: true
 
     StatisticRunDto:

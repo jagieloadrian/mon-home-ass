@@ -10,9 +10,11 @@ data class StatisticMetaDto(
         val statisticId: String?,
         val name: String?,
         val unitOfMeasurement: String?,
+        val unitClass: String?,
         val source: String?,
         val hasMean: Boolean?,
-        val hasSum: Boolean?
+        val hasSum: Boolean?,
+        val meanType: Short
 )
 
 fun ResultRow.toStatisticMetaDto(): StatisticMetaDto {
@@ -21,8 +23,10 @@ fun ResultRow.toStatisticMetaDto(): StatisticMetaDto {
             statisticId = this[StatisticMetaData.statisticId],
             name = this[StatisticMetaData.name],
             unitOfMeasurement = this[StatisticMetaData.unitOfMeasurement],
+            unitClass = this[StatisticMetaData.unitClass],
             source = this[StatisticMetaData.sourceOfData],
             hasMean = this[StatisticMetaData.hasMean],
-            hasSum = this[StatisticMetaData.hasSum]
+            hasSum = this[StatisticMetaData.hasSum],
+            meanType = this[StatisticMetaData.meanType]
     )
 }

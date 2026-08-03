@@ -48,6 +48,7 @@ class StatisticSummaryRoutesKtTest : StringSpec({
                     it[sourceOfData] = "recorder"
                     it[hasMean] = true
                     it[hasSum] = false
+                    it[meanType] = 0
                 }
             }
             addRecords {
