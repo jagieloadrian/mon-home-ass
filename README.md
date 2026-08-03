@@ -1,24 +1,17 @@
 # mon-home-ass
 
 Readonly HTTP API over a Home Assistant recorder database. Exposes
-statistics, entities, recorder runs, migrations, and schema changes as JSON
-endpoints for external tools/dashboards, without touching Home Assistant
-itself.
+statistics, entities, states, recorder/statistic runs, migrations, and
+schema changes as JSON endpoints for external tools/dashboards, without
+touching Home Assistant itself.
 
 ## Stack
 
-Kotlin + Ktor server, Exposed ORM (Postgres in prod, H2 in tests),
-kotlinx.serialization, `ktor-server-routing-openapi` + `swaggerUI` for the
-live API docs.
-
-## Rules
-
-This project follows `.specify/memory/constitution.md`. Short version:
-- The DB user is readonly — the app never writes to the recorder DB.
-- New features follow the existing pattern: table → DTO → repo → route.
-- No pagination/caching/search until a real need shows up — see
-  `user-roadmap.md` for what's planned and what's intentionally deferred.
-- Every `speckit-implement` run must leave the app building and starting.
+Kotlin + Ktor server, Exposed ORM against the recorder DB — Postgres,
+MariaDB, MySQL, or SQLite, selected via `ktor.database.database_type`
+(Postgres/H2 in tests via Testcontainers) — Redis (Jedis) as a 5-minute
+read-through cache, kotlinx.serialization, Ktor's built-in
+OpenAPI/`swaggerUI` for the live API docs.
 
 ## Getting started
 
@@ -31,7 +24,5 @@ Swagger UI: `http://localhost:8080/swagger`
 
 ## Docs
 
-- `openapi.yaml` — API contract
-- `user-roadmap.md` — phased feature plan
-- `notatki.txt` — source Home Assistant recorder DB schema
+- API contract — generated from route `.describe {}` blocks, not hand-maintained. Live at `/openapi.json` (raw) or `/swagger` (UI) on a running instance.
 - `.devops/` — Kubernetes manifests + Helm chart (initial scaffold)

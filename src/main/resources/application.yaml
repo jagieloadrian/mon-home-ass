@@ -5,12 +5,16 @@ ktor:
     deployment:
         port: 8080
     database:
+        # database_type: one of postgres | mariadb | mysql | sqlite
+        # network engines (postgres/mariadb/mysql) use url/database_name/user/password below.
+        # sqlite instead uses file_path (path to the recorder .db file, opened read-only).
         user: "db_user"
         password: "db_password"
         url: "db_url"
         database_name: "db_name"
         driver: "org.postgresql.Driver"
         database_type: "postgres"
+        # file_path: "/data/home-assistant_v2.db"  # sqlite only
     redis:
         host: "localhost"
         port: 6379

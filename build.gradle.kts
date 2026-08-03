@@ -1,6 +1,5 @@
 import io.ktor.plugin.features.*
 
-val h2_version: String by project
 val kotlin_version: String by project
 val logback_version: String by project
 val postgres_version: String by project
@@ -47,10 +46,11 @@ dependencies {
 
     //databases
     implementation("org.postgresql:postgresql:$postgres_version")
-    implementation("com.h2database:h2:$h2_version")
+    implementation("org.mariadb.jdbc:mariadb-java-client:3.5.6")
+    implementation("com.mysql:mysql-connector-j:9.5.0")
+    implementation("org.xerial:sqlite-jdbc:3.50.3.0")
     implementation("org.jetbrains.exposed:exposed-core:$exposed_version")
     implementation("org.jetbrains.exposed:exposed-jdbc:$exposed_version")
-    implementation("org.jetbrains.exposed:exposed-dao:$exposed_version")
     implementation("org.jetbrains.exposed:exposed-kotlin-datetime:$exposed_version")
     //health
     implementation("dev.hayden:khealth:3.0.0")
@@ -67,11 +67,27 @@ dependencies {
     testImplementation("io.ktor:ktor-client-content-negotiation:${ktor_version}")
     testImplementation("org.testcontainers:testcontainers:1.21.4")
     testImplementation("org.testcontainers:postgresql:1.21.4")
+    testImplementation("org.testcontainers:mariadb:1.21.4")
+    testImplementation("org.testcontainers:mysql:1.21.4")
 }
 
 tasks.test {
     useJUnitPlatform()
+    filter { excludeTestsMatching("com.anjo.monhomeass.tools.OpenApiSnapshotKtTest") }
     finalizedBy(tasks.jacocoTestReport)
+}
+
+// ponytail: reuses the test source set (already has testApplication +
+// testcontainers wired) instead of a standalone main()/source set just to
+// boot the app and hit one endpoint.
+tasks.register<Test>("generateOpenApiSpec") {
+    description = "Snapshots the live-generated OpenAPI doc to openapi.json"
+    group = "documentation"
+    useJUnitPlatform()
+    testClassesDirs = sourceSets.test.get().output.classesDirs
+    classpath = sourceSets.test.get().runtimeClasspath
+    filter { includeTestsMatching("com.anjo.monhomeass.tools.OpenApiSnapshotKtTest") }
+    outputs.upToDateWhen { false }
 }
 
 tasks.jacocoTestReport {

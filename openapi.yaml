@@ -134,6 +134,98 @@ paths:
               schema:
                 $ref: "#/components/schemas/ErrorDto"
 
+  /states/{entityId}:
+    get:
+      tags: [States]
+      summary: Latest recorded state for one entity
+      parameters:
+        - $ref: "#/components/parameters/EntityId"
+      responses:
+        "200":
+          description: The most recent state row for this entity.
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/StateDto"
+        "404":
+          description: Unknown entityId, or entity has no recorded state rows.
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorDto"
+        "503":
+          description: Recorder database unreachable or query failed.
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorDto"
+
+  /states/{entityId}/history:
+    get:
+      tags: [States]
+      summary: State history for one entity
+      parameters:
+        - $ref: "#/components/parameters/EntityId"
+        - $ref: "#/components/parameters/From"
+        - $ref: "#/components/parameters/To"
+        - $ref: "#/components/parameters/Limit"
+        - $ref: "#/components/parameters/Offset"
+      responses:
+        "200":
+          description: State rows, oldest first, optionally paginated. Empty array if entity known but has no rows in range.
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/StateDto"
+        "400":
+          description: from/to/limit/offset present but unparseable or negative.
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorDto"
+        "404":
+          description: Unknown entityId.
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorDto"
+        "503":
+          description: Recorder database unreachable or query failed.
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorDto"
+
+  /statistics-runs:
+    get:
+      tags: [Statistics]
+      summary: List statistics recorder runs, most recent first
+      parameters:
+        - $ref: "#/components/parameters/Limit"
+      responses:
+        "200":
+          description: Recorder run rows, most recent first, optionally capped by limit. Empty array if no runs recorded.
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/StatisticRunDto"
+        "400":
+          description: limit present but unparseable or negative.
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorDto"
+        "503":
+          description: Recorder database unreachable or query failed.
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorDto"
+
   /entities:
     get:
       tags: [Entities]
@@ -158,6 +250,13 @@ components:
   parameters:
     StatisticId:
       name: statisticId
+      in: path
+      required: true
+      schema:
+        type: string
+      example: sensor.living_room_temperature
+    EntityId:
+      name: entityId
       in: path
       required: true
       schema:
@@ -214,7 +313,7 @@ components:
 
     StatisticMetaDto:
       type: object
-      required: [id, statisticId]
+      required: [id, statisticId, meanType]
       properties:
         id:
           type: integer
@@ -226,6 +325,9 @@ components:
         unitOfMeasurement:
           type: string
           nullable: true
+        unitClass:
+          type: string
+          nullable: true
         hasMean:
           type: boolean
           nullable: true
@@ -235,6 +337,8 @@ components:
         name:
           type: string
           nullable: true
+        meanType:
+          type: integer
 
     StatisticDto:
       type: object
@@ -245,6 +349,10 @@ components:
           format: int64
           description: Period start, epoch seconds.
         mean:
+          type: number
+          format: double
+          nullable: true
+        meanWeight:
           type: number
           format: double
           nullable: true
@@ -304,3 +412,38 @@ components:
         entityId:
           type: string
           nullable: true
+
+    StateDto:
+      type: object
+      required: [entityId]
+      properties:
+        entityId:
+          type: string
+        state:
+          type: string
+          nullable: true
+        attributes:
+          type: string
+          nullable: true
+          description: Opaque shared-attributes text, not parsed.
+        lastChangedTs:
+          type: integer
+          format: int64
+          nullable: true
+        lastUpdatedTs:
+          type: integer
+          format: int64
+          nullable: true
+        eventId:
+          type: integer
+          nullable: true
+
+    StatisticRunDto:
+      type: object
+      required: [runId, startedAtTs]
+      properties:
+        runId:
+          type: integer
+        startedAtTs:
+          type: integer
+          format: int64

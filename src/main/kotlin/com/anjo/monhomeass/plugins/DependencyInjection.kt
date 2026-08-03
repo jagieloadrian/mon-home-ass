@@ -6,17 +6,17 @@ import com.anjo.monhomeass.repository.MigrationRepo
 import com.anjo.monhomeass.repository.RecorderRepo
 import com.anjo.monhomeass.repository.SchemaChangesRepo
 import com.anjo.monhomeass.repository.StateMetadataRepo
+import com.anjo.monhomeass.repository.StateRepo
 import com.anjo.monhomeass.repository.StatisticMetaRepo
 import com.anjo.monhomeass.repository.StatisticRepo
-import com.anjo.monhomeass.service.EventService
-import com.anjo.monhomeass.utils.Constants.REDIS_CONFIG_PREFIX
+import com.anjo.monhomeass.repository.StatisticRunRepo
 import io.ktor.server.application.Application
 import io.ktor.server.plugins.di.DependencyKey
 import io.ktor.server.plugins.di.dependencies
 import redis.clients.jedis.RedisClient
 
 fun Application.configureDI() {
-    val redisConfig = environment.config.config(REDIS_CONFIG_PREFIX)
+    val redisConfig = environment.config.config("ktor.redis")
     val redisHost = redisConfig.propertyOrNull("host")?.getString() ?: "localhost"
     val redisPort = redisConfig.propertyOrNull("port")?.getString()?.toIntOrNull() ?: 6379
     val redisTtlMillis = redisConfig.propertyOrNull("ttlMillis")?.getString()?.toLongOrNull() ?: 300_000L
@@ -30,6 +30,7 @@ fun Application.configureDI() {
         provide { StateMetadataRepo(get(DependencyKey<RedisCache>())) }
         provide { StatisticMetaRepo(get(DependencyKey<RedisCache>())) }
         provide { StatisticRepo(get(DependencyKey<RedisCache>())) }
-        provide { EventService(get(DependencyKey<EventRepo>())) }
+        provide { StateRepo(get(DependencyKey<RedisCache>())) }
+        provide { StatisticRunRepo(get(DependencyKey<RedisCache>())) }
     }
 }

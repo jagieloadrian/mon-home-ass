@@ -3,7 +3,7 @@
 package com.anjo.monhomeass.routing
 
 import com.anjo.monhomeass.model.dto.EventDto
-import com.anjo.monhomeass.service.EventService
+import com.anjo.monhomeass.repository.EventRepo
 import io.ktor.http.HttpStatusCode
 import io.ktor.openapi.jsonSchema
 import io.ktor.server.response.respond
@@ -13,13 +13,13 @@ import io.ktor.server.routing.openapi.describe
 import io.ktor.server.routing.route
 import io.ktor.utils.io.ExperimentalKtorApi
 
-fun Route.eventsRoute(service: EventService) {
+fun Route.eventsRoute(repo: EventRepo) {
 
     route("/events") {
         get {
            val contain = call.request.queryParameters["contain"]
            val exclude = call.request.queryParameters["exclude"]
-            call.respond(status = HttpStatusCode.OK, message = service.getAll(contain, exclude))
+            call.respond(status = HttpStatusCode.OK, message = repo.getAll(contain, exclude))
         }.describe {
             tag("Event")
             summary = "Get info about events"

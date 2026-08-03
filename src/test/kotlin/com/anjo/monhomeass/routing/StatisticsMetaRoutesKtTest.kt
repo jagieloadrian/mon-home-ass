@@ -48,9 +48,11 @@ class StatisticsMetaRoutesKtTest : StringSpec({
                     it[statisticId] = "sensor.living_room_temperature"
                     it[name] = "Living Room Temperature"
                     it[unitOfMeasurement] = "°C"
+                    it[unitClass] = "temperature"
                     it[sourceOfData] = "recorder"
                     it[hasMean] = true
                     it[hasSum] = false
+                    it[meanType] = 1
                 }
             }
             addRecords {
@@ -59,9 +61,11 @@ class StatisticsMetaRoutesKtTest : StringSpec({
                     it[statisticId] = "sensor.energy_usage"
                     it[name] = null
                     it[unitOfMeasurement] = null
+                    it[unitClass] = null
                     it[sourceOfData] = null
                     it[hasMean] = null
                     it[hasSum] = null
+                    it[meanType] = 0
                 }
             }
         }
@@ -80,8 +84,8 @@ class StatisticsMetaRoutesKtTest : StringSpec({
                 configureRouting()
             }
             val expected = listOf(
-                    StatisticMetaDto(1, "sensor.living_room_temperature", "Living Room Temperature", "°C", "recorder", true, false),
-                    StatisticMetaDto(2, "sensor.energy_usage", null, null, null, null, null)
+                    StatisticMetaDto(1, "sensor.living_room_temperature", "Living Room Temperature", "°C", "temperature", "recorder", true, false, 1),
+                    StatisticMetaDto(2, "sensor.energy_usage", null, null, null, null, null, null, 0)
             )
 
             //when
@@ -119,7 +123,7 @@ class StatisticsMetaRoutesKtTest : StringSpec({
 
             //then
             response.status shouldBe HttpStatusCode.OK
-            decodedJson shouldBe listOf(StatisticMetaDto(2, "sensor.energy_usage", null, null, null, null, null))
+            decodedJson shouldBe listOf(StatisticMetaDto(2, "sensor.energy_usage", null, null, null, null, null, null, 0))
         }
     }
 
@@ -146,7 +150,7 @@ class StatisticsMetaRoutesKtTest : StringSpec({
             //then
             response.status shouldBe HttpStatusCode.OK
             decodedJson shouldBe listOf(
-                    StatisticMetaDto(1, "sensor.living_room_temperature", "Living Room Temperature", "°C", "recorder", true, false)
+                    StatisticMetaDto(1, "sensor.living_room_temperature", "Living Room Temperature", "°C", "temperature", "recorder", true, false, 1)
             )
         }
     }
@@ -190,8 +194,8 @@ class StatisticsMetaRoutesKtTest : StringSpec({
                 configureRouting()
             }
             val expected = listOf(
-                    StatisticMetaDto(1, "sensor.living_room_temperature", "Living Room Temperature", "°C", "recorder", true, false),
-                    StatisticMetaDto(2, "sensor.energy_usage", null, null, null, null, null)
+                    StatisticMetaDto(1, "sensor.living_room_temperature", "Living Room Temperature", "°C", "temperature", "recorder", true, false, 1),
+                    StatisticMetaDto(2, "sensor.energy_usage", null, null, null, null, null, null, 0)
             )
 
             //when

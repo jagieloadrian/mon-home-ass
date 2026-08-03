@@ -78,9 +78,11 @@ Follow the existing pattern per feature: table object (Exposed `Table`) →
 DTO (`@Serializable` + `ResultRow.toXDto()`) → repo (plain class, no
 interface) → route (`Route.xRoute(repo)` with `.describe { }` for the
 OpenAPI/swagger contract) → wire into `configureRouting()` in `Routing.kt`.
-`user-roadmap.md` and `openapi.yaml` are the standing design contract for
-planned phases; keep them in sync with what actually ships, and don't
-hand-maintain a third source of truth.
+`user-roadmap.md` is the standing design contract for planned phases. The
+API contract itself is generated at runtime from each route's `.describe {}`
+block (served at `/openapi.json` and `/swagger`) — never hand-write or
+hand-edit a static OpenAPI file; if a route's documented shape is wrong, fix
+its `.describe {}` block.
 
 ## Governance
 
@@ -94,4 +96,49 @@ written justification in that phase's own planning docs — silent violations
 are not acceptable. Compliance is checked at the `Constitution Check` gate in
 `plan-template.md` for every new feature plan.
 
-**Version**: 1.0.0 | **Ratified**: 2026-07-30 | **Last Amended**: 2026-07-30
+## Historia rozwoju
+
+- **Statistics meta list**: `GET /statistics-meta` — pełna lista śledzonych
+  statystyk z recorder DB (id, statistic_id, nazwa, jednostka, źródło, flagi
+  mean/sum). Pusta baza → `[]`, awaria bazy → 503.
+- **Statistics long term**: `GET /statistics/{statisticId}` — historyczne
+  próbki (mean/min/max/sum/state per okres), opcjonalny zakres `from`/`to`
+  (epoch sekundy lub ISO-8601). Nieznany `statisticId` → 404, zły format →
+  400, brak wierszy w zakresie → `[]`.
+- **Statistics short term**: `GET /statistics/{statisticId}/short-term` —
+  dane 5-minutowe, ten sam kształt i te same reguły co long-term.
+- **Entities list**: `GET /entities` — lista znanych encji Home Assistant
+  (`entity_id`).
+- **Statistics summary**: `GET /statistics/{statisticId}/summary` — agregaty
+  min/max/avg/sum (kolumna `state`) liczone w SQL dla zakresu dat.
+- **Statistics meta search**: `?search=` na `/statistics-meta` — filtr
+  podciągu po `statistic_id`/`name`, bez rozróżniania wielkości liter, w SQL.
+- **Statistics pagination**: `limit`/`offset` na endpointach long/short-term,
+  realizowane przez SQL `LIMIT`/`OFFSET`.
+- **Read caching**: warstwa cache w Redis przed wszystkimi endpointami
+  odczytu, TTL 5 minut, klucz per pełny zestaw parametrów zapytania. Błędy
+  (400/404/503) nie są cache'owane.
+- **Dependency updates**: Kotlin, Ktor, Exposed, driver PostgreSQL, H2,
+  Logback podbite do aktualnych stabilnych wersji; zero zmian zachowania API.
+- **CI build check & deploy scaffold**: GitHub Actions workflow (build +
+  test + próg pokrycia JaCoCo/Codecov, min. 70%) na push do `main` i na PR;
+  gotowe manifesty Kubernetes + Helm chart w `.devops/` (bez commitowanych
+  sekretów).
+- **State latest & history**: `GET /states/{entityId}` — najnowszy
+  zarejestrowany stan encji (wartość, atrybuty, znaczniki czasu). Nieznany
+  `entityId` lub encja bez zarejestrowanych wierszy stanu → 404.
+  `GET /states/{entityId}/history` — historia stanów w opcjonalnym zakresie
+  `from`/`to`, `limit`/`offset` jak w statystykach; znana encja bez wierszy
+  w zakresie → `[]`.
+- **Statistics runs**: `GET /statistics-runs` — historia uruchomień
+  recordera statystyk (id + czas startu), od najnowszego; opcjonalny
+  `limit`. Brak wierszy → `[]`.
+- **Multi-database support**: `ktor.database.database_type` obsługuje teraz
+  4 silniki — `postgres` (bez zmian), `mariadb` (min. 10.5), `mysql`
+  (min. 8.0), `sqlite` (min. 3.35, plik przez `file_path`, wymuszone
+  `mode=ro` na poziomie JDBC URL, bo `Connection.isReadOnly` to no-op/rzuca
+  wyjątek w sqlite-jdbc). Nierozpoznany `database_type` → fail-fast przy
+  starcie z nazwą błędnej wartości i listą 4 poprawnych opcji.
+
+
+**Version**: 1.0.0 | **Ratified**: 2026-07-30 | **Last Amended**: 2026-08-03

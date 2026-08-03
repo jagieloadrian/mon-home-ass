@@ -1,7 +1,7 @@
 <!-- SPECKIT START -->
 For additional context about technologies to be used, project structure,
 shell commands, and other important information, read the current plan
-at specs/010-ci-deploy-scaffold/plan.md
+at specs/002-multi-database-support/plan.md
 <!-- SPECKIT END -->
 
 # mon-home-ass
@@ -23,4 +23,6 @@ follow:
 - New repos/routes/non-trivial logic ship with a test (see `src/test/kotlin`
   for the existing pattern).
 
-Design contract: `openapi.yaml` (API shape) + `user-roadmap.md` (phase plan).
+Design contract: API shape is generated from routes' `.describe {}` blocks
+(`/openapi.json`, `/swagger` on a running instance) — not a hand-edited
+file. Phase plan: `user-roadmap.md`.

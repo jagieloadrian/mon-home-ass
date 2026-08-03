@@ -23,6 +23,17 @@ jobs:
       - name: Check coverage threshold (JaCoCo, min 70%)
         run: ./gradlew jacocoTestCoverageVerification
 
+      - name: Snapshot OpenAPI spec
+        run: ./gradlew generateOpenApiSpec
+
+      - name: Upload OpenAPI spec
+        uses: actions/upload-artifact@v4
+        with:
+          name: openapi-spec
+          path: |
+            openapi.json
+            openapi.yaml
+
       # Collect Tests Result of failed tests
       - name: Collect Tests Result
         if: ${{ failure() }}

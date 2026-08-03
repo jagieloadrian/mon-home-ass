@@ -9,6 +9,7 @@ import org.jetbrains.exposed.v1.core.ResultRow
 data class StatisticDto(
         val startTs: Long,
         val mean: Double?,
+        val meanWeight: Double?,
         val min: Double?,
         val max: Double?,
         val sum: Double?,
@@ -19,6 +20,7 @@ fun ResultRow.toStatisticDto(): StatisticDto {
     return StatisticDto(
             startTs = this[Statistic.startTs]!!.epochSeconds,
             mean = this[Statistic.mean],
+            meanWeight = this[Statistic.meanWeight],
             min = this[Statistic.min],
             max = this[Statistic.max],
             sum = this[Statistic.sum],
@@ -30,6 +32,7 @@ fun ResultRow.toStatisticDtoShortTerm(): StatisticDto {
     return StatisticDto(
             startTs = this[StatisticShortTem.startTs]!!.epochSeconds,
             mean = this[StatisticShortTem.mean],
+            meanWeight = this[StatisticShortTem.meanWeight],
             min = this[StatisticShortTem.min],
             max = this[StatisticShortTem.max],
             sum = this[StatisticShortTem.sum],
