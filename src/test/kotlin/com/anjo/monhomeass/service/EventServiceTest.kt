@@ -16,14 +16,14 @@ class EventServiceTest : StringSpec({
         val service = EventService(mockRepo)
         val expected = listOf<EventDto>()
 
-        every { mockRepo.getAll() } returns expected
+        every { mockRepo.getAll(null, null) } returns expected
 
         //when
         val actual = service.getAll(null, null)
 
         //then
         actual shouldBe expected
-        verify { mockRepo.getAll() }
+        verify { mockRepo.getAll(null, null) }
     }
 
     "given mock repo and contain arg and exclude null when get all then verify using of specific method" {
@@ -33,14 +33,14 @@ class EventServiceTest : StringSpec({
         val expected = listOf<EventDto>()
         val containArg = "someArg"
 
-        every { mockRepo.getAllWithContain(containArg) } returns expected
+        every { mockRepo.getAll(containArg, null) } returns expected
 
         //when
         val actual = service.getAll(containArg, null)
 
         //then
         actual shouldBe expected
-        verify { mockRepo.getAllWithContain(containArg) }
+        verify { mockRepo.getAll(containArg, null) }
     }
 
     "given mock repo and exclude arg and contain null when get all then verify using of specific method" {
@@ -50,14 +50,14 @@ class EventServiceTest : StringSpec({
         val expected = listOf<EventDto>()
         val excludeArg = "someArg"
 
-        every { mockRepo.getAllWithExclude(excludeArg) } returns expected
+        every { mockRepo.getAll(null, excludeArg) } returns expected
 
         //when
         val actual = service.getAll(null, excludeArg)
 
         //then
         actual shouldBe expected
-        verify { mockRepo.getAllWithExclude(excludeArg) }
+        verify { mockRepo.getAll(null, excludeArg) }
     }
 
     "given mock repo and non null args when get all then verify using of specific method" {
@@ -68,13 +68,13 @@ class EventServiceTest : StringSpec({
         val containArg = "someArg"
         val excludeArg = "someArg"
 
-        every { mockRepo.getAllWithContainAndExclude(containArg, excludeArg) } returns expected
+        every { mockRepo.getAll(containArg, excludeArg) } returns expected
 
         //when
         val actual = service.getAll(containArg, excludeArg)
 
         //then
         actual shouldBe expected
-        verify { mockRepo.getAllWithContainAndExclude(containArg, excludeArg) }
+        verify { mockRepo.getAll(containArg, excludeArg) }
     }
 })

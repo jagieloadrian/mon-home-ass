@@ -1,11 +1,10 @@
 package com.anjo.monhomeass.plugins
 
-import com.anjo.monhomeass.utils.Constants.DATABASE_CONFIG_PREFIX
 import io.ktor.server.application.Application
 import org.jetbrains.exposed.v1.jdbc.Database
 
 fun Application.configureDatabases() {
-    val dbConfig = environment.config.config(DATABASE_CONFIG_PREFIX)
+    val dbConfig = environment.config.config("ktor.database")
     val dbUrl = dbConfig.propertyOrNull("url")?.getString() ?: "localhost:5432"
     val dbName = dbConfig.propertyOrNull("database_name")?.getString() ?: "postgres"
     val dbUser = dbConfig.propertyOrNull("user")?.getString() ?: "postgres"

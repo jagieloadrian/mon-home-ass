@@ -9,14 +9,13 @@ import com.anjo.monhomeass.repository.StateMetadataRepo
 import com.anjo.monhomeass.repository.StatisticMetaRepo
 import com.anjo.monhomeass.repository.StatisticRepo
 import com.anjo.monhomeass.service.EventService
-import com.anjo.monhomeass.utils.Constants.REDIS_CONFIG_PREFIX
 import io.ktor.server.application.Application
 import io.ktor.server.plugins.di.DependencyKey
 import io.ktor.server.plugins.di.dependencies
 import redis.clients.jedis.RedisClient
 
 fun Application.configureDI() {
-    val redisConfig = environment.config.config(REDIS_CONFIG_PREFIX)
+    val redisConfig = environment.config.config("ktor.redis")
     val redisHost = redisConfig.propertyOrNull("host")?.getString() ?: "localhost"
     val redisPort = redisConfig.propertyOrNull("port")?.getString()?.toIntOrNull() ?: 6379
     val redisTtlMillis = redisConfig.propertyOrNull("ttlMillis")?.getString()?.toLongOrNull() ?: 300_000L

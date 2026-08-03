@@ -14,46 +14,14 @@ import org.jetbrains.exposed.v1.jdbc.transactions.transaction
 
 class EventRepo {
 
-    fun getAll(): List<EventDto> {
+    fun getAll(contain: String? = null, exclude: String? = null): List<EventDto> {
         return transaction {
-            Event.innerJoin(EventData)
+            var query = Event.innerJoin(EventData)
                     .innerJoin(EventType)
                     .selectAll()
-                    .orderBy(Event.timestampTs, SortOrder.DESC)
-                    .map { it.toEventDto() }
-        }
-    }
-
-    fun getAllWithContain(contain: String): List<EventDto> {
-        return transaction {
-            Event.innerJoin(EventData)
-                    .innerJoin(EventType)
-                    .selectAll()
-                    .where { EventData.sharedData.like("%$contain%") }
-                    .orderBy(Event.timestampTs, SortOrder.DESC)
-                    .map { it.toEventDto() }
-        }
-    }
-
-    fun getAllWithExclude(exclude: String): List<EventDto> {
-        return transaction {
-            Event.innerJoin(EventData)
-                    .innerJoin(EventType)
-                    .selectAll()
-                    .where { EventData.sharedData.notLike("%$exclude%") }
-                    .orderBy(Event.timestampTs, SortOrder.DESC)
-                    .map { it.toEventDto() }
-        }
-    }
-
-    fun getAllWithContainAndExclude(contain: String, exclude: String): List<EventDto> {
-        return transaction {
-            Event.innerJoin(EventData)
-                    .innerJoin(EventType)
-                    .selectAll()
-                    .where { EventData.sharedData.like("%$contain%") }
-                    .andWhere { EventData.sharedData.notLike("%$exclude%") }
-                    .orderBy(Event.timestampTs, SortOrder.DESC)
+            if (contain != null) query = query.andWhere { EventData.sharedData.like("%$contain%") }
+            if (exclude != null) query = query.andWhere { EventData.sharedData.notLike("%$exclude%") }
+            query.orderBy(Event.timestampTs, SortOrder.DESC)
                     .map { it.toEventDto() }
         }
     }
