@@ -27,6 +27,8 @@ import io.ktor.openapi.OpenApiInfo
 import io.ktor.server.application.Application
 import io.ktor.server.plugins.di.dependencies
 import io.ktor.server.plugins.swagger.swaggerUI
+import io.ktor.server.response.respondText
+import io.ktor.server.routing.get
 import io.ktor.server.routing.openapi.OpenApiDocSource
 import io.ktor.server.routing.routing
 import io.ktor.server.routing.routingRoot
@@ -65,13 +67,23 @@ fun Application.configureRouting() {
     // the RoutingRoot plugin is installed) sidesteps the bug entirely and
     // also means every route's `.describe {}` block actually runs (and is
     // covered) at startup instead of never running at all.
+    val openApiDocInfo = OpenApiDoc(info = OpenApiInfo("Monitor Home Assistant Stats", "1.0"))
     val openApiDoc = OpenApiDocSource.Routing(ContentType.Application.Json) {
         routingRoot.descendants()
-    }.read(this, OpenApiDoc(info = OpenApiInfo("Monitor Home Assistant Stats", "1.0")))
+    }.read(this, openApiDocInfo)
+    val openApiDocYaml = OpenApiDocSource.Routing(ContentType.Application.Yaml) {
+        routingRoot.descendants()
+    }.read(this, openApiDocInfo)
 
     routing {
         swaggerUI("/swagger") {
             source = OpenApiDocSource.Text(openApiDoc.content, openApiDoc.contentType)
+        }
+        get("/openapi.json") {
+            call.respondText(openApiDoc.content, openApiDoc.contentType)
+        }
+        get("/openapi.yaml") {
+            call.respondText(openApiDocYaml.content, openApiDocYaml.contentType)
         }
     }
 }

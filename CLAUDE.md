@@ -23,4 +23,6 @@ follow:
 - New repos/routes/non-trivial logic ship with a test (see `src/test/kotlin`
   for the existing pattern).
 
-Design contract: `openapi.yaml` (API shape) + `user-roadmap.md` (phase plan).
+Design contract: API shape is generated from routes' `.describe {}` blocks
+(`/openapi.json`, `/swagger` on a running instance) — not a hand-edited
+file. Phase plan: `user-roadmap.md`.

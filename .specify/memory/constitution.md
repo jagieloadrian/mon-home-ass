@@ -78,9 +78,11 @@ Follow the existing pattern per feature: table object (Exposed `Table`) →
 DTO (`@Serializable` + `ResultRow.toXDto()`) → repo (plain class, no
 interface) → route (`Route.xRoute(repo)` with `.describe { }` for the
 OpenAPI/swagger contract) → wire into `configureRouting()` in `Routing.kt`.
-`user-roadmap.md` and `openapi.yaml` are the standing design contract for
-planned phases; keep them in sync with what actually ships, and don't
-hand-maintain a third source of truth.
+`user-roadmap.md` is the standing design contract for planned phases. The
+API contract itself is generated at runtime from each route's `.describe {}`
+block (served at `/openapi.json` and `/swagger`) — never hand-write or
+hand-edit a static OpenAPI file; if a route's documented shape is wrong, fix
+its `.describe {}` block.
 
 ## Governance
 

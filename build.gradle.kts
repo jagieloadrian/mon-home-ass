@@ -73,7 +73,21 @@ dependencies {
 
 tasks.test {
     useJUnitPlatform()
+    filter { excludeTestsMatching("com.anjo.monhomeass.tools.OpenApiSnapshotKtTest") }
     finalizedBy(tasks.jacocoTestReport)
+}
+
+// ponytail: reuses the test source set (already has testApplication +
+// testcontainers wired) instead of a standalone main()/source set just to
+// boot the app and hit one endpoint.
+tasks.register<Test>("generateOpenApiSpec") {
+    description = "Snapshots the live-generated OpenAPI doc to openapi.json"
+    group = "documentation"
+    useJUnitPlatform()
+    testClassesDirs = sourceSets.test.get().output.classesDirs
+    classpath = sourceSets.test.get().runtimeClasspath
+    filter { includeTestsMatching("com.anjo.monhomeass.tools.OpenApiSnapshotKtTest") }
+    outputs.upToDateWhen { false }
 }
 
 tasks.jacocoTestReport {
