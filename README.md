@@ -1,23 +1,17 @@
 # mon-home-ass
 
 Readonly HTTP API over a Home Assistant recorder database. Exposes
-statistics, entities, recorder runs, migrations, and schema changes as JSON
-endpoints for external tools/dashboards, without touching Home Assistant
-itself.
+statistics, entities, states, recorder/statistic runs, migrations, and
+schema changes as JSON endpoints for external tools/dashboards, without
+touching Home Assistant itself.
 
 ## Stack
 
-Kotlin + Ktor server, Exposed ORM (Postgres in prod and in tests via
-Testcontainers), Redis (Jedis) as a 5-minute read-through cache,
-kotlinx.serialization, Ktor's built-in OpenAPI/`swaggerUI` for the live API
-docs.
-
-## Rules
-
-This project follows `.specify/memory/constitution.md`. Short version:
-- The DB user is readonly — the app never writes to the recorder DB.
-- New features follow the existing pattern: table → DTO → repo → route.
-- Every `speckit-implement` run must leave the app building and starting.
+Kotlin + Ktor server, Exposed ORM against the recorder DB — Postgres,
+MariaDB, MySQL, or SQLite, selected via `ktor.database.database_type`
+(Postgres/H2 in tests via Testcontainers) — Redis (Jedis) as a 5-minute
+read-through cache, kotlinx.serialization, Ktor's built-in
+OpenAPI/`swaggerUI` for the live API docs.
 
 ## Getting started
 
