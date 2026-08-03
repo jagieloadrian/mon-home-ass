@@ -25,9 +25,6 @@ fun Application.configureDatabases() {
 }
 
 fun generateUrl(type: String, dbUrl: String, dbName: String): String {
-    return when(type) {
-        "postgres" -> "jdbc:postgresql://$dbUrl/$dbName"
-        "h2" -> "jdbc:h2:$dbUrl:$dbName"
-        else -> throw IllegalArgumentException("")
-    }
+    require(type == "postgres") { "Unsupported database_type: $type" }
+    return "jdbc:postgresql://$dbUrl/$dbName"
 }

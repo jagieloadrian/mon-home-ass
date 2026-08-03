@@ -1,5 +1,6 @@
 package com.anjo.monhomeass.plugins
 
+import com.anjo.monhomeass.repository.EventRepo
 import com.anjo.monhomeass.repository.MigrationRepo
 import com.anjo.monhomeass.repository.RecorderRepo
 import com.anjo.monhomeass.repository.SchemaChangesRepo
@@ -20,7 +21,6 @@ import com.anjo.monhomeass.routing.statisticRoute
 import com.anjo.monhomeass.routing.statisticRunRoute
 import com.anjo.monhomeass.routing.statisticShortTermRoute
 import com.anjo.monhomeass.routing.statisticSummaryRoute
-import com.anjo.monhomeass.service.EventService
 import io.ktor.http.ContentType
 import io.ktor.openapi.OpenApiDoc
 import io.ktor.openapi.OpenApiInfo
@@ -32,7 +32,7 @@ import io.ktor.server.routing.routing
 import io.ktor.server.routing.routingRoot
 
 fun Application.configureRouting() {
-    val eventService:EventService by dependencies
+    val eventRepo: EventRepo by dependencies
     val migrationRepo: MigrationRepo by dependencies
     val recorderRepo: RecorderRepo by dependencies
     val schemaChangesRepo: SchemaChangesRepo by dependencies
@@ -45,7 +45,7 @@ fun Application.configureRouting() {
         migrationRoute(migrationRepo)
         recorderRout(recorderRepo)
         schemaChangesRout(schemaChangesRepo)
-        eventsRoute(eventService)
+        eventsRoute(eventRepo)
         entitiesRoute(stateMetadataRepo)
         statisticMetaRoute(statisticMetaRepo)
         statisticRoute(statisticRepo)
