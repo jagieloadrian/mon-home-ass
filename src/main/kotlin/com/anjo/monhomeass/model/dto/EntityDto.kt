@@ -6,7 +6,7 @@ import org.jetbrains.exposed.v1.core.ResultRow
 
 @Serializable
 data class EntityDto(
-        val id: Int,
+        val id: Long,
         val entityId: String?
 )
 

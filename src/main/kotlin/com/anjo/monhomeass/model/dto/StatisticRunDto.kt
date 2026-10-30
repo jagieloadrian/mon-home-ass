@@ -6,7 +6,7 @@ import org.jetbrains.exposed.v1.core.ResultRow
 
 @Serializable
 data class StatisticRunDto(
-        val runId: Int,
+        val runId: Long,
         val startedAtTs: Long
 )
 

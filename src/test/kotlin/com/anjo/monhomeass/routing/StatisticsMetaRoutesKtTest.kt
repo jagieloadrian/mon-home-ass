@@ -226,7 +226,7 @@ class StatisticsMetaRoutesKtTest : StringSpec({
 
             //when
             val first = client.get("/statistics-meta")
-            directUpdate("UPDATE statistics_meta SET name = 'changed' WHERE data_id = 1")
+            directUpdate("UPDATE statistics_meta SET name = 'changed' WHERE id = 1")
             val second = client.get("/statistics-meta")
 
             //then

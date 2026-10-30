@@ -8,7 +8,7 @@ import org.jetbrains.exposed.v1.core.ResultRow
 
 @Serializable
 data class SchemaChangeDto(
-        val id: Int,
+        val id: Long,
         val version: Int?,
         val changedAt: LocalDateTime,
 )

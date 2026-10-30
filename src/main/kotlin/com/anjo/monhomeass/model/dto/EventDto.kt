@@ -11,7 +11,7 @@ import kotlin.time.Instant
 
 @Serializable
 data class EventDto(
-        val id: Int,
+        val id: Long,
         val type: String?,
         val data: String?,
         val origin: String?,
@@ -27,14 +27,14 @@ data class EventDto(
 
 @Serializable
 data class DataContentDto(
-        val id: Int,
+        val id: Long,
         val hash: Long?,
         val sharedData: String?,
 )
 
 @Serializable
 data class EventTypeDto(
-        val id: Int,
+        val id: Long,
         val type: String?
 )
 

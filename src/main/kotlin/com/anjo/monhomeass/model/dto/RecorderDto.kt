@@ -8,7 +8,7 @@ import org.jetbrains.exposed.v1.core.ResultRow
 
 @Serializable
 data class RecorderDto(
-        val id: Int,
+        val id: Long,
         val startTime: LocalDateTime,
         val endTime: LocalDateTime?,
         val isClosedIncorrect: Boolean,

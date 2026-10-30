@@ -6,7 +6,7 @@ import org.jetbrains.exposed.v1.core.ResultRow
 
 @Serializable
 data class StatisticMetaDto(
-        val id: Int,
+        val id: Long,
         val statisticId: String?,
         val name: String?,
         val unitOfMeasurement: String?,
