@@ -107,14 +107,34 @@ tasks.check {
 ktor {
     docker {
         jreVersion.set(JavaVersion.VERSION_21)
-        customBaseImage.set("eclipse-temurin:21-jre-alpine")
+        customBaseImage.set("eclipse-temurin:21-jre")
         localImageName.set(rootProject.name)
         imageTag.set(version.toString())
-        jib.container.creationTime = "USE_CURRENT_TIMESTAMP"
         portMappings.set(
             listOf(
                 DockerPortMapping(outsideDocker = 8080, 8080, DockerPortMappingProtocol.TCP),
             ),
         )
+    }
+}
+
+// Homelab nodes: RPi5 (arm64) + Wyse (amd64). User matches the pod securityContext.
+jib {
+    from {
+        platforms {
+            platform {
+                architecture = "amd64"
+                os = "linux"
+            }
+            platform {
+                architecture = "arm64"
+                os = "linux"
+            }
+        }
+    }
+    container {
+        user = "10001:10001"
+        jvmFlags = listOf("-XX:MaxRAMPercentage=60", "-XX:+UseSerialGC", "-XX:+ExitOnOutOfMemoryError")
+        creationTime.set("USE_CURRENT_TIMESTAMP")
     }
 }
