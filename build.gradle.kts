@@ -1,15 +1,9 @@
 import io.ktor.plugin.features.*
 
-val kotlin_version: String by project
-val logback_version: String by project
-val postgres_version: String by project
-val exposed_version: String by project
-val ktor_version: String by project
-
 plugins {
-    kotlin("jvm")
-    kotlin("plugin.serialization")
-    id("io.ktor.plugin")
+    alias(libs.plugins.kotlin.jvm)
+    alias(libs.plugins.kotlin.serialization)
+    alias(libs.plugins.ktor)
     jacoco
 }
 
@@ -23,52 +17,40 @@ application {
     applicationDefaultJvmArgs = listOf("-Dio.ktor.development=$isDevelopment")
 }
 
-repositories {
-    mavenCentral()
-    maven { url = uri("https://jitpack.io") }
-}
-
 dependencies {
-    //ktor
-    implementation("io.ktor:ktor-server-core-jvm")
-    implementation("io.ktor:ktor-serialization-kotlinx-json-jvm")
-    implementation("io.ktor:ktor-server-content-negotiation-jvm")
-    implementation("io.ktor:ktor-server-cors-jvm")
-    implementation("io.ktor:ktor-server-default-headers-jvm")
-    implementation("io.ktor:ktor-server-netty-jvm")
-    implementation("io.ktor:ktor-server-config-yaml")
-    implementation("io.ktor:ktor-server-di")
+    implementation(libs.ktor.server.core)
+    implementation(libs.ktor.server.netty)
+    implementation(libs.ktor.server.config.yaml)
+    implementation(libs.ktor.server.di)
+    implementation(libs.ktor.server.default.headers)
+    implementation(libs.ktor.server.content.negotiation)
+    implementation(libs.ktor.serialization.kotlinx.json)
+    implementation(libs.ktor.server.cors)
+    implementation(libs.ktor.server.status.pages)
+    implementation(libs.ktor.server.swagger)
 
-    //swagger
-    implementation("io.ktor:ktor-server-swagger:${ktor_version}")
-    //error handling
-    implementation("io.ktor:ktor-server-status-pages-jvm")
+    implementation(libs.postgresql)
+    implementation(libs.mariadb)
+    implementation(libs.mysql)
+    implementation(libs.sqlite)
+    implementation(libs.exposed.core)
+    implementation(libs.exposed.jdbc)
+    implementation(libs.exposed.kotlin.datetime)
 
-    //databases
-    implementation("org.postgresql:postgresql:$postgres_version")
-    implementation("org.mariadb.jdbc:mariadb-java-client:3.5.6")
-    implementation("com.mysql:mysql-connector-j:9.5.0")
-    implementation("org.xerial:sqlite-jdbc:3.50.3.0")
-    implementation("org.jetbrains.exposed:exposed-core:$exposed_version")
-    implementation("org.jetbrains.exposed:exposed-jdbc:$exposed_version")
-    implementation("org.jetbrains.exposed:exposed-kotlin-datetime:$exposed_version")
-    //health
-    implementation("dev.hayden:khealth:3.0.0")
-    //cache
-    implementation("redis.clients:jedis:7.5.3")
-    //logging
-    implementation("io.github.oshai:kotlin-logging-jvm:7.0.14")
-    implementation("ch.qos.logback:logback-classic:$logback_version")
-    //test
-    testImplementation("io.ktor:ktor-server-test-host-jvm")
-    testImplementation("io.kotest:kotest-runner-junit5:5.9.1")
-    testImplementation("io.kotest:kotest-assertions-core:5.9.1")
-    testImplementation("io.mockk:mockk:1.13.13")
-    testImplementation("io.ktor:ktor-client-content-negotiation:${ktor_version}")
-    testImplementation("org.testcontainers:testcontainers:1.21.4")
-    testImplementation("org.testcontainers:postgresql:1.21.4")
-    testImplementation("org.testcontainers:mariadb:1.21.4")
-    testImplementation("org.testcontainers:mysql:1.21.4")
+    implementation(libs.khealth)
+    implementation(libs.jedis)
+    implementation(libs.kotlin.logging)
+    implementation(libs.logback.classic)
+
+    testImplementation(libs.ktor.server.test.host)
+    testImplementation(libs.ktor.client.content.negotiation)
+    testImplementation(libs.kotest.runner)
+    testImplementation(libs.kotest.assertions)
+    testImplementation(libs.mockk)
+    testImplementation(libs.testcontainers)
+    testImplementation(libs.testcontainers.postgresql)
+    testImplementation(libs.testcontainers.mariadb)
+    testImplementation(libs.testcontainers.mysql)
 }
 
 tasks.test {
