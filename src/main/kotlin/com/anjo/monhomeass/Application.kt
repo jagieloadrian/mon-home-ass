@@ -4,6 +4,7 @@ import com.anjo.monhomeass.plugins.configureDI
 import com.anjo.monhomeass.plugins.configureDatabases
 import com.anjo.monhomeass.plugins.configureHTTP
 import com.anjo.monhomeass.plugins.configureMonitoring
+import com.anjo.monhomeass.plugins.configurePublisher
 import com.anjo.monhomeass.plugins.configureRouting
 import com.anjo.monhomeass.plugins.configureSerialization
 import com.anjo.monhomeass.plugins.configureStatusPages
@@ -21,4 +22,5 @@ fun Application.module() {
     configureStatusPages()
     configureHTTP()
     configureRouting()
+    configurePublisher()
 }

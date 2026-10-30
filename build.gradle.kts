@@ -39,6 +39,7 @@ dependencies {
 
     implementation(libs.khealth)
     implementation(libs.jedis)
+    implementation(libs.jnats)
     implementation(libs.kotlin.logging)
     implementation(libs.logback.classic)
 

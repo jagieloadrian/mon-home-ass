@@ -2,9 +2,11 @@ package com.anjo.monhomeass.repository
 
 import com.anjo.monhomeass.cache.RedisCache
 import com.anjo.monhomeass.model.dto.StatisticDto
+import com.anjo.monhomeass.model.dto.StatisticRecordDto
 import com.anjo.monhomeass.model.dto.StatisticSummaryDto
 import com.anjo.monhomeass.model.dto.toStatisticDto
 import com.anjo.monhomeass.model.dto.toStatisticDtoShortTerm
+import com.anjo.monhomeass.model.dto.toStatisticRecordDto
 import com.anjo.monhomeass.model.tables.Statistic
 import com.anjo.monhomeass.model.tables.StatisticMetaData
 import com.anjo.monhomeass.model.tables.StatisticShortTem
@@ -13,6 +15,7 @@ import org.jetbrains.exposed.v1.core.JoinType
 import org.jetbrains.exposed.v1.core.SortOrder
 import org.jetbrains.exposed.v1.core.avg
 import org.jetbrains.exposed.v1.core.eq
+import org.jetbrains.exposed.v1.core.greater
 import org.jetbrains.exposed.v1.core.greaterEq
 import org.jetbrains.exposed.v1.core.isNotNull
 import org.jetbrains.exposed.v1.core.lessEq
@@ -129,6 +132,25 @@ class StatisticRepo(private val cache: RedisCache) {
                         sum = row[sumExpr]
                 )
             }
+        }
+    }
+
+    // Publisher cursor: rows after [afterId] in insert order, uncached.
+    // ponytail: assumes ids grow in commit order — true for HA's single recorder writer.
+    fun getShortTermAfter(afterId: Long, limit: Int): List<Pair<Long, StatisticRecordDto>> {
+        return transaction {
+            Join(
+                    StatisticShortTem,
+                    StatisticMetaData,
+                    JoinType.INNER,
+                    additionalConstraint = { StatisticShortTem.metadataId eq StatisticMetaData.id }
+            ).selectAll()
+                    .where { StatisticShortTem.id greater afterId }
+                    .andWhere { StatisticShortTem.startTs.isNotNull() }
+                    .andWhere { StatisticMetaData.statisticId.isNotNull() }
+                    .orderBy(StatisticShortTem.id, SortOrder.ASC)
+                    .limit(limit)
+                    .map { it[StatisticShortTem.id] to it.toStatisticRecordDto() }
         }
     }
 }
