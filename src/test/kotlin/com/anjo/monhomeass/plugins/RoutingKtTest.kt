@@ -10,27 +10,28 @@ import io.ktor.client.statement.bodyAsText
 import io.ktor.http.HttpStatusCode
 import io.ktor.server.testing.testApplication
 
-class RoutingKtTest : StringSpec({
+class RoutingKtTest :
+    StringSpec({
 
-    "given app running when get swagger then returns OpenAPI UI page" {
-        testApplication {
-            //given
-            prepareDatabase()
-            environment {
-                config = testApplicationConfig()
+        "given app running when get swagger then returns OpenAPI UI page" {
+            testApplication {
+                // given
+                prepareDatabase()
+                environment {
+                    config = testApplicationConfig()
+                }
+                application {
+                    configureDatabases()
+                    configureStatusPages()
+                    configureRouting()
+                }
+
+                // when
+                val response = client.get("/swagger")
+
+                // then
+                response.status shouldBe HttpStatusCode.OK
+                response.bodyAsText() shouldContain "swagger"
             }
-            application {
-                configureDatabases()
-                configureStatusPages()
-                configureRouting()
-            }
-
-            //when
-            val response = client.get("/swagger")
-
-            //then
-            response.status shouldBe HttpStatusCode.OK
-            response.bodyAsText() shouldContain "swagger"
         }
-    }
-})
+    })

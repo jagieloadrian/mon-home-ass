@@ -27,7 +27,7 @@ object State : Table("states") {
     val contextId = char("context_id", 1).nullable()
     val contextUserId = char("context_user_id", 1).nullable()
     val contextParentId = char("context_parent_id", 1).nullable()
-    val dataId = integer("origin_idx").nullable()
+    val originIdx = integer("origin_idx").nullable()
     val contextIdBinary = binary("context_id_bin").nullable()
     val contextUserIdBinary = binary("context_user_id_bin").nullable()
     val contextParentIdBinary = binary("context_parent_id_bin").nullable()

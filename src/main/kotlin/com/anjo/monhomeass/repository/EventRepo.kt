@@ -13,16 +13,20 @@ import org.jetbrains.exposed.v1.jdbc.selectAll
 import org.jetbrains.exposed.v1.jdbc.transactions.transaction
 
 class EventRepo {
-
-    fun getAll(contain: String? = null, exclude: String? = null): List<EventDto> {
-        return transaction {
-            var query = Event.innerJoin(EventData)
+    fun getAll(
+        contain: String? = null,
+        exclude: String? = null,
+    ): List<EventDto> =
+        transaction {
+            var query =
+                Event
+                    .innerJoin(EventData)
                     .innerJoin(EventType)
                     .selectAll()
             if (contain != null) query = query.andWhere { EventData.sharedData.like("%$contain%") }
             if (exclude != null) query = query.andWhere { EventData.sharedData.notLike("%$exclude%") }
-            query.orderBy(Event.timestampTs, SortOrder.DESC)
-                    .map { it.toEventDto() }
+            query
+                .orderBy(Event.timestampTs, SortOrder.DESC)
+                .map { it.toEventDto() }
         }
-    }
 }

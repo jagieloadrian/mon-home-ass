@@ -14,11 +14,10 @@ import io.ktor.server.routing.route
 import io.ktor.utils.io.ExperimentalKtorApi
 
 fun Route.eventsRoute(repo: EventRepo) {
-
     route("/events") {
         get {
-           val contain = call.request.queryParameters["contain"]
-           val exclude = call.request.queryParameters["exclude"]
+            val contain = call.request.queryParameters["contain"]
+            val exclude = call.request.queryParameters["exclude"]
             call.respond(status = HttpStatusCode.OK, message = repo.getAll(contain, exclude))
         }.describe {
             tag("Event")

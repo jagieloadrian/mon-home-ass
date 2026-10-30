@@ -13,8 +13,7 @@ import io.ktor.server.routing.openapi.describe
 import io.ktor.server.routing.route
 import io.ktor.utils.io.ExperimentalKtorApi
 
-fun Route.schemaChangesRout(repo: SchemaChangesRepo) {
-
+fun Route.schemaChangesRoute(repo: SchemaChangesRepo) {
     route("/schemas") {
         get {
             call.respond(status = HttpStatusCode.OK, message = repo.getAll())

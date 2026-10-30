@@ -6,6 +6,7 @@ import io.ktor.http.HttpStatusCode
 import io.ktor.server.application.Application
 import io.ktor.server.application.install
 import io.ktor.server.application.pluginOrNull
+import io.ktor.server.plugins.BadRequestException
 import io.ktor.server.plugins.statuspages.StatusPages
 import io.ktor.server.response.respond
 import org.jetbrains.exposed.v1.exceptions.ExposedSQLException
@@ -18,6 +19,10 @@ fun Application.configureStatusPages() {
     // to enumerate routes, so this can be called twice per real start — guard it.
     if (pluginOrNull(StatusPages) != null) return
     install(StatusPages) {
+        // Invalid query params and missing path params (getOrFail) end up here.
+        exception<BadRequestException> { call, cause ->
+            call.respond(HttpStatusCode.BadRequest, ErrorDto(cause.message ?: "Bad request"))
+        }
         exception<ExposedSQLException> { call, cause ->
             logger.error(cause) { "Recorder database query failed" }
             call.respond(HttpStatusCode.ServiceUnavailable, ErrorDto("Recorder database unavailable"))

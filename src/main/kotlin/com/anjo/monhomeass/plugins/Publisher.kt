@@ -22,21 +22,35 @@ fun Application.configurePublisher() {
     val natsConfig = environment.config.config("ktor.nats")
     val stream = natsConfig.property("stream").getString()
     val subject = natsConfig.property("subject").getString()
-    val interval = natsConfig.property("interval_seconds").getString().toLong().seconds
+    val interval =
+        natsConfig
+            .property("interval_seconds")
+            .getString()
+            .toLong()
+            .seconds
     val statisticRepo: StatisticRepo by dependencies
 
     launch(Dispatchers.IO) {
         // Blocks until the broker is reachable, then reconnects on its own.
-        val connection = Nats.connectReconnectOnConnect(Options.builder().server(url).maxReconnects(-1).build())
+        val connection =
+            Nats.connectReconnectOnConnect(
+                Options
+                    .builder()
+                    .server(url)
+                    .maxReconnects(-1)
+                    .build(),
+            )
         monitor.subscribe(ApplicationStopping) { connection.close() }
         val publisher = StatisticPublisher(statisticRepo, connection.jetStream(), connection.jetStreamManagement(), stream, subject)
         while (isActive) {
             runCatching {
                 publisher.ensureStream()
                 publisher.publishNew()
+            }.onSuccess {
+                if (it > 0) logger.info { "Published $it statistics to $subject" }
+            }.onFailure {
+                logger.warn(it) { "Publishing statistics failed, retry in $interval" }
             }
-                    .onSuccess { if (it > 0) logger.info { "Published $it statistics to $subject" } }
-                    .onFailure { logger.warn(it) { "Publishing statistics failed, retry in $interval" } }
             delay(interval)
         }
     }

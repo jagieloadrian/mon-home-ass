@@ -7,10 +7,8 @@ import org.jetbrains.exposed.v1.jdbc.selectAll
 import org.jetbrains.exposed.v1.jdbc.transactions.transaction
 
 class RecorderRepo {
-
-    fun getAll(): List<RecorderDto> {
-        return transaction {
+    fun getAll(): List<RecorderDto> =
+        transaction {
             Recorder.selectAll().map { it.toRecorderDto() }
         }
-    }
 }

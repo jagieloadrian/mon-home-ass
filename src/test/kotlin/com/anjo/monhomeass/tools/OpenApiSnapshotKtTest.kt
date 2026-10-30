@@ -13,19 +13,20 @@ import java.io.File
 // OpenAPI doc (served at /openapi.json and /openapi.yaml) to disk for tools
 // that need a static file (codegen, external doc hosting). Run explicitly via
 // `./gradlew generateOpenApiSpec`; excluded from the normal `test` task.
-class OpenApiSnapshotKtTest : StringSpec({
-    "write openapi snapshots to disk" {
-        testApplication {
-            prepareDatabase()
-            environment {
-                config = testApplicationConfig()
-            }
-            application {
-                configureRouting()
-            }
+class OpenApiSnapshotKtTest :
+    StringSpec({
+        "write openapi snapshots to disk" {
+            testApplication {
+                prepareDatabase()
+                environment {
+                    config = testApplicationConfig()
+                }
+                application {
+                    configureRouting()
+                }
 
-            File("openapi.json").writeText(client.get("/openapi.json").bodyAsText())
-            File("openapi.yaml").writeText(client.get("/openapi.yaml").bodyAsText())
+                File("openapi.json").writeText(client.get("/openapi.json").bodyAsText())
+                File("openapi.yaml").writeText(client.get("/openapi.yaml").bodyAsText())
+            }
         }
-    }
-})
+    })

@@ -5,7 +5,6 @@ import io.ktor.server.application.install
 import io.ktor.server.plugins.cors.routing.CORS
 import io.ktor.server.plugins.defaultheaders.DefaultHeaders
 
-
 fun Application.configureHTTP() {
     // ponytail: API is readonly, GET-only (see constitution) — CORS only needs to
     // allow the default GET/HEAD/OPTIONS methods, no write verbs or custom headers.

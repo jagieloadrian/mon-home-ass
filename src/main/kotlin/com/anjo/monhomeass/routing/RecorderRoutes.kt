@@ -13,12 +13,13 @@ import io.ktor.server.routing.route
 import io.ktor.util.reflect.TypeInfo
 import io.ktor.utils.io.ExperimentalKtorApi
 
-fun Route.recorderRout(repo: RecorderRepo) {
-
+fun Route.recorderRoute(repo: RecorderRepo) {
     route("/recorders") {
         get {
-            call.respond(repo.getAll(),
-                    typeInfo = TypeInfo(ArrayList::class))
+            call.respond(
+                repo.getAll(),
+                typeInfo = TypeInfo(ArrayList::class),
+            )
         }.describe {
             tag("Recorder")
             summary = "Get info about recorders"

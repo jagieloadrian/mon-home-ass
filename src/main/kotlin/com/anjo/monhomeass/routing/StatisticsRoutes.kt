@@ -10,22 +10,23 @@ import com.anjo.monhomeass.repository.StatisticMetaRepo
 import com.anjo.monhomeass.repository.StatisticRepo
 import io.ktor.http.HttpStatusCode
 import io.ktor.openapi.jsonSchema
+import io.ktor.server.response.respond
 import io.ktor.server.routing.Route
 import io.ktor.server.routing.get
 import io.ktor.server.routing.openapi.describe
 import io.ktor.server.routing.route
-import io.ktor.server.response.respond
+import io.ktor.server.util.getOrFail
 import io.ktor.util.reflect.TypeInfo
 import io.ktor.utils.io.ExperimentalKtorApi
-import kotlin.time.Instant
 
 fun Route.statisticMetaRoute(repo: StatisticMetaRepo) {
-
     route("/statistics-meta") {
         get {
             val search = call.request.queryParameters["search"]
-            call.respond(repo.getAll(search),
-                    typeInfo = TypeInfo(ArrayList::class))
+            call.respond(
+                repo.getAll(search),
+                typeInfo = TypeInfo(ArrayList::class),
+            )
         }.describe {
             tag("Statistics")
             summary = "List trackable statistic entities"
@@ -52,23 +53,15 @@ fun Route.statisticMetaRoute(repo: StatisticMetaRepo) {
 }
 
 fun Route.statisticSummaryRoute(repo: StatisticRepo) {
-
     route("/statistics") {
         get("/{statisticId}/summary") {
-            val statisticId = call.parameters["statisticId"]!!
-            val from = call.request.queryParameters["from"]?.let {
-                parseInstant(it) ?: return@get call.respond(HttpStatusCode.BadRequest, ErrorDto("Invalid 'from' value"))
-            }
-            val to = call.request.queryParameters["to"]?.let {
-                parseInstant(it) ?: return@get call.respond(HttpStatusCode.BadRequest, ErrorDto("Invalid 'to' value"))
-            }
-
-            val summary = repo.getSummary(statisticId, from, to)
-            if (summary == null) {
-                call.respond(HttpStatusCode.NotFound, ErrorDto("Unknown statisticId"))
-            } else {
-                call.respond(summary)
-            }
+            val summary =
+                repo.getSummary(
+                    call.parameters.getOrFail("statisticId"),
+                    call.instantParam("from"),
+                    call.instantParam("to"),
+                ) ?: return@get call.respond(HttpStatusCode.NotFound, ErrorDto("Unknown statisticId"))
+            call.respond(summary)
         }.describe {
             tag("Statistics")
             summary = "Aggregated min/max/avg/sum over a date range"
@@ -109,40 +102,18 @@ fun Route.statisticSummaryRoute(repo: StatisticRepo) {
     }
 }
 
-internal fun parseInstant(value: String): Instant? {
-    return value.toLongOrNull()?.let { Instant.fromEpochSeconds(it) }
-            ?: runCatching { Instant.parse(value) }.getOrNull()
-}
-
 fun Route.statisticRoute(repo: StatisticRepo) {
-
     route("/statistics") {
         get("/{statisticId}") {
-            val statisticId = call.parameters["statisticId"]!!
-            val from = call.request.queryParameters["from"]?.let {
-                parseInstant(it) ?: return@get call.respond(HttpStatusCode.BadRequest, ErrorDto("Invalid 'from' value"))
-            }
-            val to = call.request.queryParameters["to"]?.let {
-                parseInstant(it) ?: return@get call.respond(HttpStatusCode.BadRequest, ErrorDto("Invalid 'to' value"))
-            }
-
-            val limit = call.request.queryParameters["limit"]?.let {
-                val v = it.toIntOrNull()
-                if (v == null || v < 0) return@get call.respond(HttpStatusCode.BadRequest, ErrorDto("Invalid 'limit' value"))
-                v
-            }
-            val offset = call.request.queryParameters["offset"]?.let {
-                val v = it.toLongOrNull()
-                if (v == null || v < 0) return@get call.respond(HttpStatusCode.BadRequest, ErrorDto("Invalid 'offset' value"))
-                v
-            }
-
-            val rows = repo.getLongTerm(statisticId, from, to, limit, offset)
-            if (rows == null) {
-                call.respond(HttpStatusCode.NotFound, ErrorDto("Unknown statisticId"))
-            } else {
-                call.respond(rows, typeInfo = TypeInfo(ArrayList::class))
-            }
+            val rows =
+                repo.getLongTerm(
+                    call.parameters.getOrFail("statisticId"),
+                    call.instantParam("from"),
+                    call.instantParam("to"),
+                    call.limitParam(),
+                    call.offsetParam(),
+                ) ?: return@get call.respond(HttpStatusCode.NotFound, ErrorDto("Unknown statisticId"))
+            call.respond(rows, typeInfo = TypeInfo(ArrayList::class))
         }.describe {
             tag("Statistics")
             summary = "Long-term statistics for one entity"
@@ -192,33 +163,17 @@ fun Route.statisticRoute(repo: StatisticRepo) {
 }
 
 fun Route.statisticShortTermRoute(repo: StatisticRepo) {
-
     route("/statistics") {
         get("/{statisticId}/short-term") {
-            val statisticId = call.parameters["statisticId"]!!
-            val from = call.request.queryParameters["from"]?.let {
-                parseInstant(it) ?: return@get call.respond(HttpStatusCode.BadRequest, ErrorDto("Invalid 'from' value"))
-            }
-            val to = call.request.queryParameters["to"]?.let {
-                parseInstant(it) ?: return@get call.respond(HttpStatusCode.BadRequest, ErrorDto("Invalid 'to' value"))
-            }
-            val limit = call.request.queryParameters["limit"]?.let {
-                val v = it.toIntOrNull()
-                if (v == null || v < 0) return@get call.respond(HttpStatusCode.BadRequest, ErrorDto("Invalid 'limit' value"))
-                v
-            }
-            val offset = call.request.queryParameters["offset"]?.let {
-                val v = it.toLongOrNull()
-                if (v == null || v < 0) return@get call.respond(HttpStatusCode.BadRequest, ErrorDto("Invalid 'offset' value"))
-                v
-            }
-
-            val rows = repo.getShortTerm(statisticId, from, to, limit, offset)
-            if (rows == null) {
-                call.respond(HttpStatusCode.NotFound, ErrorDto("Unknown statisticId"))
-            } else {
-                call.respond(rows, typeInfo = TypeInfo(ArrayList::class))
-            }
+            val rows =
+                repo.getShortTerm(
+                    call.parameters.getOrFail("statisticId"),
+                    call.instantParam("from"),
+                    call.instantParam("to"),
+                    call.limitParam(),
+                    call.offsetParam(),
+                ) ?: return@get call.respond(HttpStatusCode.NotFound, ErrorDto("Unknown statisticId"))
+            call.respond(rows, typeInfo = TypeInfo(ArrayList::class))
         }.describe {
             tag("Statistics")
             summary = "Short-term (5-minute) statistics for one entity"

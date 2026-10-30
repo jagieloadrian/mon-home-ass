@@ -6,27 +6,26 @@ import org.jetbrains.exposed.v1.core.ResultRow
 
 @Serializable
 data class StatisticMetaDto(
-        val id: Long,
-        val statisticId: String?,
-        val name: String?,
-        val unitOfMeasurement: String?,
-        val unitClass: String?,
-        val source: String?,
-        val hasMean: Boolean?,
-        val hasSum: Boolean?,
-        val meanType: Short
+    val id: Long,
+    val statisticId: String?,
+    val name: String?,
+    val unitOfMeasurement: String?,
+    val unitClass: String?,
+    val source: String?,
+    val hasMean: Boolean?,
+    val hasSum: Boolean?,
+    val meanType: Short,
 )
 
-fun ResultRow.toStatisticMetaDto(): StatisticMetaDto {
-    return StatisticMetaDto(
-            id = this[StatisticMetaData.id],
-            statisticId = this[StatisticMetaData.statisticId],
-            name = this[StatisticMetaData.name],
-            unitOfMeasurement = this[StatisticMetaData.unitOfMeasurement],
-            unitClass = this[StatisticMetaData.unitClass],
-            source = this[StatisticMetaData.sourceOfData],
-            hasMean = this[StatisticMetaData.hasMean],
-            hasSum = this[StatisticMetaData.hasSum],
-            meanType = this[StatisticMetaData.meanType]
+fun ResultRow.toStatisticMetaDto(): StatisticMetaDto =
+    StatisticMetaDto(
+        id = this[StatisticMetaData.id],
+        statisticId = this[StatisticMetaData.statisticId],
+        name = this[StatisticMetaData.name],
+        unitOfMeasurement = this[StatisticMetaData.unitOfMeasurement],
+        unitClass = this[StatisticMetaData.unitClass],
+        source = this[StatisticMetaData.sourceOfData],
+        hasMean = this[StatisticMetaData.hasMean],
+        hasSum = this[StatisticMetaData.hasSum],
+        meanType = this[StatisticMetaData.meanType],
     )
-}

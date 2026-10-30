@@ -14,13 +14,12 @@ import java.time.Duration
 // Nats-Msg-Id: JetStream dedups resends, and the stream's last message says
 // where to resume after a restart — no state of our own, the DB stays read-only.
 class StatisticPublisher(
-        private val repo: StatisticRepo,
-        private val js: JetStream,
-        private val jsm: JetStreamManagement,
-        private val stream: String,
-        private val subject: String
+    private val repo: StatisticRepo,
+    private val js: JetStream,
+    private val jsm: JetStreamManagement,
+    private val stream: String,
+    private val subject: String,
 ) {
-
     // ponytail: created only when missing, so a stream defined by the broker's
     // own config wins. 30 days max age = how long StatisticsService may lag.
     fun ensureStream() {
@@ -28,17 +27,27 @@ class StatisticPublisher(
             jsm.getStreamInfo(stream)
         } catch (e: JetStreamApiException) {
             if (e.errorCode != NOT_FOUND) throw e
-            jsm.addStream(StreamConfiguration.builder().name(stream).subjects(subject).maxAge(Duration.ofDays(30)).build())
+            jsm.addStream(
+                StreamConfiguration
+                    .builder()
+                    .name(stream)
+                    .subjects(subject)
+                    .maxAge(Duration.ofDays(30))
+                    .build(),
+            )
         }
     }
 
-    fun lastPublishedId(): Long {
-        return try {
-            jsm.getLastMessage(stream, subject).headers?.getFirst(MSG_ID_HEADER)?.toLongOrNull() ?: 0
+    fun lastPublishedId(): Long =
+        try {
+            jsm
+                .getLastMessage(stream, subject)
+                .headers
+                ?.getFirst(MSG_ID_HEADER)
+                ?.toLongOrNull() ?: 0
         } catch (e: JetStreamApiException) {
             if (e.errorCode == NOT_FOUND) 0 else throw e
         }
-    }
 
     // Returns how many records were published.
     fun publishNew(batchSize: Int = 500): Int {

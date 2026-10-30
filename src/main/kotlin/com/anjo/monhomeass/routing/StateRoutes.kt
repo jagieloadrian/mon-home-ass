@@ -7,26 +7,22 @@ import com.anjo.monhomeass.model.dto.StateDto
 import com.anjo.monhomeass.repository.StateRepo
 import io.ktor.http.HttpStatusCode
 import io.ktor.openapi.jsonSchema
+import io.ktor.server.response.respond
 import io.ktor.server.routing.Route
 import io.ktor.server.routing.get
 import io.ktor.server.routing.openapi.describe
 import io.ktor.server.routing.route
-import io.ktor.server.response.respond
+import io.ktor.server.util.getOrFail
 import io.ktor.util.reflect.TypeInfo
 import io.ktor.utils.io.ExperimentalKtorApi
 
 fun Route.stateRoute(repo: StateRepo) {
-
     route("/states") {
         get("/{entityId}") {
-            val entityId = call.parameters["entityId"]!!
-
-            val state = repo.getLatest(entityId)
-            if (state == null) {
-                call.respond(HttpStatusCode.NotFound, ErrorDto("Unknown entityId"))
-            } else {
-                call.respond(state)
-            }
+            val state =
+                repo.getLatest(call.parameters.getOrFail("entityId"))
+                    ?: return@get call.respond(HttpStatusCode.NotFound, ErrorDto("Unknown entityId"))
+            call.respond(state)
         }.describe {
             tag("States")
             summary = "Latest recorded state for one entity"
@@ -56,33 +52,17 @@ fun Route.stateRoute(repo: StateRepo) {
 }
 
 fun Route.stateHistoryRoute(repo: StateRepo) {
-
     route("/states") {
         get("/{entityId}/history") {
-            val entityId = call.parameters["entityId"]!!
-            val from = call.request.queryParameters["from"]?.let {
-                parseInstant(it) ?: return@get call.respond(HttpStatusCode.BadRequest, ErrorDto("Invalid 'from' value"))
-            }
-            val to = call.request.queryParameters["to"]?.let {
-                parseInstant(it) ?: return@get call.respond(HttpStatusCode.BadRequest, ErrorDto("Invalid 'to' value"))
-            }
-            val limit = call.request.queryParameters["limit"]?.let {
-                val v = it.toIntOrNull()
-                if (v == null || v < 0) return@get call.respond(HttpStatusCode.BadRequest, ErrorDto("Invalid 'limit' value"))
-                v
-            }
-            val offset = call.request.queryParameters["offset"]?.let {
-                val v = it.toLongOrNull()
-                if (v == null || v < 0) return@get call.respond(HttpStatusCode.BadRequest, ErrorDto("Invalid 'offset' value"))
-                v
-            }
-
-            val rows = repo.getHistory(entityId, from, to, limit, offset)
-            if (rows == null) {
-                call.respond(HttpStatusCode.NotFound, ErrorDto("Unknown entityId"))
-            } else {
-                call.respond(rows, typeInfo = TypeInfo(ArrayList::class))
-            }
+            val rows =
+                repo.getHistory(
+                    call.parameters.getOrFail("entityId"),
+                    call.instantParam("from"),
+                    call.instantParam("to"),
+                    call.limitParam(),
+                    call.offsetParam(),
+                ) ?: return@get call.respond(HttpStatusCode.NotFound, ErrorDto("Unknown entityId"))
+            call.respond(rows, typeInfo = TypeInfo(ArrayList::class))
         }.describe {
             tag("States")
             summary = "State history for one entity"

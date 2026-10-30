@@ -1,9 +1,11 @@
-import io.ktor.plugin.features.*
+import io.ktor.plugin.features.DockerPortMapping
+import io.ktor.plugin.features.DockerPortMappingProtocol
 
 plugins {
     alias(libs.plugins.kotlin.jvm)
     alias(libs.plugins.kotlin.serialization)
     alias(libs.plugins.ktor)
+    alias(libs.plugins.ktlint)
     jacoco
 }
 
@@ -54,6 +56,12 @@ dependencies {
     testImplementation(libs.testcontainers.mysql)
 }
 
+ktlint {
+    version =
+        libs.versions.ktlint.engine
+            .get()
+}
+
 tasks.test {
     useJUnitPlatform()
     filter { excludeTestsMatching("com.anjo.monhomeass.tools.OpenApiSnapshotKtTest") }
@@ -67,8 +75,9 @@ tasks.register<Test>("generateOpenApiSpec") {
     description = "Snapshots the live-generated OpenAPI doc to openapi.json"
     group = "documentation"
     useJUnitPlatform()
-    testClassesDirs = sourceSets.test.get().output.classesDirs
-    classpath = sourceSets.test.get().runtimeClasspath
+    val testSources = sourceSets.test.get()
+    testClassesDirs = testSources.output.classesDirs
+    classpath = testSources.runtimeClasspath
     filter { includeTestsMatching("com.anjo.monhomeass.tools.OpenApiSnapshotKtTest") }
     outputs.upToDateWhen { false }
 }
@@ -102,9 +111,10 @@ ktor {
         localImageName.set(rootProject.name)
         imageTag.set(version.toString())
         jib.container.creationTime = "USE_CURRENT_TIMESTAMP"
-        portMappings.set(listOf(
-                DockerPortMapping(outsideDocker = 8080, 8080, DockerPortMappingProtocol.TCP)
-        )
+        portMappings.set(
+            listOf(
+                DockerPortMapping(outsideDocker = 8080, 8080, DockerPortMappingProtocol.TCP),
+            ),
         )
     }
 }

@@ -62,10 +62,10 @@ private object TestContainers {
 fun prepareDatabase() {
     val pg = TestContainers.postgres
     Database.connect(
-            url = pg.jdbcUrl,
-            driver = "org.postgresql.Driver",
-            user = pg.username,
-            password = pg.password
+        url = pg.jdbcUrl,
+        driver = "org.postgresql.Driver",
+        user = pg.username,
+        password = pg.password,
     )
     flushRedis()
 }
@@ -74,15 +74,15 @@ fun testApplicationConfig(): MapApplicationConfig {
     val pg = TestContainers.postgres
     val redis = TestContainers.redis
     return MapApplicationConfig(
-            "ktor.database.user" to pg.username,
-            "ktor.database.password" to pg.password,
-            "ktor.database.url" to "${pg.host}:${pg.getMappedPort(5432)}",
-            "ktor.database.database_name" to pg.databaseName,
-            "ktor.database.driver" to "org.postgresql.Driver",
-            "ktor.database.database_type" to "postgres",
-            "ktor.redis.host" to redis.host,
-            "ktor.redis.port" to redis.getMappedPort(6379).toString(),
-            "ktor.redis.ttlMillis" to "300000"
+        "ktor.database.user" to pg.username,
+        "ktor.database.password" to pg.password,
+        "ktor.database.url" to "${pg.host}:${pg.getMappedPort(5432)}",
+        "ktor.database.database_name" to pg.databaseName,
+        "ktor.database.driver" to "org.postgresql.Driver",
+        "ktor.database.database_type" to "postgres",
+        "ktor.redis.host" to redis.host,
+        "ktor.redis.port" to redis.getMappedPort(6379).toString(),
+        "ktor.redis.ttlMillis" to "300000",
     ).apply {
         // ponytail: previous H2-era config file relied on ktor.application.modules
         // to auto-invoke the real module() (serialization/DI/etc.) alongside each
@@ -94,12 +94,13 @@ fun testApplicationConfig(): MapApplicationConfig {
 
 fun prepareDatabaseMariaDb(): Database {
     val db = TestContainers.mariaDb
-    val database = Database.connect(
+    val database =
+        Database.connect(
             url = db.jdbcUrl,
             driver = "org.mariadb.jdbc.Driver",
             user = db.username,
-            password = db.password
-    )
+            password = db.password,
+        )
     flushRedis()
     return database
 }
@@ -108,15 +109,15 @@ fun testApplicationConfigMariaDb(): MapApplicationConfig {
     val db = TestContainers.mariaDb
     val redis = TestContainers.redis
     return MapApplicationConfig(
-            "ktor.database.user" to db.username,
-            "ktor.database.password" to db.password,
-            "ktor.database.url" to "${db.host}:${db.getMappedPort(3306)}",
-            "ktor.database.database_name" to db.databaseName,
-            "ktor.database.driver" to "org.mariadb.jdbc.Driver",
-            "ktor.database.database_type" to "mariadb",
-            "ktor.redis.host" to redis.host,
-            "ktor.redis.port" to redis.getMappedPort(6379).toString(),
-            "ktor.redis.ttlMillis" to "300000"
+        "ktor.database.user" to db.username,
+        "ktor.database.password" to db.password,
+        "ktor.database.url" to "${db.host}:${db.getMappedPort(3306)}",
+        "ktor.database.database_name" to db.databaseName,
+        "ktor.database.driver" to "org.mariadb.jdbc.Driver",
+        "ktor.database.database_type" to "mariadb",
+        "ktor.redis.host" to redis.host,
+        "ktor.redis.port" to redis.getMappedPort(6379).toString(),
+        "ktor.redis.ttlMillis" to "300000",
     ).apply {
         put("ktor.application.modules", listOf("com.anjo.monhomeass.ApplicationKt.module"))
     }
@@ -124,12 +125,13 @@ fun testApplicationConfigMariaDb(): MapApplicationConfig {
 
 fun prepareDatabaseMySql(): Database {
     val db = TestContainers.mySql
-    val database = Database.connect(
+    val database =
+        Database.connect(
             url = db.jdbcUrl,
             driver = "com.mysql.cj.jdbc.Driver",
             user = db.username,
-            password = db.password
-    )
+            password = db.password,
+        )
     flushRedis()
     return database
 }
@@ -138,15 +140,15 @@ fun testApplicationConfigMySql(): MapApplicationConfig {
     val db = TestContainers.mySql
     val redis = TestContainers.redis
     return MapApplicationConfig(
-            "ktor.database.user" to db.username,
-            "ktor.database.password" to db.password,
-            "ktor.database.url" to "${db.host}:${db.getMappedPort(3306)}",
-            "ktor.database.database_name" to db.databaseName,
-            "ktor.database.driver" to "com.mysql.cj.jdbc.Driver",
-            "ktor.database.database_type" to "mysql",
-            "ktor.redis.host" to redis.host,
-            "ktor.redis.port" to redis.getMappedPort(6379).toString(),
-            "ktor.redis.ttlMillis" to "300000"
+        "ktor.database.user" to db.username,
+        "ktor.database.password" to db.password,
+        "ktor.database.url" to "${db.host}:${db.getMappedPort(3306)}",
+        "ktor.database.database_name" to db.databaseName,
+        "ktor.database.driver" to "com.mysql.cj.jdbc.Driver",
+        "ktor.database.database_type" to "mysql",
+        "ktor.redis.host" to redis.host,
+        "ktor.redis.port" to redis.getMappedPort(6379).toString(),
+        "ktor.redis.ttlMillis" to "300000",
     ).apply {
         put("ktor.application.modules", listOf("com.anjo.monhomeass.ApplicationKt.module"))
     }
@@ -161,18 +163,21 @@ fun testApplicationConfigSqlite(): MapApplicationConfig {
     val redis = TestContainers.redis
     flushRedis()
     return MapApplicationConfig(
-            "ktor.database.driver" to "org.sqlite.JDBC",
-            "ktor.database.database_type" to "sqlite",
-            "ktor.database.file_path" to file.toAbsolutePath().toString(),
-            "ktor.redis.host" to redis.host,
-            "ktor.redis.port" to redis.getMappedPort(6379).toString(),
-            "ktor.redis.ttlMillis" to "300000"
+        "ktor.database.driver" to "org.sqlite.JDBC",
+        "ktor.database.database_type" to "sqlite",
+        "ktor.database.file_path" to file.toAbsolutePath().toString(),
+        "ktor.redis.host" to redis.host,
+        "ktor.redis.port" to redis.getMappedPort(6379).toString(),
+        "ktor.redis.ttlMillis" to "300000",
     ).apply {
         put("ktor.application.modules", listOf("com.anjo.monhomeass.ApplicationKt.module"))
     }
 }
 
-fun seedSqlite(filePath: String, seedFunc: () -> Unit) {
+fun seedSqlite(
+    filePath: String,
+    seedFunc: () -> Unit,
+) {
     val db = Database.connect(url = "jdbc:sqlite:file:$filePath", driver = "org.sqlite.JDBC")
     transaction(db) {
         seedFunc()
