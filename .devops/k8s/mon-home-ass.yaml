@@ -65,19 +65,19 @@ spec:
               memory: 384Mi
           startupProbe:
             httpGet:
-              path: /health
+              path: /health/live
               port: http
             periodSeconds: 5
             failureThreshold: 24
           livenessProbe:
             httpGet:
-              path: /health
+              path: /health/live
               port: http
             periodSeconds: 20
             failureThreshold: 3
           readinessProbe:
             httpGet:
-              path: /ready
+              path: /health/ready
               port: http
             periodSeconds: 10
             failureThreshold: 3
