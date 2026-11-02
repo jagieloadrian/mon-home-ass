@@ -1,5 +1,13 @@
 # PROJECT-STATUS
 
+## Done (2026-11-02, branch feature-5/remove-comments)
+
+- No comments in code/config; tests keep `// given` / `// when` / `// then` markers.
+- Deploy: HelmRelease retries the first install until Vault has `secret/apps/mon-home-ass`; NATS settings removed until a NATS user and policy exist in homelab-infra.
+- CORS from `CORS_HOSTS` (comma-separated hosts, empty = no cross-origin) instead of any host.
+- `/health/ready` returns 503 while the database is unreachable; `/health/live` does not depend on the database.
+- Logging at `info` by default.
+
 ## Done (2026-11-02, branch feature-4/cleaning-repo)
 
 - Deploy moved from `.devops/k8s` (kustomize) to `.devops/helm`: Flux HelmRelease of homelab-infra
