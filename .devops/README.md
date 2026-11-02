@@ -2,19 +2,19 @@
 
 Wdrożenie na homelab (k3s + Flux) według kontraktu z `homelab-infra/docs`
 ([setup.md](../../homelab-infra/docs/setup.md), [postgres.md](../../homelab-infra/docs/postgres.md)).
-Flux czyta tylko `.devops/k8s/` z gałęzi `main`.
+Flux czyta tylko `.devops/helm/` z gałęzi `main` (HelmRelease wspólnego chartu `charts/app` z homelab-infra,
+opis values: `homelab-infra/charts/app/values.yaml`).
 
 | Plik | W gicie | Zawartość |
 | --- | --- | --- |
-| `k8s/mon-home-ass.yaml` | tak | ServiceAccount, Deployment, Service, HTTPRoute `mon-home-ass.home.arpa`, AuthorizationPolicy |
-| `k8s/config.env` | tak, jawny | konfiguracja → ConfigMap `mon-home-ass-config` |
-| `k8s/secrets.sops.env` | tak, zaszyfrowany | hasła → Secret `mon-home-ass-secrets` |
-| `k8s/kustomization.yaml` | tak | generatory ConfigMap/Secret (hash w nazwie = rollout po zmianie) |
+| `helm/release.yaml` | tak, jawny | HelmRelease: obraz, zasoby, HTTPRoute `mon-home-ass.home.arpa`, `values.env` → ConfigMap `mon-home-ass-config`; chart renderuje też ServiceAccount, Deployment, Service, AuthorizationPolicy |
+| `helm/secrets.sops.yaml` | tak, zaszyfrowany | `secretEnv` (hasła) → Secret `mon-home-ass-secrets` |
+| `helm/kustomization.yaml` | tak | secretGenerator `mon-home-ass-values` (stała nazwa) → `valuesFrom` w HelmRelease; zmiana env/sekretów = rollout (`checksum/env`) |
 
 Obraz `ghcr.io/jagieloadrian/mon-home-ass` (Jib, amd64 + arm64) buduje CI na `main`
-i commituje jego tag do `k8s/mon-home-ass.yaml`.
+i commituje jego tag do `helm/release.yaml`.
 
-## config.env
+## values.env (`helm/release.yaml`)
 
 | Zmienna | Wartość | Znaczenie |
 | --- | --- | --- |
@@ -28,17 +28,18 @@ i commituje jego tag do `k8s/mon-home-ass.yaml`.
 
 Redis nie jest wymagany: bez niego cache działa w pamięci poda (`REDIS_HOST`/`REDIS_PORT`, gdy kiedyś będzie).
 
-## secrets.sops.env
+## secrets.sops.yaml
 
 ```bash
-sops .devops/k8s/secrets.sops.env   # edytor; zapis = szyfrowanie
+sops .devops/helm/secrets.sops.yaml   # edytor; zapis = szyfrowanie
 ```
 
-```bash
-DB_PASSWORD=<openssl rand -hex 24>
+```yaml
+secretEnv:
+  DB_PASSWORD: <openssl rand -hex 24>
 ```
 
-Broker NATS z uwierzytelnianiem: przenieś `NATS_URL` z `config.env` tutaj jako
+Broker NATS z uwierzytelnianiem: przenieś `NATS_URL` z `values.env` tutaj do `secretEnv` jako
 `nats://<user>:<hasło>@nats.apps.svc.cluster.local:4222`.
 Wcześniej wpisz swój klucz publiczny age w `.sops.yaml` ([setup.md](../../homelab-infra/docs/setup.md), krok 2).
 

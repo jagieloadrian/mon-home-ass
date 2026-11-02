@@ -1,5 +1,11 @@
 # PROJECT-STATUS
 
+## Done (2026-11-02, branch feature-4/cleaning-repo)
+
+- Deploy moved from `.devops/k8s` (kustomize) to `.devops/helm`: Flux HelmRelease of homelab-infra
+  `charts/app`, config in `values.env`, secrets in `.devops/helm/secrets.sops.yaml` (`secretEnv`);
+  CI bumps the tag in `release.yaml`, `devops.yml` checks with `helm template` + kubeconform.
+
 ## Done (2026-10-30, branch feature-4/cleaning-repo)
 
 - Schema checked against the HA recorder dump (Postgres 18, `notatki.txt`): fixed
@@ -8,7 +14,7 @@
   Ktor 3.6.1, Exposed 1.6.0, kotest 6, Testcontainers 2, Gradle 9.8.2, ...).
 - NATS JetStream publisher: `statistics_short_term` rows → subject `home-assistant.statistics`
   as StatisticsService native records `{ts, dims, vals}`. REST API unchanged.
-- `.devops/k8s` (Flux + kustomize + SOPS) per homelab-infra docs; Helm chart removed.
+- `.devops/k8s` (Flux + kustomize + SOPS) per homelab-infra docs, now `.devops/helm` (above); own Helm chart removed.
 - GitHub CI: `build.yml` (check, multi-arch Jib to GHCR, image tag bump on main), `devops.yml`.
 - Kotlin conventions: ktlint (`ktlint_official`) in `check`, no `!!`, shared `StatisticTable`,
   query param helpers.
@@ -28,7 +34,7 @@
 - StatisticsService has no NATS consumer yet (its T070 Kafka channel is gated) — build a
   JetStream consumer there, or the messages only sit in the stream.
 - Deploy NATS JetStream in homelab-infra (`nats.apps.svc.cluster.local:4222` expected).
-- Before first deploy: age key in `.sops.yaml`, `.devops/k8s/secrets.sops.env` (`DB_PASSWORD`),
+- Before first deploy: age key in `.sops.yaml`, `.devops/helm/secrets.sops.yaml` (`secretEnv.DB_PASSWORD`),
   readonly role + `pg_hba` lines, registration in homelab-infra, GHCR package public
   (`.devops/README.md`).
 - API is unauthenticated and exposed at `mon-home-ass.home.arpa` (LAN only).

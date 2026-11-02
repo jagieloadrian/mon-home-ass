@@ -25,4 +25,4 @@ Swagger UI: `http://localhost:8080/swagger`
 ## Docs
 
 - API contract — generated from route `.describe {}` blocks, not hand-maintained. Live at `/openapi.json` (raw) or `/swagger` (UI) on a running instance.
-- `.devops/` — Kubernetes manifests + Helm chart (initial scaffold)
+- `.devops/` — Flux HelmRelease (shared homelab-infra chart `charts/app`), see `.devops/README.md`
