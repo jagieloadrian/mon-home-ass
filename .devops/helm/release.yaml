@@ -14,10 +14,9 @@ spec:
         kind: GitRepository
         name: flux-system
         namespace: flux-system
-  valuesFrom:
-    - kind: Secret
-      name: mon-home-ass-values # secrets.sops.yaml (kustomization.yaml)
   values:
+    # Secret mon-home-ass-secrets from Vault secret/apps/mon-home-ass (homelab-infra docs/vault.md)
+    secrets: true
     image: ghcr.io/jagieloadrian/mon-home-ass:main-00000000000000-0000000
     resources:
       requests:
@@ -27,7 +26,7 @@ spec:
         memory: 384Mi
     route:
       hostname: mon-home-ass.home.arpa
-    # Jawna konfiguracja -> ConfigMap mon-home-ass-config. Sekrety: secrets.sops.yaml.
+    # Jawna konfiguracja -> ConfigMap mon-home-ass-config. Sekrety: Vault (secrets wyżej).
     # Opis zmiennych: .devops/README.md.
     env:
       DB_TYPE: postgres

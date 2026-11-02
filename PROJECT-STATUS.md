@@ -3,7 +3,7 @@
 ## Done (2026-11-02, branch feature-4/cleaning-repo)
 
 - Deploy moved from `.devops/k8s` (kustomize) to `.devops/helm`: Flux HelmRelease of homelab-infra
-  `charts/app`, config in `values.env`, secrets in `.devops/helm/secrets.sops.yaml` (`secretEnv`);
+  `charts/app`, config in `values.env`, secrets in Vault `secret/apps/mon-home-ass` (ExternalSecret, `secrets: true`);
   CI bumps the tag in `release.yaml`, `devops.yml` checks with `helm template` + kubeconform.
 
 ## Done (2026-10-30, branch feature-4/cleaning-repo)
@@ -34,7 +34,7 @@
 - StatisticsService has no NATS consumer yet (its T070 Kafka channel is gated) — build a
   JetStream consumer there, or the messages only sit in the stream.
 - Deploy NATS JetStream in homelab-infra (`nats.apps.svc.cluster.local:4222` expected).
-- Before first deploy: age key in `.sops.yaml`, `.devops/helm/secrets.sops.yaml` (`secretEnv.DB_PASSWORD`),
+- Before first deploy: `DB_PASSWORD` in Vault `secret/apps/mon-home-ass` (homelab-infra docs/vault.md),
   readonly role + `pg_hba` lines, registration in homelab-infra, GHCR package public
   (`.devops/README.md`).
 - API is unauthenticated and exposed at `mon-home-ass.home.arpa` (LAN only).

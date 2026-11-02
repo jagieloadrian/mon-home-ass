@@ -8,8 +8,7 @@ values description: `homelab-infra/charts/app/values.yaml`).
 | File | In git | Contents |
 | --- | --- | --- |
 | `helm/release.yaml` | yes, plain | HelmRelease: image, resources, HTTPRoute `mon-home-ass.home.arpa`, `values.env` → ConfigMap `mon-home-ass-config`; the chart also renders ServiceAccount, Deployment, Service, AuthorizationPolicy |
-| `helm/secrets.sops.yaml` | yes, encrypted | `secretEnv` (passwords) → Secret `mon-home-ass-secrets` |
-| `helm/kustomization.yaml` | yes | secretGenerator `mon-home-ass-values` (fixed name) → `valuesFrom` in HelmRelease; env/secrets change = rollout (`checksum/env`) |
+| Vault `secret/apps/mon-home-ass` | no | passwords → Secret `mon-home-ass-secrets` (ExternalSecret from the chart, `secrets: true` in `release.yaml`) |
 
 The image `ghcr.io/jagieloadrian/mon-home-ass` (Jib, amd64 + arm64) is built by CI on `main`,
 which commits its tag to `helm/release.yaml`.
@@ -28,20 +27,17 @@ which commits its tag to `helm/release.yaml`.
 
 Redis is not required: without it the cache lives in pod memory (`REDIS_HOST`/`REDIS_PORT`, once there is one).
 
-## secrets.sops.yaml
+## Secrets (Vault)
+
+Secrets live only in Vault `secret/apps/mon-home-ass` (keys = env names); nothing in git, CI needs no keys.
+Set them per [vault.md](../../homelab-infra/docs/vault.md):
 
 ```bash
-sops .devops/helm/secrets.sops.yaml   # editor; save = encrypt
+vault kv put secret/apps/mon-home-ass DB_PASSWORD=-   # value from stdin (openssl rand -hex 24)
 ```
 
-```yaml
-secretEnv:
-  DB_PASSWORD: <openssl rand -hex 24>
-```
-
-NATS broker with authentication: move `NATS_URL` from `values.env` here into `secretEnv` as
-`nats://<user>:<password>@nats.apps.svc.cluster.local:4222`.
-Before that, put your public age key in `.sops.yaml` ([setup.md](../../homelab-infra/docs/setup.md), step 2).
+NATS broker with authentication: remove `NATS_URL` from `values.env` and put it in Vault
+(`vault kv patch secret/apps/mon-home-ass NATS_URL=-`) as `nats://<user>:<password>@nats.apps.svc.cluster.local:4222`.
 
 ## Postgres: read-only role
 
