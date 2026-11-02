@@ -32,6 +32,10 @@ Compile and run the tests (Testcontainers, so Docker must be running):
 
 Swagger UI: `http://localhost:8080/swagger`
 
+Cross-origin browser calls are allowed only from the hosts in `CORS_HOSTS`: comma-separated, without scheme (`http`
+and `https` both match), e.g. `statistics.home.arpa,localhost:8081`; default `localhost:8080`, empty = no
+cross-origin access.
+
 The statistics publisher (NATS JetStream) starts only when `NATS_URL` is set; the homelab NATS is not wired yet,
 see `.devops/README.md`.
 

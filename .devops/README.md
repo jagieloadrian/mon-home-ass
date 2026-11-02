@@ -31,6 +31,7 @@ which commits its tag to `helm/release.yaml`. Until the first `main` build does 
 | `DB_URL` | `postgres.apps.svc.cluster.local:5432` | `host:port` of Postgres on Wyse (Service from homelab-infra) |
 | `DB_NAME` | `home_assistant` | HA recorder database |
 | `DB_USER` | `mon_home_ass` | read-only role (below) |
+| `CORS_HOSTS` | `""` | comma-separated hosts without scheme allowed to call the API from a browser on another origin (app default `localhost:8080`); empty = none, the API is used same-origin at `mon-home-ass.home.arpa` |
 
 Redis is not required: without it the cache lives in pod memory (`REDIS_HOST`/`REDIS_PORT`, once there is one).
 

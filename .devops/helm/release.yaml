@@ -35,3 +35,4 @@ spec:
       DB_URL: postgres.apps.svc.cluster.local:5432
       DB_NAME: home_assistant
       DB_USER: mon_home_ass
+      CORS_HOSTS: ""
