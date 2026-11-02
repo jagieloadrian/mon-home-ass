@@ -22,7 +22,7 @@ import org.jetbrains.exposed.v1.jdbc.transactions.transaction
 class MySqlConnectionKtTest :
     StringSpec({
 
-        "given real MySQL engine when get entities then returns seeded data" {
+        "given real MySQL engine when get entities then returns seeded data and reports ready" {
             testApplication {
                 // given
                 val db = prepareDatabaseMySql()
@@ -47,9 +47,11 @@ class MySqlConnectionKtTest :
 
                 // when
                 val response = client.get("/entities")
+                val ready = client.get("/health/ready")
 
                 // then
                 response.status shouldBe HttpStatusCode.OK
+                ready.status shouldBe HttpStatusCode.OK
                 Json.decodeFromString<List<EntityDto>>(response.bodyAsText()) shouldBe
                     listOf(EntityDto(1, "sensor.mysql_probe"))
             }

@@ -58,15 +58,6 @@ fun Application.configureRouting() {
         statisticRunRoute(statisticRunRepo)
     }
 
-    // ponytail: OpenApiDocSource.Routing's built-in lazy-async generation (the
-    // swaggerUI default) silently returns an empty document when read through
-    // Ktor's own async(LAZY) + coroutine-dispatch path in this Ktor version —
-    // reproduced and isolated to that mechanism specifically (a direct,
-    // synchronous .read() call works correctly). Building the doc eagerly
-    // here, once, synchronously, right after every route is registered (and
-    // the RoutingRoot plugin is installed) sidesteps the bug entirely and
-    // also means every route's `.describe {}` block actually runs (and is
-    // covered) at startup instead of never running at all.
     val openApiDocInfo = OpenApiDoc(info = OpenApiInfo("Monitor Home Assistant Stats", "1.0"))
     val openApiDoc =
         OpenApiDocSource

@@ -15,11 +15,8 @@ import java.sql.SQLException
 private val logger = KotlinLogging.logger {}
 
 fun Application.configureStatusPages() {
-    // ponytail: swaggerUI's OpenApiDocSource.Routing re-runs the application module
-    // to enumerate routes, so this can be called twice per real start — guard it.
     if (pluginOrNull(StatusPages) != null) return
     install(StatusPages) {
-        // Invalid query params and missing path params (getOrFail) end up here.
         exception<BadRequestException> { call, cause ->
             call.respond(HttpStatusCode.BadRequest, ErrorDto(cause.message ?: "Bad request"))
         }

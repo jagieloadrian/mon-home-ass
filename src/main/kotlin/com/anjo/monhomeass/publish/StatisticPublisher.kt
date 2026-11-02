@@ -9,10 +9,6 @@ import io.nats.client.api.StreamConfiguration
 import kotlinx.serialization.json.Json
 import java.time.Duration
 
-// Pushes HA short-term statistics (5 min) to a NATS JetStream subject as
-// StatisticsService native records, one message per row. The HA row id is the
-// Nats-Msg-Id: JetStream dedups resends, and the stream's last message says
-// where to resume after a restart — no state of our own, the DB stays read-only.
 class StatisticPublisher(
     private val repo: StatisticRepo,
     private val js: JetStream,
@@ -20,8 +16,6 @@ class StatisticPublisher(
     private val stream: String,
     private val subject: String,
 ) {
-    // ponytail: created only when missing, so a stream defined by the broker's
-    // own config wins. 30 days max age = how long StatisticsService may lag.
     fun ensureStream() {
         try {
             jsm.getStreamInfo(stream)
@@ -49,7 +43,6 @@ class StatisticPublisher(
             if (e.errorCode == NOT_FOUND) 0 else throw e
         }
 
-    // Returns how many records were published.
     fun publishNew(batchSize: Int = 500): Int {
         var lastId = lastPublishedId()
         var published = 0

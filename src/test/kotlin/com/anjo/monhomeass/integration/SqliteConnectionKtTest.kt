@@ -22,7 +22,7 @@ import org.jetbrains.exposed.v1.jdbc.transactions.transaction
 class SqliteConnectionKtTest :
     StringSpec({
 
-        "given real SQLite file when get entities then returns seeded data via readonly connection" {
+        "given real SQLite file when get entities then returns seeded data via readonly connection and reports ready" {
             testApplication {
                 // given
                 val config = testApplicationConfigSqlite()
@@ -45,13 +45,14 @@ class SqliteConnectionKtTest :
 
                 // when
                 val response = client.get("/entities")
+                val ready = client.get("/health/ready")
 
                 // then
                 response.status shouldBe HttpStatusCode.OK
+                ready.status shouldBe HttpStatusCode.OK
                 Json.decodeFromString<List<EntityDto>>(response.bodyAsText()) shouldBe
                     listOf(EntityDto(1, "sensor.sqlite_probe"))
 
-                // and: app's own connection is mandatorily read-only (mode=ro)
                 shouldThrow<Exception> {
                     transaction {
                         StateMetadata.insert {

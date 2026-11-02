@@ -4,7 +4,6 @@ import com.anjo.monhomeass.utils.epochSeconds
 import org.jetbrains.exposed.v1.core.Table
 import org.jetbrains.exposed.v1.datetime.timestampWithTimeZone
 
-// HA defines both statistics tables from one StatisticsBase mixin; same here.
 abstract class StatisticTable(
     name: String,
 ) : Table(name) {

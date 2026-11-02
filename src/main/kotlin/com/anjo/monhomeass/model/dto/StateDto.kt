@@ -16,7 +16,6 @@ data class StateDto(
     val eventId: Short?,
 )
 
-// Null when entity_id is missing (queries filter on it, so never in practice).
 fun ResultRow.toStateDto(): StateDto? =
     this[StateMetadata.entityId]?.let { entityId ->
         StateDto(

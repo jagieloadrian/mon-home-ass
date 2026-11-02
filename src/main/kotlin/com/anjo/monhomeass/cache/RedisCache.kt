@@ -7,15 +7,10 @@ import redis.clients.jedis.params.SetParams
 import java.util.concurrent.ConcurrentHashMap
 import kotlin.math.min
 
-// ponytail: no eviction cap beyond TTL — Redis itself can be given a
-// maxmemory/eviction policy at the infra level if this ever matters; add
-// app-side eviction logic only if that's not enough in practice.
 class RedisCache(
     @PublishedApi internal val client: RedisClient,
     @PublishedApi internal val ttlMillis: Long,
 ) {
-    // ponytail: local fallback used only while Redis is down; not a general-purpose
-    // in-memory cache, so no size cap beyond natural TTL eviction on read.
     @PublishedApi internal val local = ConcurrentHashMap<String, Pair<String, Long>>()
 
     @Volatile @PublishedApi

@@ -29,9 +29,6 @@ import kotlin.time.Instant
 class StatisticLongTermRoutesKtTest :
     StringSpec({
 
-        // ponytail: shared named in-memory H2 DB reused across every test class in
-        // the suite — drop Statistic/StatisticShortTerm first since they FK into
-        // StatisticMetaData, so each test starts clean regardless of run order.
         fun dropTablesIfExists() {
             runCatching { SchemaUtils.drop(Statistic) }
             runCatching { SchemaUtils.drop(StatisticShortTerm) }

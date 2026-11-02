@@ -68,9 +68,6 @@ tasks.test {
     finalizedBy(tasks.jacocoTestReport)
 }
 
-// ponytail: reuses the test source set (already has testApplication +
-// testcontainers wired) instead of a standalone main()/source set just to
-// boot the app and hit one endpoint.
 tasks.register<Test>("generateOpenApiSpec") {
     description = "Snapshots the live-generated OpenAPI doc to openapi.json"
     group = "documentation"
@@ -118,7 +115,6 @@ ktor {
     }
 }
 
-// Homelab nodes: RPi5 (arm64) + Wyse (amd64). User matches the pod securityContext.
 jib {
     from {
         platforms {

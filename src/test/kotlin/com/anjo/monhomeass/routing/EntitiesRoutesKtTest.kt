@@ -25,10 +25,6 @@ import org.jetbrains.exposed.v1.jdbc.transactions.transaction
 class EntitiesRoutesKtTest :
     StringSpec({
 
-        // ponytail: TestDatabase's H2 instance is a shared named in-memory DB
-        // (DB_CLOSE_DELAY=-1) reused across every test class in the suite — drop
-        // this table so each test starts from a clean/absent table regardless of
-        // run order.
         fun dropTableIfExists() {
             runCatching { SchemaUtils.drop(StateMetadata) }
         }

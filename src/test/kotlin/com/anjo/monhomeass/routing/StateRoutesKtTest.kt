@@ -27,8 +27,6 @@ import kotlin.time.Instant
 class StateRoutesKtTest :
     StringSpec({
 
-        // ponytail: State FKs into StateMetadata and StateAttributes — drop it first
-        // so each test starts clean regardless of run order.
         fun dropTablesIfExists() {
             runCatching { SchemaUtils.drop(State) }
             runCatching { SchemaUtils.drop(StateAttributes) }
