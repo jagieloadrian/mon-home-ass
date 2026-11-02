@@ -47,6 +47,7 @@ class RecorderRoutesKtTest :
 
         "given migration routes when get recorders the return migration dto" {
             testApplication {
+                // given
                 setupWithRecord()
                 environment {
                     config = testApplicationConfig()
@@ -58,6 +59,7 @@ class RecorderRoutesKtTest :
                 val dateTime = Instant.fromEpochSeconds(1).toLocalDateTime(TimeZone.UTC)
                 val expected = listOf(RecorderDto(1, dateTime, dateTime, true, dateTime))
 
+                // when
                 val response =
                     client.get("/recorders") {
                         header(HttpHeaders.ContentType, "application/json")
@@ -66,6 +68,7 @@ class RecorderRoutesKtTest :
                 val responseBody = response.bodyAsText()
                 val decodedJson = Json.decodeFromString<List<RecorderDto>>(responseBody)
 
+                // then
                 response.status shouldBe HttpStatusCode.OK
                 decodedJson shouldBe expected
             }

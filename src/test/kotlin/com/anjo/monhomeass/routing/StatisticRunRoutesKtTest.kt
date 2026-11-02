@@ -51,6 +51,7 @@ class StatisticRunRoutesKtTest :
 
         "given runs when get statistics-runs then returns most recent first" {
             testApplication {
+                // given
                 setupWithRecords()
                 environment { config = testApplicationConfig() }
                 application {
@@ -59,9 +60,11 @@ class StatisticRunRoutesKtTest :
                     configureRouting()
                 }
 
+                // when
                 val response = client.get("/statistics-runs")
                 val decoded = Json.decodeFromString<List<StatisticRunDto>>(response.bodyAsText())
 
+                // then
                 response.status shouldBe HttpStatusCode.OK
                 decoded shouldBe
                     listOf(
@@ -73,6 +76,7 @@ class StatisticRunRoutesKtTest :
 
         "given limit when get statistics-runs then returns only first N rows" {
             testApplication {
+                // given
                 setupWithRecords()
                 environment { config = testApplicationConfig() }
                 application {
@@ -81,9 +85,11 @@ class StatisticRunRoutesKtTest :
                     configureRouting()
                 }
 
+                // when
                 val response = client.get("/statistics-runs?limit=1")
                 val decoded = Json.decodeFromString<List<StatisticRunDto>>(response.bodyAsText())
 
+                // then
                 response.status shouldBe HttpStatusCode.OK
                 decoded shouldBe listOf(StatisticRunDto(2, 1_700_003_600L))
             }
@@ -91,6 +97,7 @@ class StatisticRunRoutesKtTest :
 
         "given no runs when get statistics-runs then returns empty list" {
             testApplication {
+                // given
                 prepareDatabase()
                 transaction {
                     dropTableIfExists()
@@ -103,9 +110,11 @@ class StatisticRunRoutesKtTest :
                     configureRouting()
                 }
 
+                // when
                 val response = client.get("/statistics-runs")
                 val decoded = Json.decodeFromString<List<StatisticRunDto>>(response.bodyAsText())
 
+                // then
                 response.status shouldBe HttpStatusCode.OK
                 decoded shouldBe emptyList()
             }
@@ -113,6 +122,7 @@ class StatisticRunRoutesKtTest :
 
         "given negative limit when get statistics-runs then returns 400" {
             testApplication {
+                // given
                 setupWithRecords()
                 environment { config = testApplicationConfig() }
                 application {
@@ -121,8 +131,10 @@ class StatisticRunRoutesKtTest :
                     configureRouting()
                 }
 
+                // when
                 val response = client.get("/statistics-runs?limit=-1")
 
+                // then
                 response.status shouldBe HttpStatusCode.BadRequest
                 Json.decodeFromString<ErrorDto>(response.bodyAsText()) shouldBe ErrorDto("Invalid 'limit' value")
             }
@@ -130,6 +142,7 @@ class StatisticRunRoutesKtTest :
 
         "given recorder database query fails when get statistics-runs then returns 503" {
             testApplication {
+                // given - table intentionally not (re)created, so the query fails
                 prepareDatabase()
                 transaction { dropTableIfExists() }
                 environment { config = testApplicationConfig() }
@@ -139,8 +152,10 @@ class StatisticRunRoutesKtTest :
                     configureRouting()
                 }
 
+                // when
                 val response = client.get("/statistics-runs")
 
+                // then
                 response.status shouldBe HttpStatusCode.ServiceUnavailable
             }
         }

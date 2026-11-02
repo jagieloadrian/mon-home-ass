@@ -68,6 +68,7 @@ class StatisticPublisherTest :
         }
 
         "given new short-term rows when publishNew then publishes each once as native records and resumes after restart" {
+            // given
             setupWithRecords()
             Nats.connect("nats://${nats.host}:${nats.getMappedPort(4222)}").use { connection ->
                 val jsm = connection.jetStreamManagement()
@@ -75,11 +76,13 @@ class StatisticPublisherTest :
                 fun publisher() = StatisticPublisher(StatisticRepo(mockk()), connection.jetStream(), jsm, "HA_TEST", "ha.test.statistics")
                 publisher().ensureStream()
 
+                // when
                 val first = publisher().publishNew(batchSize = 1)
                 val afterRestart = publisher().publishNew()
                 addShortTerm(3, 1_700_000_600L, 12.0)
                 val afterNewRow = publisher().publishNew()
 
+                // then
                 first shouldBe 2
                 afterRestart shouldBe 0
                 afterNewRow shouldBe 1

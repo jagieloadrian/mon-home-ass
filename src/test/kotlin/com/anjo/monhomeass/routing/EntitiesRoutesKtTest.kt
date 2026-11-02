@@ -51,6 +51,7 @@ class EntitiesRoutesKtTest :
 
         "given entities when get entities then returns all entries" {
             testApplication {
+                // given
                 setupWithRecords()
                 environment {
                     config = testApplicationConfig()
@@ -66,6 +67,7 @@ class EntitiesRoutesKtTest :
                         EntityDto(2, null),
                     )
 
+                // when
                 val response =
                     client.get("/entities") {
                         header(HttpHeaders.ContentType, "application/json")
@@ -73,6 +75,7 @@ class EntitiesRoutesKtTest :
                     }
                 val decodedJson = Json.decodeFromString<List<EntityDto>>(response.bodyAsText())
 
+                // then
                 response.status shouldBe HttpStatusCode.OK
                 decodedJson shouldBe expected
             }
@@ -80,6 +83,7 @@ class EntitiesRoutesKtTest :
 
         "given repeated call after direct row mutation when get entities then returns cached value" {
             testApplication {
+                // given
                 setupWithRecords()
                 environment {
                     config = testApplicationConfig()
@@ -90,10 +94,12 @@ class EntitiesRoutesKtTest :
                     configureRouting()
                 }
 
+                // when
                 val first = client.get("/entities")
                 directUpdate("UPDATE states_meta SET entity_id = 'changed' WHERE metadata_id = 1")
                 val second = client.get("/entities")
 
+                // then
                 first.status shouldBe HttpStatusCode.OK
                 second.status shouldBe HttpStatusCode.OK
                 Json.decodeFromString<List<EntityDto>>(second.bodyAsText()) shouldBe
@@ -103,6 +109,7 @@ class EntitiesRoutesKtTest :
 
         "given no entities when get entities then returns empty list" {
             testApplication {
+                // given
                 prepareDatabase()
                 transaction {
                     dropTableIfExists()
@@ -117,6 +124,7 @@ class EntitiesRoutesKtTest :
                     configureRouting()
                 }
 
+                // when
                 val response =
                     client.get("/entities") {
                         header(HttpHeaders.ContentType, "application/json")
@@ -124,6 +132,7 @@ class EntitiesRoutesKtTest :
                     }
                 val decodedJson = Json.decodeFromString<List<EntityDto>>(response.bodyAsText())
 
+                // then
                 response.status shouldBe HttpStatusCode.OK
                 decodedJson shouldBe emptyList()
             }
@@ -131,6 +140,7 @@ class EntitiesRoutesKtTest :
 
         "given recorder database query fails when get entities then returns 503" {
             testApplication {
+                // given - table intentionally not (re)created, so the query fails
                 prepareDatabase()
                 transaction {
                     dropTableIfExists()
@@ -144,12 +154,14 @@ class EntitiesRoutesKtTest :
                     configureRouting()
                 }
 
+                // when
                 val response =
                     client.get("/entities") {
                         header(HttpHeaders.ContentType, "application/json")
                         header(HttpHeaders.Accept, "application/json")
                     }
 
+                // then
                 response.status shouldBe HttpStatusCode.ServiceUnavailable
             }
         }

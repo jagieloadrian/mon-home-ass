@@ -69,6 +69,7 @@ class StatisticsMetaRoutesKtTest :
 
         "given statistics meta when get statistics-meta then returns all entries" {
             testApplication {
+                // given
                 setupWithRecords()
                 environment {
                     config = testApplicationConfig()
@@ -94,6 +95,7 @@ class StatisticsMetaRoutesKtTest :
                         StatisticMetaDto(2, "sensor.energy_usage", null, null, null, null, null, null, 0),
                     )
 
+                // when
                 val response =
                     client.get("/statistics-meta") {
                         header(HttpHeaders.ContentType, "application/json")
@@ -101,6 +103,7 @@ class StatisticsMetaRoutesKtTest :
                     }
                 val decodedJson = Json.decodeFromString<List<StatisticMetaDto>>(response.bodyAsText())
 
+                // then
                 response.status shouldBe HttpStatusCode.OK
                 decodedJson shouldBe expected
             }
@@ -108,6 +111,7 @@ class StatisticsMetaRoutesKtTest :
 
         "given search matching statistic_id case-insensitively when get statistics-meta then returns only matching entry" {
             testApplication {
+                // given
                 setupWithRecords()
                 environment {
                     config = testApplicationConfig()
@@ -118,6 +122,7 @@ class StatisticsMetaRoutesKtTest :
                     configureRouting()
                 }
 
+                // when
                 val response =
                     client.get("/statistics-meta?search=ENERGY") {
                         header(HttpHeaders.ContentType, "application/json")
@@ -125,6 +130,7 @@ class StatisticsMetaRoutesKtTest :
                     }
                 val decodedJson = Json.decodeFromString<List<StatisticMetaDto>>(response.bodyAsText())
 
+                // then
                 response.status shouldBe HttpStatusCode.OK
                 decodedJson shouldBe listOf(StatisticMetaDto(2, "sensor.energy_usage", null, null, null, null, null, null, 0))
             }
@@ -132,6 +138,7 @@ class StatisticsMetaRoutesKtTest :
 
         "given search matching name case-insensitively when get statistics-meta then returns only matching entry" {
             testApplication {
+                // given
                 setupWithRecords()
                 environment {
                     config = testApplicationConfig()
@@ -142,6 +149,7 @@ class StatisticsMetaRoutesKtTest :
                     configureRouting()
                 }
 
+                // when
                 val response =
                     client.get("/statistics-meta?search=room") {
                         header(HttpHeaders.ContentType, "application/json")
@@ -149,6 +157,7 @@ class StatisticsMetaRoutesKtTest :
                     }
                 val decodedJson = Json.decodeFromString<List<StatisticMetaDto>>(response.bodyAsText())
 
+                // then
                 response.status shouldBe HttpStatusCode.OK
                 decodedJson shouldBe
                     listOf(
@@ -169,6 +178,7 @@ class StatisticsMetaRoutesKtTest :
 
         "given search matching nothing when get statistics-meta then returns empty list" {
             testApplication {
+                // given
                 setupWithRecords()
                 environment {
                     config = testApplicationConfig()
@@ -179,6 +189,7 @@ class StatisticsMetaRoutesKtTest :
                     configureRouting()
                 }
 
+                // when
                 val response =
                     client.get("/statistics-meta?search=nope-not-here") {
                         header(HttpHeaders.ContentType, "application/json")
@@ -186,6 +197,7 @@ class StatisticsMetaRoutesKtTest :
                     }
                 val decodedJson = Json.decodeFromString<List<StatisticMetaDto>>(response.bodyAsText())
 
+                // then
                 response.status shouldBe HttpStatusCode.OK
                 decodedJson shouldBe emptyList()
             }
@@ -193,6 +205,7 @@ class StatisticsMetaRoutesKtTest :
 
         "given blank search when get statistics-meta then returns all entries unchanged" {
             testApplication {
+                // given
                 setupWithRecords()
                 environment {
                     config = testApplicationConfig()
@@ -218,6 +231,7 @@ class StatisticsMetaRoutesKtTest :
                         StatisticMetaDto(2, "sensor.energy_usage", null, null, null, null, null, null, 0),
                     )
 
+                // when
                 val response =
                     client.get("/statistics-meta?search=") {
                         header(HttpHeaders.ContentType, "application/json")
@@ -225,6 +239,7 @@ class StatisticsMetaRoutesKtTest :
                     }
                 val decodedJson = Json.decodeFromString<List<StatisticMetaDto>>(response.bodyAsText())
 
+                // then
                 response.status shouldBe HttpStatusCode.OK
                 decodedJson shouldBe expected
             }
@@ -232,6 +247,7 @@ class StatisticsMetaRoutesKtTest :
 
         "given repeated call after direct row mutation when get statistics-meta then returns cached value" {
             testApplication {
+                // given
                 setupWithRecords()
                 environment {
                     config = testApplicationConfig()
@@ -242,10 +258,12 @@ class StatisticsMetaRoutesKtTest :
                     configureRouting()
                 }
 
+                // when
                 val first = client.get("/statistics-meta")
                 directUpdate("UPDATE statistics_meta SET name = 'changed' WHERE id = 1")
                 val second = client.get("/statistics-meta")
 
+                // then
                 first.status shouldBe HttpStatusCode.OK
                 second.status shouldBe HttpStatusCode.OK
                 Json.decodeFromString<List<StatisticMetaDto>>(second.bodyAsText()) shouldBe
@@ -255,6 +273,7 @@ class StatisticsMetaRoutesKtTest :
 
         "given no statistics meta when get statistics-meta then returns empty list" {
             testApplication {
+                // given
                 prepareDatabase()
                 transaction {
                     dropTableIfExists()
@@ -269,6 +288,7 @@ class StatisticsMetaRoutesKtTest :
                     configureRouting()
                 }
 
+                // when
                 val response =
                     client.get("/statistics-meta") {
                         header(HttpHeaders.ContentType, "application/json")
@@ -276,6 +296,7 @@ class StatisticsMetaRoutesKtTest :
                     }
                 val decodedJson = Json.decodeFromString<List<StatisticMetaDto>>(response.bodyAsText())
 
+                // then
                 response.status shouldBe HttpStatusCode.OK
                 decodedJson shouldBe emptyList()
             }
@@ -283,6 +304,7 @@ class StatisticsMetaRoutesKtTest :
 
         "given recorder database query fails when get statistics-meta then returns 503" {
             testApplication {
+                // given - table intentionally not (re)created, so the query fails
                 prepareDatabase()
                 transaction {
                     dropTableIfExists()
@@ -296,12 +318,14 @@ class StatisticsMetaRoutesKtTest :
                     configureRouting()
                 }
 
+                // when
                 val response =
                     client.get("/statistics-meta") {
                         header(HttpHeaders.ContentType, "application/json")
                         header(HttpHeaders.Accept, "application/json")
                     }
 
+                // then
                 response.status shouldBe HttpStatusCode.ServiceUnavailable
             }
         }

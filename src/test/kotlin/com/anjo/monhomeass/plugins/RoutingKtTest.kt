@@ -16,6 +16,7 @@ class RoutingKtTest :
 
         "given app running when get swagger then returns OpenAPI UI page" {
             testApplication {
+                // given
                 prepareDatabase()
                 environment {
                     config = testApplicationConfig()
@@ -26,8 +27,10 @@ class RoutingKtTest :
                     configureRouting()
                 }
 
+                // when
                 val response = client.get("/swagger")
 
+                // then
                 response.status shouldBe HttpStatusCode.OK
                 response.bodyAsText() shouldContain "swagger"
             }
@@ -35,6 +38,7 @@ class RoutingKtTest :
 
         "given app running when get health probes and openapi then probes answer and API paths are documented" {
             testApplication {
+                // given
                 prepareDatabase()
                 environment {
                     config = testApplicationConfig()
@@ -45,10 +49,12 @@ class RoutingKtTest :
                     configureRouting()
                 }
 
+                // when
                 val live = client.get("/health/live")
                 val ready = client.get("/health/ready")
                 val openApi = client.get("/openapi.json").bodyAsText()
 
+                // then
                 live.status shouldBe HttpStatusCode.OK
                 ready.status shouldBe HttpStatusCode.OK
                 openApi shouldContain "/statistics-meta"

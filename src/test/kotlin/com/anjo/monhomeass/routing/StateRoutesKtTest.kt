@@ -80,6 +80,7 @@ class StateRoutesKtTest :
 
         "given known entityId when get state then returns latest row" {
             testApplication {
+                // given
                 setupWithRecords()
                 environment { config = testApplicationConfig() }
                 application {
@@ -88,9 +89,11 @@ class StateRoutesKtTest :
                     configureRouting()
                 }
 
+                // when
                 val response = client.get("/states/sensor.living_room_temperature")
                 val decoded = Json.decodeFromString<StateDto>(response.bodyAsText())
 
+                // then
                 response.status shouldBe HttpStatusCode.OK
                 decoded shouldBe
                     StateDto(
@@ -106,6 +109,7 @@ class StateRoutesKtTest :
 
         "given entityId with attributes when get state then includes shared attributes" {
             testApplication {
+                // given
                 prepareDatabase()
                 transaction {
                     dropTablesIfExists()
@@ -140,9 +144,11 @@ class StateRoutesKtTest :
                     configureRouting()
                 }
 
+                // when
                 val response = client.get("/states/sensor.living_room_temperature")
                 val decoded = Json.decodeFromString<StateDto>(response.bodyAsText())
 
+                // then
                 response.status shouldBe HttpStatusCode.OK
                 decoded.attributes shouldBe "{\"unit\":\"C\"}"
             }
@@ -150,6 +156,7 @@ class StateRoutesKtTest :
 
         "given unknown entityId when get state then returns 404" {
             testApplication {
+                // given
                 setupWithRecords()
                 environment { config = testApplicationConfig() }
                 application {
@@ -158,8 +165,10 @@ class StateRoutesKtTest :
                     configureRouting()
                 }
 
+                // when
                 val response = client.get("/states/sensor.does_not_exist")
 
+                // then
                 response.status shouldBe HttpStatusCode.NotFound
                 Json.decodeFromString<ErrorDto>(response.bodyAsText()) shouldBe ErrorDto("Unknown entityId")
             }
@@ -167,6 +176,7 @@ class StateRoutesKtTest :
 
         "given entityId with metadata but zero state rows when get state then returns 404" {
             testApplication {
+                // given
                 setupWithRecords()
                 environment { config = testApplicationConfig() }
                 application {
@@ -175,14 +185,17 @@ class StateRoutesKtTest :
                     configureRouting()
                 }
 
+                // when
                 val response = client.get("/states/sensor.no_state_rows")
 
+                // then
                 response.status shouldBe HttpStatusCode.NotFound
             }
         }
 
         "given repeated call after direct row mutation when get state then returns cached value" {
             testApplication {
+                // given
                 setupWithRecords()
                 environment { config = testApplicationConfig() }
                 application {
@@ -191,10 +204,12 @@ class StateRoutesKtTest :
                     configureRouting()
                 }
 
+                // when
                 val first = client.get("/states/sensor.living_room_temperature")
                 directUpdate("UPDATE states SET state = 'changed' WHERE state_id = 2")
                 val second = client.get("/states/sensor.living_room_temperature")
 
+                // then
                 first.status shouldBe HttpStatusCode.OK
                 second.status shouldBe HttpStatusCode.OK
                 Json.decodeFromString<StateDto>(second.bodyAsText()) shouldBe
@@ -204,6 +219,7 @@ class StateRoutesKtTest :
 
         "given recorder database query fails when get state then returns 503" {
             testApplication {
+                // given - table intentionally not (re)created, so the query fails
                 prepareDatabase()
                 transaction { dropTablesIfExists() }
                 environment { config = testApplicationConfig() }
@@ -213,8 +229,10 @@ class StateRoutesKtTest :
                     configureRouting()
                 }
 
+                // when
                 val response = client.get("/states/sensor.living_room_temperature")
 
+                // then
                 response.status shouldBe HttpStatusCode.ServiceUnavailable
             }
         }

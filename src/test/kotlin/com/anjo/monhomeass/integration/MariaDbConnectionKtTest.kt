@@ -24,6 +24,7 @@ class MariaDbConnectionKtTest :
 
         "given real MariaDB engine when get entities then returns seeded data" {
             testApplication {
+                // given
                 val db = prepareDatabaseMariaDb()
                 transaction(db) {
                     runCatching { SchemaUtils.drop(StateMetadata) }
@@ -44,8 +45,10 @@ class MariaDbConnectionKtTest :
                     configureRouting()
                 }
 
+                // when
                 val response = client.get("/entities")
 
+                // then
                 response.status shouldBe HttpStatusCode.OK
                 Json.decodeFromString<List<EntityDto>>(response.bodyAsText()) shouldBe
                     listOf(EntityDto(1, "sensor.mariadb_probe"))

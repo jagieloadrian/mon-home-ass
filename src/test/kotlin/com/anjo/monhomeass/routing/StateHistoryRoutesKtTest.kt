@@ -66,6 +66,7 @@ class StateHistoryRoutesKtTest :
 
         "given known entityId when get history then returns all rows oldest first" {
             testApplication {
+                // given
                 setupWithRecords()
                 environment { config = testApplicationConfig() }
                 application {
@@ -74,9 +75,11 @@ class StateHistoryRoutesKtTest :
                     configureRouting()
                 }
 
+                // when
                 val response = client.get("/states/sensor.living_room_temperature/history")
                 val decoded = Json.decodeFromString<List<StateDto>>(response.bodyAsText())
 
+                // then
                 response.status shouldBe HttpStatusCode.OK
                 decoded shouldBe
                     listOf(
@@ -88,6 +91,7 @@ class StateHistoryRoutesKtTest :
 
         "given limit and offset when get history then returns next page" {
             testApplication {
+                // given
                 setupWithRecords()
                 environment { config = testApplicationConfig() }
                 application {
@@ -96,9 +100,11 @@ class StateHistoryRoutesKtTest :
                     configureRouting()
                 }
 
+                // when
                 val response = client.get("/states/sensor.living_room_temperature/history?limit=1&offset=1")
                 val decoded = Json.decodeFromString<List<StateDto>>(response.bodyAsText())
 
+                // then
                 response.status shouldBe HttpStatusCode.OK
                 decoded shouldBe
                     listOf(
@@ -109,6 +115,7 @@ class StateHistoryRoutesKtTest :
 
         "given from and to query params when get history then returns only in-range rows" {
             testApplication {
+                // given
                 setupWithRecords()
                 environment { config = testApplicationConfig() }
                 application {
@@ -117,9 +124,11 @@ class StateHistoryRoutesKtTest :
                     configureRouting()
                 }
 
+                // when
                 val response = client.get("/states/sensor.living_room_temperature/history?from=1700003000&to=1700004000")
                 val decoded = Json.decodeFromString<List<StateDto>>(response.bodyAsText())
 
+                // then
                 response.status shouldBe HttpStatusCode.OK
                 decoded shouldBe
                     listOf(
@@ -130,6 +139,7 @@ class StateHistoryRoutesKtTest :
 
         "given unknown entityId when get history then returns 404" {
             testApplication {
+                // given
                 setupWithRecords()
                 environment { config = testApplicationConfig() }
                 application {
@@ -138,8 +148,10 @@ class StateHistoryRoutesKtTest :
                     configureRouting()
                 }
 
+                // when
                 val response = client.get("/states/sensor.does_not_exist/history")
 
+                // then
                 response.status shouldBe HttpStatusCode.NotFound
                 Json.decodeFromString<ErrorDto>(response.bodyAsText()) shouldBe ErrorDto("Unknown entityId")
             }
@@ -147,6 +159,7 @@ class StateHistoryRoutesKtTest :
 
         "given known entityId with no rows in range when get history then returns 200 empty list" {
             testApplication {
+                // given
                 setupWithRecords()
                 environment { config = testApplicationConfig() }
                 application {
@@ -155,9 +168,11 @@ class StateHistoryRoutesKtTest :
                     configureRouting()
                 }
 
+                // when
                 val response = client.get("/states/sensor.living_room_temperature/history?from=1600000000&to=1600000001")
                 val decoded = Json.decodeFromString<List<StateDto>>(response.bodyAsText())
 
+                // then
                 response.status shouldBe HttpStatusCode.OK
                 decoded shouldBe emptyList()
             }
@@ -165,6 +180,7 @@ class StateHistoryRoutesKtTest :
 
         "given negative limit when get history then returns 400" {
             testApplication {
+                // given
                 setupWithRecords()
                 environment { config = testApplicationConfig() }
                 application {
@@ -173,8 +189,10 @@ class StateHistoryRoutesKtTest :
                     configureRouting()
                 }
 
+                // when
                 val response = client.get("/states/sensor.living_room_temperature/history?limit=-1")
 
+                // then
                 response.status shouldBe HttpStatusCode.BadRequest
                 Json.decodeFromString<ErrorDto>(response.bodyAsText()) shouldBe ErrorDto("Invalid 'limit' value")
             }
@@ -182,6 +200,7 @@ class StateHistoryRoutesKtTest :
 
         "given negative offset when get history then returns 400" {
             testApplication {
+                // given
                 setupWithRecords()
                 environment { config = testApplicationConfig() }
                 application {
@@ -190,14 +209,17 @@ class StateHistoryRoutesKtTest :
                     configureRouting()
                 }
 
+                // when
                 val response = client.get("/states/sensor.living_room_temperature/history?offset=-1")
 
+                // then
                 response.status shouldBe HttpStatusCode.BadRequest
             }
         }
 
         "given unparseable from when get history then returns 400" {
             testApplication {
+                // given
                 setupWithRecords()
                 environment { config = testApplicationConfig() }
                 application {
@@ -206,8 +228,10 @@ class StateHistoryRoutesKtTest :
                     configureRouting()
                 }
 
+                // when
                 val response = client.get("/states/sensor.living_room_temperature/history?from=not-a-date")
 
+                // then
                 response.status shouldBe HttpStatusCode.BadRequest
                 Json.decodeFromString<ErrorDto>(response.bodyAsText()) shouldBe ErrorDto("Invalid 'from' value")
             }
