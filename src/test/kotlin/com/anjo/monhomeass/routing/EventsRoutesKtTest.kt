@@ -106,7 +106,6 @@ class EventsRoutesKtTest :
 
         "given event routes when get the return events" {
             testApplication {
-                // given
                 environment {
                     config = testApplicationConfig()
                 }
@@ -139,7 +138,6 @@ class EventsRoutesKtTest :
                     )
                 val expected = listOf(eventDto)
 
-                // when and then
                 client
                     .get("/events") {
                         header(HttpHeaders.ContentType, "application/json")
@@ -153,7 +151,6 @@ class EventsRoutesKtTest :
 
         "given event routes with exclude when get then return empty list" {
             testApplication {
-                // given
                 environment {
                     config = testApplicationConfig()
                 }
@@ -168,7 +165,6 @@ class EventsRoutesKtTest :
                         }
                     }
 
-                // when and then
                 client
                     .get("/events") {
                         header(HttpHeaders.ContentType, "application/json")
@@ -183,7 +179,6 @@ class EventsRoutesKtTest :
 
         "given event routes with contain when get then returns only matching event" {
             testApplication {
-                // given
                 environment {
                     config = testApplicationConfig()
                 }
@@ -214,7 +209,6 @@ class EventsRoutesKtTest :
                         EventTypeDto(3, "Type of eventType"),
                     )
 
-                // when and then
                 client
                     .get("/events") {
                         header(HttpHeaders.ContentType, "application/json")

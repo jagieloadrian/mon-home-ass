@@ -16,8 +16,8 @@ OpenAPI/`swaggerUI` for the live API docs.
 ## Getting started
 
 ```bash
-./gradlew run          # start the server (see src/main/resources/application.yaml for DB config)
-./gradlew build         # compile + run tests
+./gradlew run
+./gradlew build
 ```
 
 Swagger UI: `http://localhost:8080/swagger`

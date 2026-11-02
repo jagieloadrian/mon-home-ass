@@ -34,8 +34,6 @@ class StateRepo(
             additionalConstraint = { State.attributesId eq StateAttributes.id },
         )
 
-    // ponytail: unknown entityId and known-entity-with-zero-rows both resolve to
-    // null here on purpose — both mean 404 on the latest-state route (FR-003).
     fun getLatest(entityId: String): StateDto? =
         cache.getOrPut("states:latest:$entityId") {
             transaction {

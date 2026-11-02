@@ -9,13 +9,10 @@ class DateTimeUtilsKtTest :
     StringSpec({
 
         "given a offsetdatetime when convert to kotlindatetime then return properly type of object" {
-            // given
             val date = OffsetDateTime.now()
 
-            // when
             val actual = date.toKotlinxDateTime()
 
-            // then
             actual.shouldBeInstanceOf<LocalDateTime>()
         }
     })

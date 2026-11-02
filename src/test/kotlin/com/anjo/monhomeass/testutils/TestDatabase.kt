@@ -15,10 +15,6 @@ import java.sql.DriverManager
 import kotlin.io.path.createTempFile
 import kotlin.io.path.deleteExisting
 
-// ponytail: one Postgres + one Redis container shared for the whole test
-// JVM (lazy singleton, never stopped) — mirrors the previous shared-named-H2
-// pattern, just with real engines. Started on first use, torn down when the
-// JVM exits.
 private object TestContainers {
     val postgres: PostgreSQLContainer<Nothing> by lazy {
         PostgreSQLContainer<Nothing>(DockerImageName.parse("postgres:16-alpine")).apply {
@@ -55,10 +51,6 @@ private object TestContainers {
     }
 }
 
-// ponytail: also flushes Redis on every call — prepareDatabase() already
-// runs at the start of every test in every file, so piggybacking the
-// flush here means every test starts with a clean cache too, without
-// touching every individual test file.
 fun prepareDatabase() {
     val pg = TestContainers.postgres
     Database.connect(
@@ -84,10 +76,6 @@ fun testApplicationConfig(): MapApplicationConfig {
         "ktor.redis.port" to redis.getMappedPort(6379).toString(),
         "ktor.redis.ttlMillis" to "300000",
     ).apply {
-        // ponytail: previous H2-era config file relied on ktor.application.modules
-        // to auto-invoke the real module() (serialization/DI/etc.) alongside each
-        // test's own explicit application {} block — replicate that here since
-        // MapApplicationConfig's vararg constructor can't express a list value.
         put("ktor.application.modules", listOf("com.anjo.monhomeass.ApplicationKt.module"))
     }
 }
@@ -154,9 +142,6 @@ fun testApplicationConfigMySql(): MapApplicationConfig {
     }
 }
 
-// ponytail: sqlite has no server/user — just a file. Temp file per test,
-// never deleted between the JVM's other tests since sqlite-jdbc holds no
-// pooled connections open past each `.use {}` block.
 fun testApplicationConfigSqlite(): MapApplicationConfig {
     val file = createTempFile(prefix = "home-assistant", suffix = ".db")
     file.deleteExisting()
@@ -195,10 +180,6 @@ fun testRedisHostPort(): Pair<String, Int> {
     return redis.host to redis.getMappedPort(6379)
 }
 
-// ponytail: bypasses Exposed's globally registered connection, which the
-// app itself sets read-only via configureDatabases() — a normal
-// transaction {} block would fail here on real Postgres (H2 didn't enforce
-// this). Used only to mutate a row mid-test to prove cache staleness.
 fun directUpdate(sql: String) {
     val pg = TestContainers.postgres
     DriverManager.getConnection(pg.jdbcUrl, pg.username, pg.password).use { conn ->

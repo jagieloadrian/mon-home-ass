@@ -80,8 +80,6 @@ class StatisticRepo(
             }
         }
 
-    // Publisher cursor: rows after [afterId] in insert order, uncached.
-    // ponytail: assumes ids grow in commit order — true for HA's single recorder writer.
     fun getShortTermAfter(
         afterId: Long,
         limit: Int,
@@ -128,7 +126,6 @@ class StatisticRepo(
             }
         }
 
-    // Must run inside a transaction.
     private fun statisticExists(statisticId: String): Boolean =
         StatisticMetaData
             .select(StatisticMetaData.id)

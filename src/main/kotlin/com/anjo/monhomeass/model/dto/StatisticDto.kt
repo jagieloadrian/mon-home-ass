@@ -15,7 +15,6 @@ data class StatisticDto(
     val state: Double?,
 )
 
-// Null when the row has no start_ts (queries already filter those out).
 fun ResultRow.toStatisticDto(table: StatisticTable): StatisticDto? =
     this[table.startTs]?.let { startTs ->
         StatisticDto(

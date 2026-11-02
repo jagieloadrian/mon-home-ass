@@ -31,7 +31,6 @@ fun Application.configurePublisher() {
     val statisticRepo: StatisticRepo by dependencies
 
     launch(Dispatchers.IO) {
-        // Blocks until the broker is reachable, then reconnects on its own.
         val connection =
             Nats.connectReconnectOnConnect(
                 Options

@@ -5,22 +5,18 @@ ktor:
     deployment:
         port: 8080
     database:
-        # database_type: one of postgres | mariadb | mysql | sqlite
-        # network engines (postgres/mariadb/mysql) use url/database_name/user/password below.
-        # sqlite instead uses file_path (path to the recorder .db file, opened read-only).
         user: "$DB_USER:db_user"
         password: "$DB_PASSWORD:db_password"
         url: "$DB_URL:db_url"
         database_name: "$DB_NAME:db_name"
         driver: "$DB_DRIVER:org.postgresql.Driver"
         database_type: "$DB_TYPE:postgres"
-        file_path: "$?DB_FILE_PATH"  # sqlite only
+        file_path: "$?DB_FILE_PATH"
     redis:
         host: "$REDIS_HOST:localhost"
         port: "$REDIS_PORT:6379"
         ttlMillis: 300000
     nats:
-        # NATS JetStream publisher of statistics_short_term; no NATS_URL = publisher off.
         url: "$?NATS_URL"
         stream: "$NATS_STREAM:HOME_ASSISTANT"
         subject: "$NATS_SUBJECT:home-assistant.statistics"

@@ -1,5 +1,3 @@
-# Wdrożenie: wspólny chart homelab-infra/charts/app (opis values: charts/app/values.yaml).
-# Flux czyta .devops/helm/ z main; tag obrazu podbija CI (build.yml, krok Deploy).
 apiVersion: helm.toolkit.fluxcd.io/v2
 kind: HelmRelease
 metadata:
@@ -15,7 +13,6 @@ spec:
         name: flux-system
         namespace: flux-system
   values:
-    # Secret mon-home-ass-secrets from Vault secret/apps/mon-home-ass (homelab-infra docs/vault.md)
     secrets: true
     image: ghcr.io/jagieloadrian/mon-home-ass:main-00000000000000-0000000
     resources:
@@ -26,8 +23,6 @@ spec:
         memory: 384Mi
     route:
       hostname: mon-home-ass.home.arpa
-    # Jawna konfiguracja -> ConfigMap mon-home-ass-config. Sekrety: Vault (secrets wyżej).
-    # Opis zmiennych: .devops/README.md.
     env:
       DB_TYPE: postgres
       DB_DRIVER: org.postgresql.Driver

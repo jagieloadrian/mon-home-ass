@@ -24,7 +24,6 @@ class SqliteConnectionKtTest :
 
         "given real SQLite file when get entities then returns seeded data via readonly connection" {
             testApplication {
-                // given
                 val config = testApplicationConfigSqlite()
                 val filePath = config.property("ktor.database.file_path").getString()
                 seedSqlite(filePath) {
@@ -43,15 +42,12 @@ class SqliteConnectionKtTest :
                     configureRouting()
                 }
 
-                // when
                 val response = client.get("/entities")
 
-                // then
                 response.status shouldBe HttpStatusCode.OK
                 Json.decodeFromString<List<EntityDto>>(response.bodyAsText()) shouldBe
                     listOf(EntityDto(1, "sensor.sqlite_probe"))
 
-                // and: app's own connection is mandatorily read-only (mode=ro)
                 shouldThrow<Exception> {
                     transaction {
                         StateMetadata.insert {

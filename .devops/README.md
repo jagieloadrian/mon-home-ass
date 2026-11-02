@@ -33,7 +33,7 @@ Secrets live only in Vault `secret/apps/mon-home-ass` (keys = env names); nothin
 Set them per [vault.md](../../homelab-infra/docs/vault.md):
 
 ```bash
-vault kv put secret/apps/mon-home-ass DB_PASSWORD=-   # value from stdin (openssl rand -hex 24)
+vault kv put secret/apps/mon-home-ass DB_PASSWORD=-
 ```
 
 NATS broker with authentication: remove `NATS_URL` from `values.env` and put it in Vault
@@ -49,7 +49,6 @@ ALTER ROLE mon_home_ass SET default_transaction_read_only = on;
 GRANT CONNECT ON DATABASE home_assistant TO mon_home_ass;
 GRANT USAGE ON SCHEMA public TO mon_home_ass;
 GRANT SELECT ON ALL TABLES IN SCHEMA public TO mon_home_ass;
--- tables HA will create in future migrations
 ALTER DEFAULT PRIVILEGES FOR ROLE home_ass_user IN SCHEMA public GRANT SELECT ON TABLES TO mon_home_ass;
 ```
 

@@ -26,9 +26,6 @@ import kotlin.time.Instant
 class StatisticSummaryRoutesKtTest :
     StringSpec({
 
-        // ponytail: shared named in-memory H2 DB reused across every test class in
-        // the suite — drop Statistic/StatisticShortTerm first since they FK into
-        // StatisticMetaData, so each test starts clean regardless of run order.
         fun dropTablesIfExists() {
             runCatching { SchemaUtils.drop(Statistic) }
             runCatching { SchemaUtils.drop(StatisticShortTerm) }
@@ -73,7 +70,6 @@ class StatisticSummaryRoutesKtTest :
 
         "given known statisticId when get summary then returns aggregate over full history" {
             testApplication {
-                // given
                 setupWithRecords()
                 environment {
                     config = testApplicationConfig()
@@ -84,11 +80,9 @@ class StatisticSummaryRoutesKtTest :
                     configureRouting()
                 }
 
-                // when
                 val response = client.get("/statistics/sensor.living_room_temperature/summary")
                 val decodedJson = Json.decodeFromString<StatisticSummaryDto>(response.bodyAsText())
 
-                // then
                 response.status shouldBe HttpStatusCode.OK
                 decodedJson shouldBe StatisticSummaryDto("sensor.living_room_temperature", null, null, 9.0, 11.0, 10.0, 20.0)
             }
@@ -96,7 +90,6 @@ class StatisticSummaryRoutesKtTest :
 
         "given from and to query params when get summary then aggregates only in-range rows" {
             testApplication {
-                // given
                 setupWithRecords()
                 environment {
                     config = testApplicationConfig()
@@ -107,11 +100,9 @@ class StatisticSummaryRoutesKtTest :
                     configureRouting()
                 }
 
-                // when
                 val response = client.get("/statistics/sensor.living_room_temperature/summary?from=1700003000&to=1700004000")
                 val decodedJson = Json.decodeFromString<StatisticSummaryDto>(response.bodyAsText())
 
-                // then
                 response.status shouldBe HttpStatusCode.OK
                 decodedJson shouldBe
                     StatisticSummaryDto(
@@ -128,7 +119,6 @@ class StatisticSummaryRoutesKtTest :
 
         "given known statisticId with no rows in range when get summary then returns 200 with null aggregates" {
             testApplication {
-                // given
                 setupWithRecords()
                 environment {
                     config = testApplicationConfig()
@@ -139,11 +129,9 @@ class StatisticSummaryRoutesKtTest :
                     configureRouting()
                 }
 
-                // when
                 val response = client.get("/statistics/sensor.living_room_temperature/summary?from=1600000000&to=1600000001")
                 val decodedJson = Json.decodeFromString<StatisticSummaryDto>(response.bodyAsText())
 
-                // then
                 response.status shouldBe HttpStatusCode.OK
                 decodedJson shouldBe
                     StatisticSummaryDto(
@@ -160,7 +148,6 @@ class StatisticSummaryRoutesKtTest :
 
         "given repeated call after direct row mutation when get summary then returns cached value" {
             testApplication {
-                // given
                 setupWithRecords()
                 environment {
                     config = testApplicationConfig()
@@ -171,12 +158,10 @@ class StatisticSummaryRoutesKtTest :
                     configureRouting()
                 }
 
-                // when
                 val first = client.get("/statistics/sensor.living_room_temperature/summary")
                 directUpdate("UPDATE statistics SET state = 999 WHERE id = 1")
                 val second = client.get("/statistics/sensor.living_room_temperature/summary")
 
-                // then
                 first.status shouldBe HttpStatusCode.OK
                 second.status shouldBe HttpStatusCode.OK
                 Json.decodeFromString<StatisticSummaryDto>(second.bodyAsText()) shouldBe
@@ -186,7 +171,6 @@ class StatisticSummaryRoutesKtTest :
 
         "given unknown statisticId when get summary then returns 404" {
             testApplication {
-                // given
                 setupWithRecords()
                 environment {
                     config = testApplicationConfig()
@@ -197,17 +181,14 @@ class StatisticSummaryRoutesKtTest :
                     configureRouting()
                 }
 
-                // when
                 val response = client.get("/statistics/not-a-real-id/summary")
 
-                // then
                 response.status shouldBe HttpStatusCode.NotFound
             }
         }
 
         "given unparseable from when get summary then returns 400" {
             testApplication {
-                // given
                 setupWithRecords()
                 environment {
                     config = testApplicationConfig()
@@ -218,17 +199,14 @@ class StatisticSummaryRoutesKtTest :
                     configureRouting()
                 }
 
-                // when
                 val response = client.get("/statistics/sensor.living_room_temperature/summary?from=not-a-date")
 
-                // then
                 response.status shouldBe HttpStatusCode.BadRequest
             }
         }
 
         "given unparseable to when get summary then returns 400" {
             testApplication {
-                // given
                 setupWithRecords()
                 environment {
                     config = testApplicationConfig()
@@ -239,17 +217,14 @@ class StatisticSummaryRoutesKtTest :
                     configureRouting()
                 }
 
-                // when
                 val response = client.get("/statistics/sensor.living_room_temperature/summary?to=not-a-date")
 
-                // then
                 response.status shouldBe HttpStatusCode.BadRequest
             }
         }
 
         "given recorder database query fails when get summary then returns 503" {
             testApplication {
-                // given - table intentionally not (re)created, so the query fails
                 prepareDatabase()
                 transaction {
                     dropTablesIfExists()
@@ -263,10 +238,8 @@ class StatisticSummaryRoutesKtTest :
                     configureRouting()
                 }
 
-                // when
                 val response = client.get("/statistics/sensor.living_room_temperature/summary")
 
-                // then
                 response.status shouldBe HttpStatusCode.ServiceUnavailable
             }
         }

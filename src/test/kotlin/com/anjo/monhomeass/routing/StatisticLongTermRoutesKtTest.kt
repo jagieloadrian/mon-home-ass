@@ -29,9 +29,6 @@ import kotlin.time.Instant
 class StatisticLongTermRoutesKtTest :
     StringSpec({
 
-        // ponytail: shared named in-memory H2 DB reused across every test class in
-        // the suite — drop Statistic/StatisticShortTerm first since they FK into
-        // StatisticMetaData, so each test starts clean regardless of run order.
         fun dropTablesIfExists() {
             runCatching { SchemaUtils.drop(Statistic) }
             runCatching { SchemaUtils.drop(StatisticShortTerm) }
@@ -80,7 +77,6 @@ class StatisticLongTermRoutesKtTest :
 
         "given known statisticId when get statistics id then returns all rows oldest first" {
             testApplication {
-                // given
                 setupWithRecords()
                 environment {
                     config = testApplicationConfig()
@@ -96,7 +92,6 @@ class StatisticLongTermRoutesKtTest :
                         StatisticDto(1_700_003_600L, 12.0, null, 6.0, 18.0, null, null),
                     )
 
-                // when
                 val response =
                     client.get("/statistics/sensor.living_room_temperature") {
                         header(HttpHeaders.ContentType, "application/json")
@@ -104,7 +99,6 @@ class StatisticLongTermRoutesKtTest :
                     }
                 val decodedJson = Json.decodeFromString<List<StatisticDto>>(response.bodyAsText())
 
-                // then
                 response.status shouldBe HttpStatusCode.OK
                 decodedJson shouldBe expected
             }
@@ -112,7 +106,6 @@ class StatisticLongTermRoutesKtTest :
 
         "given limit when get statistics id then returns only first N rows" {
             testApplication {
-                // given
                 setupWithRecords()
                 environment {
                     config = testApplicationConfig()
@@ -123,11 +116,9 @@ class StatisticLongTermRoutesKtTest :
                     configureRouting()
                 }
 
-                // when
                 val response = client.get("/statistics/sensor.living_room_temperature?limit=1")
                 val decodedJson = Json.decodeFromString<List<StatisticDto>>(response.bodyAsText())
 
-                // then
                 response.status shouldBe HttpStatusCode.OK
                 decodedJson shouldBe listOf(StatisticDto(1_700_000_000L, 10.0, null, 5.0, 15.0, null, null))
             }
@@ -135,7 +126,6 @@ class StatisticLongTermRoutesKtTest :
 
         "given limit and offset when get statistics id then returns next page" {
             testApplication {
-                // given
                 setupWithRecords()
                 environment {
                     config = testApplicationConfig()
@@ -146,11 +136,9 @@ class StatisticLongTermRoutesKtTest :
                     configureRouting()
                 }
 
-                // when
                 val response = client.get("/statistics/sensor.living_room_temperature?limit=1&offset=1")
                 val decodedJson = Json.decodeFromString<List<StatisticDto>>(response.bodyAsText())
 
-                // then
                 response.status shouldBe HttpStatusCode.OK
                 decodedJson shouldBe listOf(StatisticDto(1_700_003_600L, 12.0, null, 6.0, 18.0, null, null))
             }
@@ -158,7 +146,6 @@ class StatisticLongTermRoutesKtTest :
 
         "given offset beyond total rows when get statistics id then returns empty list" {
             testApplication {
-                // given
                 setupWithRecords()
                 environment {
                     config = testApplicationConfig()
@@ -169,11 +156,9 @@ class StatisticLongTermRoutesKtTest :
                     configureRouting()
                 }
 
-                // when
                 val response = client.get("/statistics/sensor.living_room_temperature?offset=9999")
                 val decodedJson = Json.decodeFromString<List<StatisticDto>>(response.bodyAsText())
 
-                // then
                 response.status shouldBe HttpStatusCode.OK
                 decodedJson shouldBe emptyList()
             }
@@ -181,7 +166,6 @@ class StatisticLongTermRoutesKtTest :
 
         "given negative limit when get statistics id then returns 400" {
             testApplication {
-                // given
                 setupWithRecords()
                 environment {
                     config = testApplicationConfig()
@@ -192,10 +176,8 @@ class StatisticLongTermRoutesKtTest :
                     configureRouting()
                 }
 
-                // when
                 val response = client.get("/statistics/sensor.living_room_temperature?limit=-1")
 
-                // then
                 response.status shouldBe HttpStatusCode.BadRequest
                 Json.decodeFromString<ErrorDto>(response.bodyAsText()) shouldBe ErrorDto("Invalid 'limit' value")
             }
@@ -203,7 +185,6 @@ class StatisticLongTermRoutesKtTest :
 
         "given non-numeric limit when get statistics id then returns 400" {
             testApplication {
-                // given
                 setupWithRecords()
                 environment {
                     config = testApplicationConfig()
@@ -214,17 +195,14 @@ class StatisticLongTermRoutesKtTest :
                     configureRouting()
                 }
 
-                // when
                 val response = client.get("/statistics/sensor.living_room_temperature?limit=abc")
 
-                // then
                 response.status shouldBe HttpStatusCode.BadRequest
             }
         }
 
         "given negative offset when get statistics id then returns 400" {
             testApplication {
-                // given
                 setupWithRecords()
                 environment {
                     config = testApplicationConfig()
@@ -235,17 +213,14 @@ class StatisticLongTermRoutesKtTest :
                     configureRouting()
                 }
 
-                // when
                 val response = client.get("/statistics/sensor.living_room_temperature?offset=-1")
 
-                // then
                 response.status shouldBe HttpStatusCode.BadRequest
             }
         }
 
         "given non-numeric offset when get statistics id then returns 400" {
             testApplication {
-                // given
                 setupWithRecords()
                 environment {
                     config = testApplicationConfig()
@@ -256,17 +231,14 @@ class StatisticLongTermRoutesKtTest :
                     configureRouting()
                 }
 
-                // when
                 val response = client.get("/statistics/sensor.living_room_temperature?offset=abc")
 
-                // then
                 response.status shouldBe HttpStatusCode.BadRequest
             }
         }
 
         "given unparseable to when get statistics id then returns 400" {
             testApplication {
-                // given
                 setupWithRecords()
                 environment {
                     config = testApplicationConfig()
@@ -277,17 +249,14 @@ class StatisticLongTermRoutesKtTest :
                     configureRouting()
                 }
 
-                // when
                 val response = client.get("/statistics/sensor.living_room_temperature?to=not-a-date")
 
-                // then
                 response.status shouldBe HttpStatusCode.BadRequest
             }
         }
 
         "given repeated call after direct row mutation when get statistics id then returns cached value" {
             testApplication {
-                // given
                 setupWithRecords()
                 environment {
                     config = testApplicationConfig()
@@ -298,12 +267,10 @@ class StatisticLongTermRoutesKtTest :
                     configureRouting()
                 }
 
-                // when
                 val first = client.get("/statistics/sensor.living_room_temperature")
                 directUpdate("UPDATE statistics SET mean = 999 WHERE id = 1")
                 val second = client.get("/statistics/sensor.living_room_temperature")
 
-                // then
                 first.status shouldBe HttpStatusCode.OK
                 second.status shouldBe HttpStatusCode.OK
                 Json.decodeFromString<List<StatisticDto>>(second.bodyAsText()) shouldBe
@@ -313,7 +280,6 @@ class StatisticLongTermRoutesKtTest :
 
         "given from and to query params when get statistics id then returns only in-range rows" {
             testApplication {
-                // given
                 setupWithRecords()
                 environment {
                     config = testApplicationConfig()
@@ -324,11 +290,9 @@ class StatisticLongTermRoutesKtTest :
                     configureRouting()
                 }
 
-                // when: epoch seconds, both bounds
                 val response = client.get("/statistics/sensor.living_room_temperature?from=1700003000&to=1700004000")
                 val decodedJson = Json.decodeFromString<List<StatisticDto>>(response.bodyAsText())
 
-                // then
                 response.status shouldBe HttpStatusCode.OK
                 decodedJson shouldBe listOf(StatisticDto(1_700_003_600L, 12.0, null, 6.0, 18.0, null, null))
             }
@@ -336,7 +300,6 @@ class StatisticLongTermRoutesKtTest :
 
         "given ISO-8601 from and to when get statistics id then returns only in-range rows" {
             testApplication {
-                // given
                 setupWithRecords()
                 environment {
                     config = testApplicationConfig()
@@ -347,11 +310,9 @@ class StatisticLongTermRoutesKtTest :
                     configureRouting()
                 }
 
-                // when
                 val response = client.get("/statistics/sensor.living_room_temperature?from=2023-11-14T23:03:20Z&to=2023-11-14T23:20:00Z")
                 val decodedJson = Json.decodeFromString<List<StatisticDto>>(response.bodyAsText())
 
-                // then
                 response.status shouldBe HttpStatusCode.OK
                 decodedJson shouldBe listOf(StatisticDto(1_700_003_600L, 12.0, null, 6.0, 18.0, null, null))
             }
@@ -359,7 +320,6 @@ class StatisticLongTermRoutesKtTest :
 
         "given from after to when get statistics id then returns empty list" {
             testApplication {
-                // given
                 setupWithRecords()
                 environment {
                     config = testApplicationConfig()
@@ -370,11 +330,9 @@ class StatisticLongTermRoutesKtTest :
                     configureRouting()
                 }
 
-                // when
                 val response = client.get("/statistics/sensor.living_room_temperature?from=1700004000&to=1700000000")
                 val decodedJson = Json.decodeFromString<List<StatisticDto>>(response.bodyAsText())
 
-                // then
                 response.status shouldBe HttpStatusCode.OK
                 decodedJson shouldBe emptyList()
             }
@@ -382,7 +340,6 @@ class StatisticLongTermRoutesKtTest :
 
         "given unparseable from when get statistics id then returns 400" {
             testApplication {
-                // given
                 setupWithRecords()
                 environment {
                     config = testApplicationConfig()
@@ -393,10 +350,8 @@ class StatisticLongTermRoutesKtTest :
                     configureRouting()
                 }
 
-                // when
                 val response = client.get("/statistics/sensor.living_room_temperature?from=not-a-date")
 
-                // then
                 response.status shouldBe HttpStatusCode.BadRequest
                 Json.decodeFromString<ErrorDto>(response.bodyAsText()) shouldBe ErrorDto("Invalid 'from' value")
             }
@@ -404,7 +359,6 @@ class StatisticLongTermRoutesKtTest :
 
         "given unknown statisticId when get statistics id then returns 404" {
             testApplication {
-                // given
                 setupWithRecords()
                 environment {
                     config = testApplicationConfig()
@@ -415,10 +369,8 @@ class StatisticLongTermRoutesKtTest :
                     configureRouting()
                 }
 
-                // when
                 val response = client.get("/statistics/not-a-real-id")
 
-                // then
                 response.status shouldBe HttpStatusCode.NotFound
                 Json.decodeFromString<ErrorDto>(response.bodyAsText()) shouldBe ErrorDto("Unknown statisticId")
             }
@@ -426,7 +378,6 @@ class StatisticLongTermRoutesKtTest :
 
         "given known statisticId with no rows in range when get statistics id then returns 200 empty list" {
             testApplication {
-                // given
                 setupWithRecords()
                 environment {
                     config = testApplicationConfig()
@@ -437,11 +388,9 @@ class StatisticLongTermRoutesKtTest :
                     configureRouting()
                 }
 
-                // when
                 val response = client.get("/statistics/sensor.living_room_temperature?from=1600000000&to=1600000001")
                 val decodedJson = Json.decodeFromString<List<StatisticDto>>(response.bodyAsText())
 
-                // then
                 response.status shouldBe HttpStatusCode.OK
                 decodedJson shouldBe emptyList()
             }

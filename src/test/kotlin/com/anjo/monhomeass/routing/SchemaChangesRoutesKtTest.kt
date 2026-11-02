@@ -45,7 +45,6 @@ class SchemaChangesRoutesKtTest :
 
         "given migration routes when get the return migration dto" {
             testApplication {
-                // given
                 setupWithInsert()
                 environment {
                     config = testApplicationConfig()
@@ -57,7 +56,6 @@ class SchemaChangesRoutesKtTest :
                 val date = Instant.fromEpochSeconds(1).toLocalDateTime(TimeZone.UTC)
                 val expected = listOf(SchemaChangeDto(1, 1, date))
 
-                // when
                 val response =
                     client.get("/schemas") {
                         header(HttpHeaders.ContentType, "application/json")
@@ -66,7 +64,6 @@ class SchemaChangesRoutesKtTest :
                 val responseBody = response.bodyAsText()
                 val decodedJson = Json.decodeFromString<List<SchemaChangeDto>>(responseBody)
 
-                // then
                 response.status shouldBe HttpStatusCode.OK
                 decodedJson shouldBe expected
             }
@@ -74,7 +71,6 @@ class SchemaChangesRoutesKtTest :
 
         "given recorder database query fails when get schemas then returns 503" {
             testApplication {
-                // given - table intentionally (re)dropped, so the query fails
                 prepareDatabase()
                 transaction {
                     runCatching { SchemaUtils.drop(SchemaChanges) }
@@ -88,10 +84,8 @@ class SchemaChangesRoutesKtTest :
                     configureRouting()
                 }
 
-                // when
                 val response = client.get("/schemas")
 
-                // then
                 response.status shouldBe HttpStatusCode.ServiceUnavailable
             }
         }

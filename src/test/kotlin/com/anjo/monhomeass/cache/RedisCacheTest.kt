@@ -102,7 +102,6 @@ class RedisCacheTest :
             cache.down shouldBe true
             val backoffAfterFirstFailure = cache.backoffMillis
 
-            // still within backoff window: served from local cache, no retry against redis
             val second =
                 cache.getOrPut("k") {
                     loaderCalls++
@@ -113,7 +112,6 @@ class RedisCacheTest :
             second shouldBe "value"
             loaderCalls shouldBe 1
 
-            // force the backoff window to have elapsed: retries redis, fails again, backoff doubles
             cache.nextCheckAt = 0
             cache.getOrPut("k") {
                 loaderCalls++
@@ -121,7 +119,6 @@ class RedisCacheTest :
             }
             cache.backoffMillis shouldBe backoffAfterFirstFailure * 2
 
-            // redis recovers: next retry succeeds and clears the local fallback state
             every { client.get(any<String>()) } returns null
             every { client.set(any<String>(), any<String>(), any()) } returns "OK"
             cache.nextCheckAt = 0

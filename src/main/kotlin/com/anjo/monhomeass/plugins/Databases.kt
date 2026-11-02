@@ -22,15 +22,9 @@ fun Application.configureDatabases() {
             user = dbUser,
             password = dbPassword,
             setupConnection = {
-                // sqlite-jdbc throws on setReadOnly() after connect — its URL's mode=ro already
-                // enforces read-only at the driver level. Network engines honor setReadOnly().
                 if (type != "sqlite") it.isReadOnly = true
             },
         )
-    // Exposed falls back to "last database created" when no default is set explicitly —
-    // racy once more than one engine is ever connected in the same JVM (e.g. across tests).
-    // Pin this app's own connection as the default so ambient transaction {} blocks never
-    // silently target a stale connection.
     TransactionManager.defaultDatabase = database
 }
 
