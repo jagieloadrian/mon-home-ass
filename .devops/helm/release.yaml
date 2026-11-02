@@ -4,6 +4,12 @@ metadata:
   name: mon-home-ass
 spec:
   interval: 10m
+  install:
+    remediation:
+      retries: -1
+  upgrade:
+    remediation:
+      retries: 3
   chart:
     spec:
       chart: ./charts/app
@@ -29,7 +35,3 @@ spec:
       DB_URL: postgres.apps.svc.cluster.local:5432
       DB_NAME: home_assistant
       DB_USER: mon_home_ass
-      NATS_URL: nats://nats.apps.svc.cluster.local:4222
-      NATS_STREAM: HOME_ASSISTANT
-      NATS_SUBJECT: home-assistant.statistics
-      NATS_INTERVAL_SECONDS: "60"
