@@ -15,12 +15,25 @@ OpenAPI/`swaggerUI` for the live API docs.
 
 ## Getting started
 
+Start the server on `http://localhost:8080`. The database comes from `ktor.database` in
+`src/main/resources/application.yaml`, set through `DB_TYPE` (`postgres`, `mariadb`, `mysql`, `sqlite`), `DB_URL`
+(`host:port`), `DB_NAME`, `DB_USER`, `DB_PASSWORD` and `DB_DRIVER`; `sqlite` reads the file at `DB_FILE_PATH`
+instead:
+
 ```bash
 ./gradlew run
+```
+
+Compile and run the tests (Testcontainers, so Docker must be running):
+
+```bash
 ./gradlew build
 ```
 
 Swagger UI: `http://localhost:8080/swagger`
+
+The statistics publisher (NATS JetStream) starts only when `NATS_URL` is set; the homelab NATS is not wired yet,
+see `.devops/README.md`.
 
 ## Docs
 
