@@ -13,7 +13,6 @@ import io.ktor.utils.io.ExperimentalKtorApi
 
 @OptIn(ExperimentalKtorApi::class)
 fun Route.migrationRoute(repo: MigrationRepo) {
-
     route("/migrations") {
         get {
             call.respond(status = HttpStatusCode.OK, message = repo.getAll())

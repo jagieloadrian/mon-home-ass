@@ -19,38 +19,39 @@ import org.jetbrains.exposed.v1.jdbc.SchemaUtils
 import org.jetbrains.exposed.v1.jdbc.insert
 import org.jetbrains.exposed.v1.jdbc.transactions.transaction
 
-class MySqlConnectionKtTest : StringSpec({
+class MySqlConnectionKtTest :
+    StringSpec({
 
-    "given real MySQL engine when get entities then returns seeded data" {
-        testApplication {
-            //given
-            val db = prepareDatabaseMySql()
-            transaction(db) {
-                runCatching { SchemaUtils.drop(StateMetadata) }
-                SchemaUtils.create(StateMetadata)
-                addRecords {
-                    StateMetadata.insert {
-                        it[id] = 1
-                        it[entityId] = "sensor.mysql_probe"
+        "given real MySQL engine when get entities then returns seeded data" {
+            testApplication {
+                // given
+                val db = prepareDatabaseMySql()
+                transaction(db) {
+                    runCatching { SchemaUtils.drop(StateMetadata) }
+                    SchemaUtils.create(StateMetadata)
+                    addRecords {
+                        StateMetadata.insert {
+                            it[id] = 1
+                            it[entityId] = "sensor.mysql_probe"
+                        }
                     }
                 }
-            }
-            environment {
-                config = testApplicationConfigMySql()
-            }
-            application {
-                configureDatabases()
-                configureStatusPages()
-                configureRouting()
-            }
+                environment {
+                    config = testApplicationConfigMySql()
+                }
+                application {
+                    configureDatabases()
+                    configureStatusPages()
+                    configureRouting()
+                }
 
-            //when
-            val response = client.get("/entities")
+                // when
+                val response = client.get("/entities")
 
-            //then
-            response.status shouldBe HttpStatusCode.OK
-            Json.decodeFromString<List<EntityDto>>(response.bodyAsText()) shouldBe
+                // then
+                response.status shouldBe HttpStatusCode.OK
+                Json.decodeFromString<List<EntityDto>>(response.bodyAsText()) shouldBe
                     listOf(EntityDto(1, "sensor.mysql_probe"))
+            }
         }
-    }
-})
+    })

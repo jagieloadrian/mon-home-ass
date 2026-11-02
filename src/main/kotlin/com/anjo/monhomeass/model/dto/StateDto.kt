@@ -8,21 +8,23 @@ import org.jetbrains.exposed.v1.core.ResultRow
 
 @Serializable
 data class StateDto(
-        val entityId: String,
-        val state: String?,
-        val attributes: String?,
-        val lastChangedTs: Long?,
-        val lastUpdatedTs: Long?,
-        val eventId: Short?
+    val entityId: String,
+    val state: String?,
+    val attributes: String?,
+    val lastChangedTs: Long?,
+    val lastUpdatedTs: Long?,
+    val eventId: Short?,
 )
 
-fun ResultRow.toStateDto(): StateDto {
-    return StateDto(
-            entityId = this[StateMetadata.entityId]!!,
+// Null when entity_id is missing (queries filter on it, so never in practice).
+fun ResultRow.toStateDto(): StateDto? =
+    this[StateMetadata.entityId]?.let { entityId ->
+        StateDto(
+            entityId = entityId,
             state = this[State.state],
             attributes = this.getOrNull(StateAttributes.sharedAttributes),
             lastChangedTs = this[State.lastModifiedTs]?.epochSeconds,
             lastUpdatedTs = this[State.lastUpdatedTs]?.epochSeconds,
-            eventId = this[State.eventId]
-    )
-}
+            eventId = this[State.eventId],
+        )
+    }

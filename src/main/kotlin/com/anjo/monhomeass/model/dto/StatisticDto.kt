@@ -1,41 +1,30 @@
 package com.anjo.monhomeass.model.dto
 
-import com.anjo.monhomeass.model.tables.Statistic
-import com.anjo.monhomeass.model.tables.StatisticShortTem
+import com.anjo.monhomeass.model.tables.StatisticTable
 import kotlinx.serialization.Serializable
 import org.jetbrains.exposed.v1.core.ResultRow
 
 @Serializable
 data class StatisticDto(
-        val startTs: Long,
-        val mean: Double?,
-        val meanWeight: Double?,
-        val min: Double?,
-        val max: Double?,
-        val sum: Double?,
-        val state: Double?
+    val startTs: Long,
+    val mean: Double?,
+    val meanWeight: Double?,
+    val min: Double?,
+    val max: Double?,
+    val sum: Double?,
+    val state: Double?,
 )
 
-fun ResultRow.toStatisticDto(): StatisticDto {
-    return StatisticDto(
-            startTs = this[Statistic.startTs]!!.epochSeconds,
-            mean = this[Statistic.mean],
-            meanWeight = this[Statistic.meanWeight],
-            min = this[Statistic.min],
-            max = this[Statistic.max],
-            sum = this[Statistic.sum],
-            state = this[Statistic.state]
-    )
-}
-
-fun ResultRow.toStatisticDtoShortTerm(): StatisticDto {
-    return StatisticDto(
-            startTs = this[StatisticShortTem.startTs]!!.epochSeconds,
-            mean = this[StatisticShortTem.mean],
-            meanWeight = this[StatisticShortTem.meanWeight],
-            min = this[StatisticShortTem.min],
-            max = this[StatisticShortTem.max],
-            sum = this[StatisticShortTem.sum],
-            state = this[StatisticShortTem.state]
-    )
-}
+// Null when the row has no start_ts (queries already filter those out).
+fun ResultRow.toStatisticDto(table: StatisticTable): StatisticDto? =
+    this[table.startTs]?.let { startTs ->
+        StatisticDto(
+            startTs = startTs.epochSeconds,
+            mean = this[table.mean],
+            meanWeight = this[table.meanWeight],
+            min = this[table.min],
+            max = this[table.max],
+            sum = this[table.sum],
+            state = this[table.state],
+        )
+    }

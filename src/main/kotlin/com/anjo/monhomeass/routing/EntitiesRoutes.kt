@@ -7,20 +7,21 @@ import com.anjo.monhomeass.model.dto.ErrorDto
 import com.anjo.monhomeass.repository.StateMetadataRepo
 import io.ktor.http.HttpStatusCode
 import io.ktor.openapi.jsonSchema
+import io.ktor.server.response.respond
 import io.ktor.server.routing.Route
 import io.ktor.server.routing.get
 import io.ktor.server.routing.openapi.describe
 import io.ktor.server.routing.route
-import io.ktor.server.response.respond
 import io.ktor.util.reflect.TypeInfo
 import io.ktor.utils.io.ExperimentalKtorApi
 
 fun Route.entitiesRoute(repo: StateMetadataRepo) {
-
     route("/entities") {
         get {
-            call.respond(repo.getAll(),
-                    typeInfo = TypeInfo(ArrayList::class))
+            call.respond(
+                repo.getAll(),
+                typeInfo = TypeInfo(ArrayList::class),
+            )
         }.describe {
             tag("Entities")
             summary = "List known entity ids"

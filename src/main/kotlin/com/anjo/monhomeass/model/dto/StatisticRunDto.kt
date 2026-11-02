@@ -6,13 +6,12 @@ import org.jetbrains.exposed.v1.core.ResultRow
 
 @Serializable
 data class StatisticRunDto(
-        val runId: Int,
-        val startedAtTs: Long
+    val runId: Long,
+    val startedAtTs: Long,
 )
 
-fun ResultRow.toStatisticRunDto(): StatisticRunDto {
-    return StatisticRunDto(
-            runId = this[StatisticRun.id],
-            startedAtTs = this[StatisticRun.startedAt].toInstant().epochSecond
+fun ResultRow.toStatisticRunDto(): StatisticRunDto =
+    StatisticRunDto(
+        runId = this[StatisticRun.id],
+        startedAtTs = this[StatisticRun.startedAt].toInstant().epochSecond,
     )
-}

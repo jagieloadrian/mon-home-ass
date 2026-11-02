@@ -4,7 +4,7 @@ import org.jetbrains.exposed.v1.core.Table
 import org.jetbrains.exposed.v1.datetime.timestampWithTimeZone
 
 object Recorder : Table("recorder_runs") {
-    val runId = integer("run_id")
+    val runId = long("run_id")
     val startTime = timestampWithTimeZone("start")
     val endTime = timestampWithTimeZone("end").nullable()
     val isClosedIncorrect = bool("closed_incorrect")

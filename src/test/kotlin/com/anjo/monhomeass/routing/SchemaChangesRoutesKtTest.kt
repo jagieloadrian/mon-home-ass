@@ -7,6 +7,7 @@ import com.anjo.monhomeass.plugins.configureRouting
 import com.anjo.monhomeass.plugins.configureStatusPages
 import com.anjo.monhomeass.testutils.addRecords
 import com.anjo.monhomeass.testutils.prepareDatabase
+import com.anjo.monhomeass.testutils.testApplicationConfig
 import io.kotest.core.spec.style.StringSpec
 import io.kotest.matchers.shouldBe
 import io.ktor.client.request.get
@@ -14,7 +15,6 @@ import io.ktor.client.request.header
 import io.ktor.client.statement.bodyAsText
 import io.ktor.http.HttpHeaders
 import io.ktor.http.HttpStatusCode
-import com.anjo.monhomeass.testutils.testApplicationConfig
 import io.ktor.server.testing.testApplication
 import kotlinx.datetime.TimeZone
 import kotlinx.datetime.toLocalDateTime
@@ -26,71 +26,73 @@ import java.time.OffsetDateTime
 import java.time.ZoneOffset
 import kotlin.time.Instant
 
-class SchemaChangesRoutesKtTest : StringSpec({
+class SchemaChangesRoutesKtTest :
+    StringSpec({
 
-    fun setupWithInsert() {
-        prepareDatabase()
-        transaction {
-            SchemaUtils.create(SchemaChanges)
-            addRecords {
-                SchemaChanges.insert {
-                    it[id] = 1
-                    it[version] = 1
-                    it[changedAt] = OffsetDateTime.ofInstant(java.time.Instant.ofEpochSecond(1), ZoneOffset.UTC)
+        fun setupWithInsert() {
+            prepareDatabase()
+            transaction {
+                SchemaUtils.create(SchemaChanges)
+                addRecords {
+                    SchemaChanges.insert {
+                        it[id] = 1
+                        it[version] = 1
+                        it[changedAt] = OffsetDateTime.ofInstant(java.time.Instant.ofEpochSecond(1), ZoneOffset.UTC)
+                    }
                 }
             }
         }
-    }
 
-    "given migration routes when get the return migration dto" {
-        testApplication {
-            //given
-            setupWithInsert()
-            environment {
-                config = testApplicationConfig()
-            }
-            application {
-                configureDatabases()
-                configureRouting()
-            }
-            val date = Instant.fromEpochSeconds(1).toLocalDateTime(TimeZone.UTC)
-            val expected = listOf(SchemaChangeDto(1, 1, date))
+        "given migration routes when get the return migration dto" {
+            testApplication {
+                // given
+                setupWithInsert()
+                environment {
+                    config = testApplicationConfig()
+                }
+                application {
+                    configureDatabases()
+                    configureRouting()
+                }
+                val date = Instant.fromEpochSeconds(1).toLocalDateTime(TimeZone.UTC)
+                val expected = listOf(SchemaChangeDto(1, 1, date))
 
-            //when
-            val response = client.get("/schemas") {
-                header(HttpHeaders.ContentType, "application/json")
-                header(HttpHeaders.Accept, "application/json")
-            }
-            val responseBody = response.bodyAsText()
-            val decodedJson = Json.decodeFromString<List<SchemaChangeDto>>(responseBody)
+                // when
+                val response =
+                    client.get("/schemas") {
+                        header(HttpHeaders.ContentType, "application/json")
+                        header(HttpHeaders.Accept, "application/json")
+                    }
+                val responseBody = response.bodyAsText()
+                val decodedJson = Json.decodeFromString<List<SchemaChangeDto>>(responseBody)
 
-            //then
-            response.status shouldBe HttpStatusCode.OK
-            decodedJson shouldBe expected
+                // then
+                response.status shouldBe HttpStatusCode.OK
+                decodedJson shouldBe expected
+            }
         }
-    }
 
-    "given recorder database query fails when get schemas then returns 503" {
-        testApplication {
-            //given - table intentionally (re)dropped, so the query fails
-            prepareDatabase()
-            transaction {
-                runCatching { SchemaUtils.drop(SchemaChanges) }
-            }
-            environment {
-                config = testApplicationConfig()
-            }
-            application {
-                configureDatabases()
-                configureStatusPages()
-                configureRouting()
-            }
+        "given recorder database query fails when get schemas then returns 503" {
+            testApplication {
+                // given - table intentionally (re)dropped, so the query fails
+                prepareDatabase()
+                transaction {
+                    runCatching { SchemaUtils.drop(SchemaChanges) }
+                }
+                environment {
+                    config = testApplicationConfig()
+                }
+                application {
+                    configureDatabases()
+                    configureStatusPages()
+                    configureRouting()
+                }
 
-            //when
-            val response = client.get("/schemas")
+                // when
+                val response = client.get("/schemas")
 
-            //then
-            response.status shouldBe HttpStatusCode.ServiceUnavailable
+                // then
+                response.status shouldBe HttpStatusCode.ServiceUnavailable
+            }
         }
-    }
-})
+    })

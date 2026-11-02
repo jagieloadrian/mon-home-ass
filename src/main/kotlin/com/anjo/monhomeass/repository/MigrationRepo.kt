@@ -7,11 +7,10 @@ import org.jetbrains.exposed.v1.jdbc.selectAll
 import org.jetbrains.exposed.v1.jdbc.transactions.transaction
 
 class MigrationRepo {
-
-    fun getAll(): List<MigrationDto> {
-        return transaction {
-            MigrationChanges.selectAll()
-                    .map { it.toMigrationDto() }
+    fun getAll(): List<MigrationDto> =
+        transaction {
+            MigrationChanges
+                .selectAll()
+                .map { it.toMigrationDto() }
         }
-    }
 }

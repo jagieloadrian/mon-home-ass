@@ -4,6 +4,4 @@ import kotlinx.datetime.LocalDateTime
 import kotlinx.datetime.toKotlinLocalDateTime
 import java.time.OffsetDateTime
 
-fun OffsetDateTime.toKotlinxDateTime(): LocalDateTime {
-    return this.toLocalDateTime().toKotlinLocalDateTime()
-}
+fun OffsetDateTime.toKotlinxDateTime(): LocalDateTime = this.toLocalDateTime().toKotlinLocalDateTime()

@@ -8,16 +8,18 @@ import org.jetbrains.exposed.v1.core.SortOrder
 import org.jetbrains.exposed.v1.jdbc.selectAll
 import org.jetbrains.exposed.v1.jdbc.transactions.transaction
 
-class StatisticRunRepo(private val cache: RedisCache) {
-
-    fun getAll(limit: Int? = null): List<StatisticRunDto> {
-        return cache.getOrPut("statistics-runs:all:$limit") {
+class StatisticRunRepo(
+    private val cache: RedisCache,
+) {
+    fun getAll(limit: Int? = null): List<StatisticRunDto> =
+        cache.getOrPut("statistics-runs:all:$limit") {
             transaction {
-                var query = StatisticRun.selectAll()
+                var query =
+                    StatisticRun
+                        .selectAll()
                         .orderBy(StatisticRun.startedAt, SortOrder.DESC)
                 if (limit != null) query = query.limit(limit)
                 query.map { it.toStatisticRunDto() }
             }
         } ?: emptyList()
-    }
 }

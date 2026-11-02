@@ -12,8 +12,8 @@ import com.anjo.monhomeass.repository.StatisticRunRepo
 import com.anjo.monhomeass.routing.entitiesRoute
 import com.anjo.monhomeass.routing.eventsRoute
 import com.anjo.monhomeass.routing.migrationRoute
-import com.anjo.monhomeass.routing.recorderRout
-import com.anjo.monhomeass.routing.schemaChangesRout
+import com.anjo.monhomeass.routing.recorderRoute
+import com.anjo.monhomeass.routing.schemaChangesRoute
 import com.anjo.monhomeass.routing.stateHistoryRoute
 import com.anjo.monhomeass.routing.stateRoute
 import com.anjo.monhomeass.routing.statisticMetaRoute
@@ -45,8 +45,8 @@ fun Application.configureRouting() {
     val statisticRunRepo: StatisticRunRepo by dependencies
     routing {
         migrationRoute(migrationRepo)
-        recorderRout(recorderRepo)
-        schemaChangesRout(schemaChangesRepo)
+        recorderRoute(recorderRepo)
+        schemaChangesRoute(schemaChangesRepo)
         eventsRoute(eventRepo)
         entitiesRoute(stateMetadataRepo)
         statisticMetaRoute(statisticMetaRepo)
@@ -68,12 +68,16 @@ fun Application.configureRouting() {
     // also means every route's `.describe {}` block actually runs (and is
     // covered) at startup instead of never running at all.
     val openApiDocInfo = OpenApiDoc(info = OpenApiInfo("Monitor Home Assistant Stats", "1.0"))
-    val openApiDoc = OpenApiDocSource.Routing(ContentType.Application.Json) {
-        routingRoot.descendants()
-    }.read(this, openApiDocInfo)
-    val openApiDocYaml = OpenApiDocSource.Routing(ContentType.Application.Yaml) {
-        routingRoot.descendants()
-    }.read(this, openApiDocInfo)
+    val openApiDoc =
+        OpenApiDocSource
+            .Routing(ContentType.Application.Json) {
+                routingRoot.descendants()
+            }.read(this, openApiDocInfo)
+    val openApiDocYaml =
+        OpenApiDocSource
+            .Routing(ContentType.Application.Yaml) {
+                routingRoot.descendants()
+            }.read(this, openApiDocInfo)
 
     routing {
         swaggerUI("/swagger") {

@@ -8,19 +8,18 @@ import org.jetbrains.exposed.v1.core.ResultRow
 
 @Serializable
 data class RecorderDto(
-        val id: Int,
-        val startTime: LocalDateTime,
-        val endTime: LocalDateTime?,
-        val isClosedIncorrect: Boolean,
-        val createdAt: LocalDateTime
+    val id: Long,
+    val startTime: LocalDateTime,
+    val endTime: LocalDateTime?,
+    val isClosedIncorrect: Boolean,
+    val createdAt: LocalDateTime,
 )
 
-fun ResultRow.toRecorderDto(): RecorderDto {
-    return RecorderDto(
-            id = this[Recorder.runId],
-            startTime = this[Recorder.startTime].toKotlinxDateTime(),
-            endTime = this[Recorder.endTime]?.toKotlinxDateTime(),
-            isClosedIncorrect = this[Recorder.isClosedIncorrect],
-            createdAt = this[Recorder.createdAt].toKotlinxDateTime()
+fun ResultRow.toRecorderDto(): RecorderDto =
+    RecorderDto(
+        id = this[Recorder.runId],
+        startTime = this[Recorder.startTime].toKotlinxDateTime(),
+        endTime = this[Recorder.endTime]?.toKotlinxDateTime(),
+        isClosedIncorrect = this[Recorder.isClosedIncorrect],
+        createdAt = this[Recorder.createdAt].toKotlinxDateTime(),
     )
-}

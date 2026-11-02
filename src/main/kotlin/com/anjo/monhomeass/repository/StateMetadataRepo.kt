@@ -7,13 +7,13 @@ import com.anjo.monhomeass.model.tables.StateMetadata
 import org.jetbrains.exposed.v1.jdbc.selectAll
 import org.jetbrains.exposed.v1.jdbc.transactions.transaction
 
-class StateMetadataRepo(private val cache: RedisCache) {
-
-    fun getAll(): List<EntityDto> {
-        return cache.getOrPut("entities:all") {
+class StateMetadataRepo(
+    private val cache: RedisCache,
+) {
+    fun getAll(): List<EntityDto> =
+        cache.getOrPut("entities:all") {
             transaction {
                 StateMetadata.selectAll().map { it.toEntityDto() }
             }
         } ?: emptyList()
-    }
 }

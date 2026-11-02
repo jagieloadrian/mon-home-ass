@@ -8,12 +8,12 @@ import com.anjo.monhomeass.plugins.configureRouting
 import com.anjo.monhomeass.plugins.configureStatusPages
 import com.anjo.monhomeass.testutils.addRecords
 import com.anjo.monhomeass.testutils.prepareDatabase
+import com.anjo.monhomeass.testutils.testApplicationConfig
 import io.kotest.core.spec.style.StringSpec
 import io.kotest.matchers.shouldBe
 import io.ktor.client.request.get
 import io.ktor.client.statement.bodyAsText
 import io.ktor.http.HttpStatusCode
-import com.anjo.monhomeass.testutils.testApplicationConfig
 import io.ktor.server.testing.testApplication
 import kotlinx.serialization.json.Json
 import org.jetbrains.exposed.v1.jdbc.SchemaUtils
@@ -22,139 +22,141 @@ import org.jetbrains.exposed.v1.jdbc.transactions.transaction
 import java.time.OffsetDateTime
 import java.time.ZoneOffset
 
-class StatisticRunRoutesKtTest : StringSpec({
+class StatisticRunRoutesKtTest :
+    StringSpec({
 
-    fun dropTableIfExists() {
-        runCatching { SchemaUtils.drop(StatisticRun) }
-    }
-
-    fun setupWithRecords() {
-        prepareDatabase()
-        transaction {
-            dropTableIfExists()
-            SchemaUtils.create(StatisticRun)
-            addRecords {
-                StatisticRun.insert {
-                    it[id] = 1
-                    it[startedAt] = OffsetDateTime.ofInstant(java.time.Instant.ofEpochSecond(1_700_000_000L), ZoneOffset.UTC)
-                }
-            }
-            addRecords {
-                StatisticRun.insert {
-                    it[id] = 2
-                    it[startedAt] = OffsetDateTime.ofInstant(java.time.Instant.ofEpochSecond(1_700_003_600L), ZoneOffset.UTC)
-                }
-            }
+        fun dropTableIfExists() {
+            runCatching { SchemaUtils.drop(StatisticRun) }
         }
-    }
 
-    "given runs when get statistics-runs then returns most recent first" {
-        testApplication {
-            //given
-            setupWithRecords()
-            environment { config = testApplicationConfig() }
-            application {
-                configureDatabases()
-                configureStatusPages()
-                configureRouting()
-            }
-
-            //when
-            val response = client.get("/statistics-runs")
-            val decoded = Json.decodeFromString<List<StatisticRunDto>>(response.bodyAsText())
-
-            //then
-            response.status shouldBe HttpStatusCode.OK
-            decoded shouldBe listOf(
-                    StatisticRunDto(2, 1_700_003_600L),
-                    StatisticRunDto(1, 1_700_000_000L)
-            )
-        }
-    }
-
-    "given limit when get statistics-runs then returns only first N rows" {
-        testApplication {
-            //given
-            setupWithRecords()
-            environment { config = testApplicationConfig() }
-            application {
-                configureDatabases()
-                configureStatusPages()
-                configureRouting()
-            }
-
-            //when
-            val response = client.get("/statistics-runs?limit=1")
-            val decoded = Json.decodeFromString<List<StatisticRunDto>>(response.bodyAsText())
-
-            //then
-            response.status shouldBe HttpStatusCode.OK
-            decoded shouldBe listOf(StatisticRunDto(2, 1_700_003_600L))
-        }
-    }
-
-    "given no runs when get statistics-runs then returns empty list" {
-        testApplication {
-            //given
+        fun setupWithRecords() {
             prepareDatabase()
             transaction {
                 dropTableIfExists()
                 SchemaUtils.create(StatisticRun)
+                addRecords {
+                    StatisticRun.insert {
+                        it[id] = 1
+                        it[startedAt] = OffsetDateTime.ofInstant(java.time.Instant.ofEpochSecond(1_700_000_000L), ZoneOffset.UTC)
+                    }
+                }
+                addRecords {
+                    StatisticRun.insert {
+                        it[id] = 2
+                        it[startedAt] = OffsetDateTime.ofInstant(java.time.Instant.ofEpochSecond(1_700_003_600L), ZoneOffset.UTC)
+                    }
+                }
             }
-            environment { config = testApplicationConfig() }
-            application {
-                configureDatabases()
-                configureStatusPages()
-                configureRouting()
-            }
-
-            //when
-            val response = client.get("/statistics-runs")
-            val decoded = Json.decodeFromString<List<StatisticRunDto>>(response.bodyAsText())
-
-            //then
-            response.status shouldBe HttpStatusCode.OK
-            decoded shouldBe emptyList()
         }
-    }
 
-    "given negative limit when get statistics-runs then returns 400" {
-        testApplication {
-            //given
-            setupWithRecords()
-            environment { config = testApplicationConfig() }
-            application {
-                configureDatabases()
-                configureStatusPages()
-                configureRouting()
+        "given runs when get statistics-runs then returns most recent first" {
+            testApplication {
+                // given
+                setupWithRecords()
+                environment { config = testApplicationConfig() }
+                application {
+                    configureDatabases()
+                    configureStatusPages()
+                    configureRouting()
+                }
+
+                // when
+                val response = client.get("/statistics-runs")
+                val decoded = Json.decodeFromString<List<StatisticRunDto>>(response.bodyAsText())
+
+                // then
+                response.status shouldBe HttpStatusCode.OK
+                decoded shouldBe
+                    listOf(
+                        StatisticRunDto(2, 1_700_003_600L),
+                        StatisticRunDto(1, 1_700_000_000L),
+                    )
             }
-
-            //when
-            val response = client.get("/statistics-runs?limit=-1")
-
-            //then
-            response.status shouldBe HttpStatusCode.BadRequest
-            Json.decodeFromString<ErrorDto>(response.bodyAsText()) shouldBe ErrorDto("Invalid 'limit' value")
         }
-    }
 
-    "given recorder database query fails when get statistics-runs then returns 503" {
-        testApplication {
-            //given - table intentionally not (re)created, so the query fails
-            prepareDatabase()
-            transaction { dropTableIfExists() }
-            environment { config = testApplicationConfig() }
-            application {
-                configureDatabases()
-                configureStatusPages()
-                configureRouting()
+        "given limit when get statistics-runs then returns only first N rows" {
+            testApplication {
+                // given
+                setupWithRecords()
+                environment { config = testApplicationConfig() }
+                application {
+                    configureDatabases()
+                    configureStatusPages()
+                    configureRouting()
+                }
+
+                // when
+                val response = client.get("/statistics-runs?limit=1")
+                val decoded = Json.decodeFromString<List<StatisticRunDto>>(response.bodyAsText())
+
+                // then
+                response.status shouldBe HttpStatusCode.OK
+                decoded shouldBe listOf(StatisticRunDto(2, 1_700_003_600L))
             }
-
-            //when
-            val response = client.get("/statistics-runs")
-
-            //then
-            response.status shouldBe HttpStatusCode.ServiceUnavailable
         }
-    }
-})
+
+        "given no runs when get statistics-runs then returns empty list" {
+            testApplication {
+                // given
+                prepareDatabase()
+                transaction {
+                    dropTableIfExists()
+                    SchemaUtils.create(StatisticRun)
+                }
+                environment { config = testApplicationConfig() }
+                application {
+                    configureDatabases()
+                    configureStatusPages()
+                    configureRouting()
+                }
+
+                // when
+                val response = client.get("/statistics-runs")
+                val decoded = Json.decodeFromString<List<StatisticRunDto>>(response.bodyAsText())
+
+                // then
+                response.status shouldBe HttpStatusCode.OK
+                decoded shouldBe emptyList()
+            }
+        }
+
+        "given negative limit when get statistics-runs then returns 400" {
+            testApplication {
+                // given
+                setupWithRecords()
+                environment { config = testApplicationConfig() }
+                application {
+                    configureDatabases()
+                    configureStatusPages()
+                    configureRouting()
+                }
+
+                // when
+                val response = client.get("/statistics-runs?limit=-1")
+
+                // then
+                response.status shouldBe HttpStatusCode.BadRequest
+                Json.decodeFromString<ErrorDto>(response.bodyAsText()) shouldBe ErrorDto("Invalid 'limit' value")
+            }
+        }
+
+        "given recorder database query fails when get statistics-runs then returns 503" {
+            testApplication {
+                // given - table intentionally not (re)created, so the query fails
+                prepareDatabase()
+                transaction { dropTableIfExists() }
+                environment { config = testApplicationConfig() }
+                application {
+                    configureDatabases()
+                    configureStatusPages()
+                    configureRouting()
+                }
+
+                // when
+                val response = client.get("/statistics-runs")
+
+                // then
+                response.status shouldBe HttpStatusCode.ServiceUnavailable
+            }
+        }
+    })

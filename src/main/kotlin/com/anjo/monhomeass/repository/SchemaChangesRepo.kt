@@ -7,11 +7,10 @@ import org.jetbrains.exposed.v1.jdbc.selectAll
 import org.jetbrains.exposed.v1.jdbc.transactions.transaction
 
 class SchemaChangesRepo {
-
-    fun getAll(): List<SchemaChangeDto> {
-        return transaction {
-            SchemaChanges.selectAll()
-                    .map { it.toSchemaChangeDto() }
+    fun getAll(): List<SchemaChangeDto> =
+        transaction {
+            SchemaChanges
+                .selectAll()
+                .map { it.toSchemaChangeDto() }
         }
-    }
 }
