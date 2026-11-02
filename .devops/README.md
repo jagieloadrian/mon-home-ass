@@ -35,6 +35,9 @@ which commits its tag to `helm/release.yaml`. Until the first `main` build does 
 
 Redis is not required: without it the cache lives in pod memory (`REDIS_HOST`/`REDIS_PORT`, once there is one).
 
+`/health/ready` answers 503 while the database is unreachable, so the pod only leaves the Service; `/health/live`
+(startup and liveness probes) stays 200 and the pod is not restarted.
+
 ## NATS (not set up yet)
 
 The integration with the homelab NATS is not set up yet: NATS has no user or policy for mon-home-ass, so
