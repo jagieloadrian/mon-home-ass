@@ -20,8 +20,9 @@ which commits its tag to `helm/release.yaml`. Until the first `main` build does 
 
 - This repository is private, so GHCR creates the package as private. After the first CI build: GHCR package
   `mon-home-ass` → Package settings → visibility **Public** (the cluster pulls images without logging in).
-- `main` is protected: the CI step "Deploy (bump image tag)" can push only when GitHub Actions is on the bypass list
-  of the branch protection rule or ruleset; otherwise bump the tag with a PR.
+- `main` is protected: the CI step "Deploy (bump image tag)" pushes as a GitHub App on the ruleset bypass list (variable
+  `DEPLOY_APP_CLIENT_ID`, secret `DEPLOY_APP_PRIVATE_KEY`), setup in https://github.com/jagieloadrian/homelab-infra/blob/main/docs/apps.md (own app,
+  step 3). The tag commit carries `[skip ci]`.
 
 ## values.env (`helm/release.yaml`)
 
