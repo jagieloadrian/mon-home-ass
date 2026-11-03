@@ -8,28 +8,28 @@ import com.anjo.monhomeass.repository.StatisticRepo
 import com.anjo.monhomeass.testutils.addRecords
 import com.anjo.monhomeass.testutils.prepareDatabase
 import io.kotest.core.spec.style.StringSpec
-import io.kotest.matchers.nulls.shouldNotBeNull
 import io.kotest.matchers.shouldBe
 import io.mockk.mockk
-import io.nats.client.Nats
 import kotlinx.serialization.json.Json
 import org.jetbrains.exposed.v1.jdbc.SchemaUtils
 import org.jetbrains.exposed.v1.jdbc.insert
 import org.jetbrains.exposed.v1.jdbc.transactions.transaction
-import org.testcontainers.containers.GenericContainer
-import org.testcontainers.utility.DockerImageName
 import kotlin.time.Instant
+
+private val SINCE = Instant.fromEpochSeconds(1_700_000_000L)
 
 class StatisticPublisherTest :
     StringSpec({
 
-        val nats =
-            GenericContainer<Nothing>(DockerImageName.parse("nats:2-alpine")).apply {
-                withCommand("-js")
-                withExposedPorts(4222)
-                start()
+        class RecordingSink : Sink {
+            val records = mutableListOf<StatisticRecordDto>()
+
+            override fun send(payload: ByteArray) {
+                records += Json.decodeFromString<StatisticRecordDto>(payload.decodeToString())
             }
-        afterSpec { nats.stop() }
+
+            override fun close() = Unit
+        }
 
         fun addShortTerm(
             rowId: Long,
@@ -63,47 +63,58 @@ class StatisticPublisherTest :
                     }
                 }
             }
-            addShortTerm(1, 1_700_000_000L, 10.0)
-            addShortTerm(2, 1_700_000_300L, null)
+            addShortTerm(1, 1_699_999_700L, 9.0)
+            addShortTerm(2, 1_700_000_000L, 10.0)
+            addShortTerm(3, 1_700_000_300L, null)
         }
 
-        "given new short-term rows when publishNew then publishes each once as native records and resumes after restart" {
+        "given rows since the lookback start when publishNew then sends each once and later only new rows" {
             // given
             setupWithRecords()
-            Nats.connect("nats://${nats.host}:${nats.getMappedPort(4222)}").use { connection ->
-                val jsm = connection.jetStreamManagement()
+            val sink = RecordingSink()
+            val publisher = StatisticPublisher(StatisticRepo(mockk()), sink, SINCE, batchSize = 1)
 
-                fun publisher() = StatisticPublisher(StatisticRepo(mockk()), connection.jetStream(), jsm, "HA_TEST", "ha.test.statistics")
-                publisher().ensureStream()
+            // when
+            val first = publisher.publishNew()
+            val again = publisher.publishNew()
+            addShortTerm(4, 1_700_000_600L, 12.0)
+            val afterNewRow = publisher.publishNew()
 
-                // when
-                val first = publisher().publishNew(batchSize = 1)
-                val afterRestart = publisher().publishNew()
-                addShortTerm(3, 1_700_000_600L, 12.0)
-                val afterNewRow = publisher().publishNew()
+            // then
+            first shouldBe 2
+            again shouldBe 0
+            afterNewRow shouldBe 1
+            sink.records.map { it.ts } shouldBe listOf("2023-11-14T22:13:20Z", "2023-11-14T22:18:20Z", "2023-11-14T22:23:20Z")
+            sink.records.first() shouldBe
+                StatisticRecordDto(
+                    ts = "2023-11-14T22:13:20Z",
+                    dims = mapOf("statistic_id" to "sensor.living_room_temperature"),
+                    vals = mapOf("mean" to 10.0, "min" to 5.0, "max" to 15.0),
+                )
+            sink.records[1].vals shouldBe mapOf("min" to 5.0, "max" to 15.0)
+        }
 
-                // then
-                first shouldBe 2
-                afterRestart shouldBe 0
-                afterNewRow shouldBe 1
-                publisher().lastPublishedId() shouldBe 3
-                jsm.getStreamInfo("HA_TEST").streamState.msgCount shouldBe 3
+        "given a send failing midway when publishNew then the next call resumes at the failed row" {
+            // given
+            setupWithRecords()
+            var sent = 0
+            val sink = RecordingSink()
+            val flaky =
+                object : Sink by sink {
+                    override fun send(payload: ByteArray) {
+                        if (sent++ == 1) error("broker down")
+                        sink.send(payload)
+                    }
+                }
+            val publisher = StatisticPublisher(StatisticRepo(mockk()), flaky, SINCE)
 
-                fun record(seq: Long) =
-                    Json.decodeFromString<StatisticRecordDto>(
-                        jsm
-                            .getMessage("HA_TEST", seq)
-                            .data
-                            .shouldNotBeNull()
-                            .decodeToString(),
-                    )
-                record(1) shouldBe
-                    StatisticRecordDto(
-                        ts = "2023-11-14T22:13:20Z",
-                        dims = mapOf("statistic_id" to "sensor.living_room_temperature"),
-                        vals = mapOf("mean" to 10.0, "min" to 5.0, "max" to 15.0),
-                    )
-                record(2).vals shouldBe mapOf("min" to 5.0, "max" to 15.0)
-            }
+            // when
+            val failed = runCatching { publisher.publishNew() }
+            val published = publisher.publishNew()
+
+            // then
+            failed.isFailure shouldBe true
+            published shouldBe 1
+            sink.records.map { it.ts } shouldBe listOf("2023-11-14T22:13:20Z", "2023-11-14T22:18:20Z")
         }
     })

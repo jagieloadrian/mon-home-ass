@@ -82,6 +82,7 @@ class StatisticRepo(
 
     fun getShortTermAfter(
         afterId: Long,
+        since: Instant,
         limit: Int,
     ): List<Pair<Long, StatisticRecordDto>> =
         transaction {
@@ -89,6 +90,7 @@ class StatisticRepo(
                 .innerJoin(StatisticMetaData)
                 .selectAll()
                 .where { StatisticShortTerm.id greater afterId }
+                .andWhere { StatisticShortTerm.startTs greaterEq since }
                 .andWhere { StatisticShortTerm.startTs.isNotNull() }
                 .andWhere { StatisticMetaData.statisticId.isNotNull() }
                 .orderBy(StatisticShortTerm.id, SortOrder.ASC)

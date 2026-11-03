@@ -38,8 +38,51 @@ cross-origin access.
 
 Health probes: `/health/ready` answers 503 while the database is unreachable, `/health/live` stays 200.
 
-The statistics publisher (NATS JetStream) starts only when `NATS_URL` is set; the homelab NATS is not wired yet,
-see `.devops/README.md`.
+## Statistics publisher
+
+Optionally the app feeds statistics-service: every `PUBLISH_INTERVAL_SECONDS` it reads new rows of
+`statistics_short_term` (Home Assistant's 5-minute statistics) and publishes them to NATS JetStream or Kafka.
+statistics-service takes them as the `pubsub` source `home-assistant` and stores them as records.
+
+```mermaid
+flowchart LR
+    HA[Home Assistant] -->|recorder| DB[(recorder database)]
+    DB -->|read-only| MHA[mon-home-ass]
+    Browser[browser, tools] -->|REST API| MHA
+    MHA -->|"new statistics every 60 s"| Broker{{NATS JetStream or Kafka}}
+    Broker --> SS[statistics-service]
+    SS --> PG[(statistics database)]
+```
+
+| Env | Default | Meaning |
+| --- | --- | --- |
+| `PUBLISHER` | `none` | `none`, `jetstream` or `kafka`; anything else stops the start |
+| `SOURCE_ID` | `home-assistant` | statistics-service source id: the NATS subject is `<NATS_SUBJECT_PREFIX>.<id>`, the Kafka record key is the id |
+| `SOURCE_TOKEN` | not set | the source token, sent as `Authorization: Bearer <token>`; without it the publisher stays off |
+| `PUBLISH_INTERVAL_SECONDS` | `60` | how often to look for new rows |
+| `PUBLISH_LOOKBACK_MINUTES` | `60` | after a start, rows of the last N minutes are sent again |
+| `NATS_URL` | `nats://localhost:4222` | with `jetstream` |
+| `NATS_USER`, `NATS_PASSWORD` | not set | NATS credentials |
+| `NATS_INBOX_PREFIX` | `_INBOX` | inbox for JetStream acks; must match the user's subscribe permission |
+| `NATS_SUBJECT_PREFIX` | `stats.ingest` | same as `NATS_SUBJECT_PREFIX` of statistics-service |
+| `KAFKA_BOOTSTRAP_SERVERS` | `localhost:9092` | with `kafka` (plaintext, no SASL) |
+| `KAFKA_TOPIC` | `stats.ingest` | same as `KAFKA_TOPIC` of statistics-service |
+
+One message carries one row in the native record format of statistics-service:
+
+```json
+{"ts": "2026-11-03T10:00:00Z", "dims": {"statistic_id": "sensor.living_room_temperature"}, "vals": {"mean": 21.4, "min": 21.1, "max": 21.8}}
+```
+
+- The publisher waits for the broker's ack (JetStream stream ack, Kafka `send().get()`) before the next row. When
+  sending fails, the next round starts at that row; nothing is skipped.
+- The position lives only in memory, so after a restart the last `PUBLISH_LOOKBACK_MINUTES` are sent again.
+  statistics-service drops the repeats: the source mapping has `identity` = `statistic_id` + `ts`.
+- The publisher never creates or reads streams or topics: statistics-service creates the stream `STATS_INGEST` on
+  start (JetStream), and a NATS user only needs publish on its subject plus subscribe on its inbox.
+- The receiving side (dataset, source with mapping, dashboard):
+  [statistics-service `definitions/home-assistant.json`](https://github.com/jagieloadrian/statistics-service/blob/main/definitions/home-assistant.json).
+  Homelab setup: `.devops/README.md`.
 
 ## Docs
 

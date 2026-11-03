@@ -14,6 +14,7 @@ kotest = "6.2.6"
 mockk = "1.14.11"
 testcontainers = "2.0.5"
 jnats = "2.26.4"
+kafka = "4.4.0"
 ktlint-engine = "1.8.0"
 ktlint-plugin = "14.2.0"
 
@@ -40,6 +41,7 @@ exposed-kotlin-datetime = { module = "org.jetbrains.exposed:exposed-kotlin-datet
 khealth = { module = "dev.hayden:khealth", version.ref = "khealth" }
 jedis = { module = "redis.clients:jedis", version.ref = "jedis" }
 jnats = { module = "io.nats:jnats", version.ref = "jnats" }
+kafka-clients = { module = "org.apache.kafka:kafka-clients", version.ref = "kafka" }
 kotlin-logging = { module = "io.github.oshai:kotlin-logging-jvm", version.ref = "kotlin-logging" }
 logback-classic = { module = "ch.qos.logback:logback-classic", version.ref = "logback" }
 kotest-runner = { module = "io.kotest:kotest-runner-junit5", version.ref = "kotest" }
@@ -49,6 +51,7 @@ testcontainers = { module = "org.testcontainers:testcontainers", version.ref = "
 testcontainers-postgresql = { module = "org.testcontainers:testcontainers-postgresql", version.ref = "testcontainers" }
 testcontainers-mariadb = { module = "org.testcontainers:testcontainers-mariadb", version.ref = "testcontainers" }
 testcontainers-mysql = { module = "org.testcontainers:testcontainers-mysql", version.ref = "testcontainers" }
+testcontainers-kafka = { module = "org.testcontainers:testcontainers-kafka", version.ref = "testcontainers" }
 
 [plugins]
 kotlin-jvm = { id = "org.jetbrains.kotlin.jvm", version.ref = "kotlin" }
