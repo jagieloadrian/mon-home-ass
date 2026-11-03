@@ -1,28 +1,98 @@
-openapi: 3.0.3
+openapi: 3.1.1
 info:
   title: Monitor Home Assistant Stats
   version: "1.0"
-  description: Readonly API over a Home Assistant recorder database (statistics/entities).
-servers:
-  - url: http://localhost:8080
-
 paths:
-  /statistics-meta:
+  /migrations:
     get:
-      tags: [Statistics]
-      summary: List trackable statistic entities
-      parameters:
-        - name: search
-          in: query
-          required: false
-          schema:
-            type: string
-          description: >-
-            Case-insensitive substring match against statistic_id or name.
-            Absent or empty returns every entry, unchanged.
+      tags:
+      - Migration
+      summary: Get info about migrations
       responses:
         "200":
-          description: List of statistic metadata entries, optionally filtered by `search`.
+          description: received data
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/MigrationDto"
+  /recorders:
+    get:
+      tags:
+      - Recorder
+      summary: Get info about recorders
+      responses:
+        "200":
+          description: received data
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/RecorderDto"
+  /schemas:
+    get:
+      tags:
+      - Schema Changes
+      summary: Get info about schema changes
+      responses:
+        "200":
+          description: received data
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/SchemaChangeDto"
+  /events:
+    get:
+      tags:
+      - Event
+      summary: Get info about events
+      responses:
+        "200":
+          description: received data
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/EventDto"
+  /entities:
+    get:
+      tags:
+      - Entities
+      summary: List known entity ids
+      responses:
+        "200":
+          description: List of entities.
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/EntityDto"
+        "503":
+          description: Recorder database unreachable or query failed.
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorDto"
+  /statistics-meta:
+    get:
+      tags:
+      - Statistics
+      summary: List trackable statistic entities
+      parameters:
+      - name: search
+        in: query
+        schema:
+          type: string
+      responses:
+        "200":
+          description: List of statistic metadata entries, optionally filtered by
+            search.
           content:
             application/json:
               schema:
@@ -35,17 +105,33 @@ paths:
             application/json:
               schema:
                 $ref: "#/components/schemas/ErrorDto"
-
   /statistics/{statisticId}:
     get:
-      tags: [Statistics]
+      tags:
+      - Statistics
       summary: Long-term statistics for one entity
       parameters:
-        - $ref: "#/components/parameters/StatisticId"
-        - $ref: "#/components/parameters/From"
-        - $ref: "#/components/parameters/To"
-        - $ref: "#/components/parameters/Limit"
-        - $ref: "#/components/parameters/Offset"
+      - name: statisticId
+        in: path
+        required: true
+        schema:
+          type: string
+      - name: from
+        in: query
+        schema:
+          type: integer
+      - name: to
+        in: query
+        schema:
+          type: integer
+      - name: limit
+        in: query
+        schema:
+          type: integer
+      - name: offset
+        in: query
+        schema:
+          type: integer
       responses:
         "200":
           description: Long-term statistic rows, oldest first, optionally paginated.
@@ -67,17 +153,39 @@ paths:
             application/json:
               schema:
                 $ref: "#/components/schemas/ErrorDto"
-
+        "503":
+          description: Recorder database unreachable or query failed.
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorDto"
   /statistics/{statisticId}/short-term:
     get:
-      tags: [Statistics]
+      tags:
+      - Statistics
       summary: Short-term (5-minute) statistics for one entity
       parameters:
-        - $ref: "#/components/parameters/StatisticId"
-        - $ref: "#/components/parameters/From"
-        - $ref: "#/components/parameters/To"
-        - $ref: "#/components/parameters/Limit"
-        - $ref: "#/components/parameters/Offset"
+      - name: statisticId
+        in: path
+        required: true
+        schema:
+          type: string
+      - name: from
+        in: query
+        schema:
+          type: integer
+      - name: to
+        in: query
+        schema:
+          type: integer
+      - name: limit
+        in: query
+        schema:
+          type: integer
+      - name: offset
+        in: query
+        schema:
+          type: integer
       responses:
         "200":
           description: Short-term statistic rows, oldest first, optionally paginated.
@@ -99,15 +207,31 @@ paths:
             application/json:
               schema:
                 $ref: "#/components/schemas/ErrorDto"
-
+        "503":
+          description: Recorder database unreachable or query failed.
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorDto"
   /statistics/{statisticId}/summary:
     get:
-      tags: [Statistics]
+      tags:
+      - Statistics
       summary: Aggregated min/max/avg/sum over a date range
       parameters:
-        - $ref: "#/components/parameters/StatisticId"
-        - $ref: "#/components/parameters/From"
-        - $ref: "#/components/parameters/To"
+      - name: statisticId
+        in: path
+        required: true
+        schema:
+          type: string
+      - name: from
+        in: query
+        schema:
+          type: integer
+      - name: to
+        in: query
+        schema:
+          type: integer
       responses:
         "200":
           description: Aggregate summary for the range.
@@ -133,13 +257,17 @@ paths:
             application/json:
               schema:
                 $ref: "#/components/schemas/ErrorDto"
-
   /states/{entityId}:
     get:
-      tags: [States]
+      tags:
+      - States
       summary: Latest recorded state for one entity
       parameters:
-        - $ref: "#/components/parameters/EntityId"
+      - name: entityId
+        in: path
+        required: true
+        schema:
+          type: string
       responses:
         "200":
           description: The most recent state row for this entity.
@@ -159,20 +287,37 @@ paths:
             application/json:
               schema:
                 $ref: "#/components/schemas/ErrorDto"
-
   /states/{entityId}/history:
     get:
-      tags: [States]
+      tags:
+      - States
       summary: State history for one entity
       parameters:
-        - $ref: "#/components/parameters/EntityId"
-        - $ref: "#/components/parameters/From"
-        - $ref: "#/components/parameters/To"
-        - $ref: "#/components/parameters/Limit"
-        - $ref: "#/components/parameters/Offset"
+      - name: entityId
+        in: path
+        required: true
+        schema:
+          type: string
+      - name: from
+        in: query
+        schema:
+          type: integer
+      - name: to
+        in: query
+        schema:
+          type: integer
+      - name: limit
+        in: query
+        schema:
+          type: integer
+      - name: offset
+        in: query
+        schema:
+          type: integer
       responses:
         "200":
-          description: State rows, oldest first, optionally paginated. Empty array if entity known but has no rows in range.
+          description: State rows, oldest first, optionally paginated. Empty array
+            if entity known but has no rows in range.
           content:
             application/json:
               schema:
@@ -197,16 +342,20 @@ paths:
             application/json:
               schema:
                 $ref: "#/components/schemas/ErrorDto"
-
   /statistics-runs:
     get:
-      tags: [Statistics]
+      tags:
+      - Statistics
       summary: List statistics recorder runs, most recent first
       parameters:
-        - $ref: "#/components/parameters/Limit"
+      - name: limit
+        in: query
+        schema:
+          type: integer
       responses:
         "200":
-          description: Recorder run rows, most recent first, optionally capped by limit. Empty array if no runs recorded.
+          description: Recorder run rows, most recent first, optionally capped by
+            limit. Empty array if no runs recorded.
           content:
             application/json:
               schema:
@@ -225,225 +374,300 @@ paths:
             application/json:
               schema:
                 $ref: "#/components/schemas/ErrorDto"
-
-  /entities:
-    get:
-      tags: [Entities]
-      summary: List known entity ids
-      responses:
-        "200":
-          description: List of entities.
-          content:
-            application/json:
-              schema:
-                type: array
-                items:
-                  $ref: "#/components/schemas/EntityDto"
-        "503":
-          description: Recorder database unreachable or query failed.
-          content:
-            application/json:
-              schema:
-                $ref: "#/components/schemas/ErrorDto"
-
 components:
-  parameters:
-    StatisticId:
-      name: statisticId
-      in: path
-      required: true
-      schema:
-        type: string
-      example: sensor.living_room_temperature
-    EntityId:
-      name: entityId
-      in: path
-      required: true
-      schema:
-        type: string
-      example: sensor.living_room_temperature
-    From:
-      name: from
-      in: query
-      required: false
-      schema:
-        oneOf:
-          - type: integer
-            format: int64
-          - type: string
-            format: date-time
-      description: Range start — epoch seconds or ISO-8601 date-time.
-    To:
-      name: to
-      in: query
-      required: false
-      schema:
-        oneOf:
-          - type: integer
-            format: int64
-          - type: string
-            format: date-time
-      description: Range end — epoch seconds or ISO-8601 date-time.
-    Limit:
-      name: limit
-      in: query
-      required: false
-      schema:
-        type: integer
-        format: int32
-        minimum: 0
-      description: Max number of rows to return. Omit for no limit (all matching rows).
-    Offset:
-      name: offset
-      in: query
-      required: false
-      schema:
-        type: integer
-        format: int64
-        minimum: 0
-      description: Number of rows to skip before applying limit. Omit for 0.
-
   schemas:
+    MigrationDto:
+      type: object
+      title: MigrationDto
+      required:
+      - id
+      - version
+      properties:
+        id:
+          type: string
+        version:
+          type: integer
+    RecorderDto:
+      type: object
+      title: RecorderDto
+      required:
+      - id
+      - startTime
+      - isClosedIncorrect
+      - createdAt
+      properties:
+        id:
+          type: integer
+        startTime:
+          type: string
+          format: date-time
+        endTime:
+          type:
+          - string
+          - "null"
+          format: date-time
+        isClosedIncorrect:
+          type: boolean
+        createdAt:
+          type: string
+          format: date-time
+    SchemaChangeDto:
+      type: object
+      title: SchemaChangeDto
+      required:
+      - id
+      - changedAt
+      properties:
+        id:
+          type: integer
+        version:
+          type:
+          - integer
+          - "null"
+        changedAt:
+          type: string
+          format: date-time
+    DataContentDto:
+      type:
+      - object
+      - "null"
+      title: DataContentDto
+      required:
+      - id
+      properties:
+        id:
+          type: integer
+        hash:
+          type:
+          - integer
+          - "null"
+        sharedData:
+          type:
+          - string
+          - "null"
+    EventTypeDto:
+      type:
+      - object
+      - "null"
+      title: EventTypeDto
+      required:
+      - id
+      properties:
+        id:
+          type: integer
+        type:
+          type:
+          - string
+          - "null"
+    EventDto:
+      type: object
+      title: EventDto
+      required:
+      - id
+      properties:
+        id:
+          type: integer
+        type:
+          type:
+          - string
+          - "null"
+        data:
+          type:
+          - string
+          - "null"
+        origin:
+          type:
+          - string
+          - "null"
+        originIdx:
+          type:
+          - integer
+          - "null"
+        timestamp:
+          type:
+          - string
+          - "null"
+          format: date-time
+        timestampTs:
+          type:
+          - string
+          - "null"
+          format: date-time
+        contextId:
+          type:
+          - string
+          - "null"
+        contextUserId:
+          type:
+          - string
+          - "null"
+        contextParentId:
+          type:
+          - string
+          - "null"
+        dataContent:
+          $ref: "#/components/schemas/DataContentDto"
+        eventType:
+          $ref: "#/components/schemas/EventTypeDto"
+    EntityDto:
+      type: object
+      title: EntityDto
+      required:
+      - id
+      properties:
+        id:
+          type: integer
+        entityId:
+          type:
+          - string
+          - "null"
     ErrorDto:
       type: object
-      required: [message]
+      title: ErrorDto
+      required:
+      - message
       properties:
         message:
           type: string
-
     StatisticMetaDto:
       type: object
-      required: [id, statisticId, meanType]
+      title: StatisticMetaDto
+      required:
+      - id
+      - meanType
       properties:
         id:
           type: integer
         statisticId:
-          type: string
-        source:
-          type: string
-          nullable: true
-        unitOfMeasurement:
-          type: string
-          nullable: true
-        unitClass:
-          type: string
-          nullable: true
-        hasMean:
-          type: boolean
-          nullable: true
-        hasSum:
-          type: boolean
-          nullable: true
+          type:
+          - string
+          - "null"
         name:
-          type: string
-          nullable: true
+          type:
+          - string
+          - "null"
+        unitOfMeasurement:
+          type:
+          - string
+          - "null"
+        unitClass:
+          type:
+          - string
+          - "null"
+        source:
+          type:
+          - string
+          - "null"
+        hasMean:
+          type:
+          - boolean
+          - "null"
+        hasSum:
+          type:
+          - boolean
+          - "null"
         meanType:
           type: integer
-
     StatisticDto:
       type: object
-      required: [startTs]
+      title: StatisticDto
+      required:
+      - startTs
       properties:
         startTs:
           type: integer
-          format: int64
-          description: Period start, epoch seconds.
         mean:
-          type: number
-          format: double
-          nullable: true
+          type:
+          - number
+          - "null"
         meanWeight:
-          type: number
-          format: double
-          nullable: true
+          type:
+          - number
+          - "null"
         min:
-          type: number
-          format: double
-          nullable: true
+          type:
+          - number
+          - "null"
         max:
-          type: number
-          format: double
-          nullable: true
+          type:
+          - number
+          - "null"
         sum:
-          type: number
-          format: double
-          nullable: true
+          type:
+          - number
+          - "null"
         state:
-          type: number
-          format: double
-          nullable: true
-
+          type:
+          - number
+          - "null"
     StatisticSummaryDto:
       type: object
+      title: StatisticSummaryDto
+      required:
+      - statisticId
       properties:
         statisticId:
           type: string
         from:
-          type: string
-          format: date-time
-          nullable: true
+          type:
+          - string
+          - "null"
         to:
-          type: string
-          format: date-time
-          nullable: true
+          type:
+          - string
+          - "null"
         min:
-          type: number
-          format: double
-          nullable: true
+          type:
+          - number
+          - "null"
         max:
-          type: number
-          format: double
-          nullable: true
+          type:
+          - number
+          - "null"
         avg:
-          type: number
-          format: double
-          nullable: true
+          type:
+          - number
+          - "null"
         sum:
-          type: number
-          format: double
-          nullable: true
-
-    EntityDto:
-      type: object
-      required: [id]
-      properties:
-        id:
-          type: integer
-        entityId:
-          type: string
-          nullable: true
-
+          type:
+          - number
+          - "null"
     StateDto:
       type: object
-      required: [entityId]
+      title: StateDto
+      required:
+      - entityId
       properties:
         entityId:
           type: string
         state:
-          type: string
-          nullable: true
+          type:
+          - string
+          - "null"
         attributes:
-          type: string
-          nullable: true
-          description: Opaque shared-attributes text, not parsed.
+          type:
+          - string
+          - "null"
         lastChangedTs:
-          type: integer
-          format: int64
-          nullable: true
+          type:
+          - integer
+          - "null"
         lastUpdatedTs:
-          type: integer
-          format: int64
-          nullable: true
+          type:
+          - integer
+          - "null"
         eventId:
-          type: integer
-          nullable: true
-
+          type:
+          - integer
+          - "null"
     StatisticRunDto:
       type: object
-      required: [runId, startedAtTs]
+      title: StatisticRunDto
+      required:
+      - runId
+      - startedAtTs
       properties:
         runId:
           type: integer
         startedAtTs:
           type: integer
-          format: int64
