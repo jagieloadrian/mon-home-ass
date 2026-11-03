@@ -36,3 +36,8 @@ spec:
       DB_NAME: home_assistant
       DB_USER: mon_home_ass
       CORS_HOSTS: ""
+      PUBLISHER: jetstream
+      SOURCE_ID: home-assistant
+      NATS_URL: nats://nats.apps.svc.cluster.local:4222
+      NATS_USER: mon-home-ass
+      NATS_INBOX_PREFIX: _INBOX_mon_home_ass

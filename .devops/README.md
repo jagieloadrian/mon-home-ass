@@ -33,34 +33,47 @@ which commits its tag to `helm/release.yaml`. Until the first `main` build does 
 | `DB_NAME` | `home_assistant` | HA recorder database |
 | `DB_USER` | `mon_home_ass` | read-only role (below) |
 | `CORS_HOSTS` | `""` | comma-separated hosts without scheme allowed to call the API from a browser on another origin (app default `localhost:8080`); empty = none, the API is used same-origin at `mon-home-ass.home.arpa` |
+| `PUBLISHER` | `jetstream` | send new Home Assistant statistics to statistics-service over the homelab NATS |
+| `SOURCE_ID` | `home-assistant` | the statistics-service source; the subject is `stats.ingest.home-assistant` |
+| `NATS_URL` | `nats://nats.apps.svc.cluster.local:4222` | homelab NATS |
+| `NATS_USER` | `mon-home-ass` | NATS user from homelab-infra; its password is `NATS_PASSWORD` in Vault |
+| `NATS_INBOX_PREFIX` | `_INBOX_mon_home_ass` | the only inbox the user may subscribe to; JetStream acks arrive there |
 
 Redis is not required: without it the cache lives in pod memory (`REDIS_HOST`/`REDIS_PORT`, once there is one).
 
 `/health/ready` answers 503 while the database is unreachable, so the pod only leaves the Service; `/health/live`
 (startup and liveness probes) stays 200 and the pod is not restarted.
 
-## NATS (not set up yet)
+## Statistics publisher (NATS)
 
-The integration with the homelab NATS is not set up yet: NATS has no user or policy for mon-home-ass, so
-`values.env` has no `NATS_*` variables. Without `NATS_URL` the statistics publisher stays off and the API works as usual.
-Wiring it needs:
+Every 60 s the app sends new `statistics_short_term` rows (Home Assistant's 5-minute statistics) to statistics-service
+over NATS JetStream. How it works and all variables: [README](../README.md#statistics-publisher).
 
-1. A NATS user for mon-home-ass with its permissions in homelab-infra
-   [apps/nats/release.yaml](https://github.com/jagieloadrian/homelab-infra/blob/main/apps/nats/release.yaml):
-   publish to its subject and `$JS.API.>` (stream lookup and creation, last published message), subscribe `_INBOX.>`
-   (replies).
-2. Principal `cluster.local/ns/apps/sa/mon-home-ass` in the AuthorizationPolicy `nats` (same file).
-3. The credentials in Vault `secret/apps/mon-home-ass`. The app reads them only from the URL, so `NATS_URL` goes there,
-   not into `values.env`: `vault kv patch secret/apps/mon-home-ass NATS_URL=-` with
-   `nats://<user>:<password>@nats.apps.svc.cluster.local:4222`.
-4. To feed statistics-service, a subject under `stats.ingest.>` (`NATS_SUBJECT=stats.ingest.<source id>`) with
-   `NATS_STREAM=STATS_INGEST`, the stream statistics-service already owns (JetStream refuses a second stream over the
-   same subjects), plus a `pubsub` source there with a mapping for the published JSON. That source expects an
-   `Authorization: Bearer <source token>` header, which the publisher does not send yet.
+homelab-infra already has the NATS side: user `mon-home-ass` may publish to `stats.ingest.home-assistant` only and
+receive acks on `_INBOX_mon_home_ass.>`, and the AuthorizationPolicy `nats` lets this app's ServiceAccount reach
+port 4222. Without `SOURCE_TOKEN` the publisher logs an error and stays off; the API works either way.
 
-The other variables go into `values.env` (defaults in `application.yaml`): `NATS_STREAM` (`HOME_ASSISTANT`, created
-if missing, max age 30 days), `NATS_SUBJECT` (`home-assistant.statistics`) and `NATS_INTERVAL_SECONDS` (`60`, how
-often to check for new `statistics_short_term` rows).
+Once, after statistics-service runs:
+
+1. Import [`definitions/home-assistant.json`](https://github.com/jagieloadrian/statistics-service/blob/main/definitions/home-assistant.json)
+   into statistics-service (dataset, `pubsub` source and dashboard), as in its README, "Load the example definitions".
+2. Create the source token. The response `{"token": "…"}` is shown only once:
+   ```bash
+   curl -s -X POST https://statistics.home.arpa/api/v2/sources/home-assistant/credential -H "Authorization: Bearer $TOKEN"
+   ```
+3. Put the token and the NATS password in Vault (two commands, each reads one value from stdin).
+   `NATS_PASSWORD` is the value of `MON_HOME_ASS_PASSWORD` in `secret/apps/nats`:
+   ```bash
+   vault kv patch secret/apps/mon-home-ass SOURCE_TOKEN=-
+   vault kv patch secret/apps/mon-home-ass NATS_PASSWORD=-
+   ```
+4. Sync the Secret and restart the app:
+   ```bash
+   kubectl -n apps annotate externalsecret mon-home-ass-secrets force-sync=$(date +%s) --overwrite
+   kubectl -n apps rollout restart deploy/mon-home-ass
+   ```
+5. Check: the log shows `Published N statistics to jetstream` within a minute, and
+   `GET /api/v2/sources/home-assistant/status` in statistics-service shows accepted records and no rejections.
 
 ## Secrets (Vault)
 
@@ -70,6 +83,12 @@ Set them per [vault.md](https://github.com/jagieloadrian/homelab-infra/blob/main
 ```bash
 vault kv put secret/apps/mon-home-ass DB_PASSWORD=-
 ```
+
+| Key | Value |
+| --- | --- |
+| `DB_PASSWORD` | password of the read-only role below |
+| `NATS_PASSWORD` | `MON_HOME_ASS_PASSWORD` from `secret/apps/nats` |
+| `SOURCE_TOKEN` | token of the statistics-service source `home-assistant` (publisher section above) |
 
 Type the password from `openssl rand -hex 24`, then press Ctrl+D twice (no Enter, it would become part of the
 value). The same password goes into the role below.
