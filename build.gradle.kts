@@ -42,6 +42,7 @@ dependencies {
     implementation(libs.khealth)
     implementation(libs.jedis)
     implementation(libs.jnats)
+    implementation(libs.kafka.clients)
     implementation(libs.kotlin.logging)
     implementation(libs.logback.classic)
 
@@ -54,6 +55,7 @@ dependencies {
     testImplementation(libs.testcontainers.postgresql)
     testImplementation(libs.testcontainers.mariadb)
     testImplementation(libs.testcontainers.mysql)
+    testImplementation(libs.testcontainers.kafka)
 }
 
 ktlint {

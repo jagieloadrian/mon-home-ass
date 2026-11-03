@@ -18,8 +18,18 @@ ktor:
         host: "$REDIS_HOST:localhost"
         port: "$REDIS_PORT:6379"
         ttlMillis: 300000
+    publisher:
+        type: "$PUBLISHER:none"
+        source_id: "$SOURCE_ID:home-assistant"
+        source_token: "$?SOURCE_TOKEN"
+        interval_seconds: "$PUBLISH_INTERVAL_SECONDS:60"
+        lookback_minutes: "$PUBLISH_LOOKBACK_MINUTES:60"
     nats:
-        url: "$?NATS_URL"
-        stream: "$NATS_STREAM:HOME_ASSISTANT"
-        subject: "$NATS_SUBJECT:home-assistant.statistics"
-        interval_seconds: "$NATS_INTERVAL_SECONDS:60"
+        url: "$NATS_URL:nats://localhost:4222"
+        user: "$?NATS_USER"
+        password: "$?NATS_PASSWORD"
+        inbox_prefix: "$NATS_INBOX_PREFIX:_INBOX"
+        subject_prefix: "$NATS_SUBJECT_PREFIX:stats.ingest"
+    kafka:
+        bootstrap_servers: "$KAFKA_BOOTSTRAP_SERVERS:localhost:9092"
+        topic: "$KAFKA_TOPIC:stats.ingest"
