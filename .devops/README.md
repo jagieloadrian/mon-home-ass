@@ -18,8 +18,9 @@ The image `ghcr.io/jagieloadrian/mon-home-ass` (Jib, amd64 + arm64) is built by 
 which commits its tag to `helm/release.yaml`. Until the first `main` build does that, the tag there is a placeholder
 (`main-00000000000000-0000000`) that cannot be pulled.
 
-- This repository is private, so GHCR creates the package as private. After the first CI build: GHCR package
-  `mon-home-ass` → Package settings → visibility **Public** (the cluster pulls images without logging in).
+- The GHCR package `mon-home-ass` can stay private: the cluster pulls with Secret `ghcr-pull`, a read-only GHCR token
+  from Vault `secret/apps/ghcr` (homelab-infra
+  [setup.md](https://github.com/jagieloadrian/homelab-infra/blob/main/docs/setup.md), step 3).
 - `main` is protected: the CI step "Deploy (bump image tag)" pushes as a GitHub App on the ruleset bypass list (variable
   `DEPLOY_APP_CLIENT_ID`, secret `DEPLOY_APP_PRIVATE_KEY`), setup in https://github.com/jagieloadrian/homelab-infra/blob/main/docs/apps.md (own app,
   step 3). The tag commit carries `[skip ci]`.
