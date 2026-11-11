@@ -54,27 +54,36 @@ homelab-infra already has the NATS side: user `mon-home-ass` may publish to `sta
 receive acks on `_INBOX_mon_home_ass.>`, and the AuthorizationPolicy `nats` lets this app's ServiceAccount reach
 port 4222. Without `SOURCE_TOKEN` the publisher logs an error and stays off; the API works either way.
 
-Once, after statistics-service runs:
+Once, after statistics-service runs. The gateway serves plain HTTP, so the URLs use `http://`. `NATS_PASSWORD`
+is already in Vault: homelab-infra `scripts/install.sh` copies `MON_HOME_ASS_PASSWORD` from `secret/apps/nats`.
 
-1. Import [`definitions/home-assistant.json`](https://github.com/jagieloadrian/statistics-service/blob/main/definitions/home-assistant.json)
-   into statistics-service (dataset, `pubsub` source and dashboard), as in its README, "Load the example definitions".
-2. Create the source token. The response `{"token": "…"}` is shown only once:
+1. Sign in as the statistics-service admin (`ADMIN_EMAIL`, password from `scripts/install.sh`):
    ```bash
-   curl -s -X POST https://statistics.home.arpa/api/v2/sources/home-assistant/credential -H "Authorization: Bearer $TOKEN"
+   API=http://statistics.home.arpa/api/v2
+   read -rsp "Admin password: " pw && echo
+   TOKEN=$(jq -n --arg p "$pw" '{email:"admin@home.arpa",password:$p}' | curl -s $API/auth/login -H 'Content-Type: application/json' -d @- | jq -r .token); unset pw
    ```
-3. Put the token and the NATS password in Vault (two commands, each reads one value from stdin).
-   `NATS_PASSWORD` is the value of `MON_HOME_ASS_PASSWORD` in `secret/apps/nats`:
+2. Import [`definitions/home-assistant.json`](https://github.com/jagieloadrian/statistics-service/blob/main/definitions/home-assistant.json)
+   (dataset, `pubsub` source and dashboard):
    ```bash
-   vault kv patch secret/apps/mon-home-ass SOURCE_TOKEN=-
-   vault kv patch secret/apps/mon-home-ass NATS_PASSWORD=-
+   curl -sfL https://raw.githubusercontent.com/jagieloadrian/statistics-service/main/definitions/home-assistant.json |
+     curl -s -X POST $API/import -H "Authorization: Bearer $TOKEN" -H 'Content-Type: application/json' -d @-
    ```
-4. Sync the Secret and restart the app:
+3. Create the source token and put it straight into Vault. The token is shown only once, so it never reaches the
+   screen; a second run creates a new one:
+   ```bash
+   t=$(curl -s -X POST $API/sources/home-assistant/credential -H "Authorization: Bearer $TOKEN" | jq -r .token) &&
+     [ "$t" != null ] && printf %s "$t" | kubectl -n vault exec -i vault-0 -- vault kv patch secret/apps/mon-home-ass SOURCE_TOKEN=- >/dev/null && echo OK; unset t
+   ```
+   Vault in the pod must be logged in ([vault.md](https://github.com/jagieloadrian/homelab-infra/blob/main/docs/vault.md)).
+4. Sync the Secret, wait for it, then restart the app:
    ```bash
    kubectl -n apps annotate externalsecret mon-home-ass-secrets force-sync=$(date +%s) --overwrite
-   kubectl -n apps rollout restart deploy/mon-home-ass
+   sleep 10 && kubectl -n apps rollout restart deploy/mon-home-ass
    ```
 5. Check: the log shows `Published N statistics to jetstream` within a minute, and
-   `GET /api/v2/sources/home-assistant/status` in statistics-service shows accepted records and no rejections.
+   `curl -s $API/sources/home-assistant/status -H "Authorization: Bearer $TOKEN"` shows accepted records and no
+   rejections.
 
 ## Secrets (Vault)
 
