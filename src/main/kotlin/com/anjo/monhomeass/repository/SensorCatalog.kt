@@ -1,6 +1,7 @@
 package com.anjo.monhomeass.repository
 
 import com.anjo.monhomeass.model.SensorSource
+import com.anjo.monhomeass.model.dto.HaRegistries
 import com.anjo.monhomeass.model.dto.SensorDto
 
 private const val CLIMATE = "climate"
@@ -59,6 +60,8 @@ private val CATEGORY_BY_DEVICE_CLASS: Map<String, String> =
         DIAGNOSTIC to listOf("signal_strength", "data_rate", "data_size"),
     ).flatMap { (category, deviceClasses) -> deviceClasses.map { it to category } }.toMap()
 
+private val DIAGNOSTIC_ENTITY_CATEGORIES = setOf("diagnostic", "config")
+
 private val CATEGORY_BY_UNIT_CLASS: Map<String, String> =
     mapOf(
         "temperature" to CLIMATE,
@@ -70,11 +73,41 @@ private val CATEGORY_BY_UNIT_CLASS: Map<String, String> =
         "volume" to UTILITY,
     )
 
-internal fun sensorCatalog(sources: List<SensorSource>): List<SensorDto> =
-    sources
+internal fun sensorCatalog(
+    sources: List<SensorSource>,
+    registries: HaRegistries?,
+): List<SensorDto> {
+    val entities = registries?.entities.orEmpty().associateBy { it.entityId }
+    val devices = registries?.devices.orEmpty().associateBy { it.id }
+    val areas = registries?.areas.orEmpty().associateBy { it.areaId }
+    val floors = registries?.floors.orEmpty().associateBy { it.floorId }
+    return sources
         .sortedBy { it.entityId }
-        .map { it.toSensorDto() }
-        .withUniqueNames()
+        .map { source ->
+            val sensor = source.toSensorDto()
+            val entity = entities[source.entityId] ?: return@map sensor
+            val device = entity.deviceId?.let { devices[it] }
+            val area = (entity.areaId ?: device?.areaId)?.let { areas[it] }
+            sensor.copy(
+                name = registryName(entity, device, area, source.deviceClass) ?: sensor.name,
+                area = area?.name,
+                floor = area?.floorId?.let { floors[it]?.name },
+                category = if (entity.entityCategory in DIAGNOSTIC_ENTITY_CATEGORIES) DIAGNOSTIC else sensor.category,
+            )
+        }.withUniqueNames()
+}
+
+private fun registryName(
+    entity: HaRegistries.Entity,
+    device: HaRegistries.Device?,
+    area: HaRegistries.Area?,
+    deviceClass: String?,
+): String? =
+    entity.name
+        ?: device?.nameByUser?.let { deviceName ->
+            entity.originalName?.takeIf { entity.hasEntityName }?.let { "$deviceName $it" } ?: deviceName
+        }
+        ?: area?.let { (deviceClass?.replace('_', ' ') ?: entity.originalName)?.let { what -> "${area.name} $what" } }
 
 private fun SensorSource.toSensorDto(): SensorDto =
     SensorDto(

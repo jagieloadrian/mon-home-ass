@@ -51,6 +51,17 @@ every other read.
 - category: from `device_class` (`climate`, `air-quality`, `energy`, `utility`, `battery`, `light`, `diagnostic`),
   else from the `statistics_meta` unit class, else `other`
 
+With `HA_URL` (e.g. `http://homeassistant.local:8123`) and `HA_TOKEN` (a long-lived access token) both set, the
+catalog also reads the entity, device, area and floor registries over the Home Assistant WebSocket API:
+
+- area: the entity's area, else its device's area; floor: the area's floor
+- name: the user's entity name, else the user's device name (plus the entity name), else `<area> <device class>`,
+  else the name from the recorder database
+- entities with the entity category `diagnostic` or `config` get the category `diagnostic`
+
+When Home Assistant does not answer within 10 s or rejects the token, the catalog is built from the recorder
+database alone and a warning is logged.
+
 ## Statistics publisher
 
 Optionally the app feeds statistics-service: every `PUBLISH_INTERVAL_SECONDS` it reads new rows of
