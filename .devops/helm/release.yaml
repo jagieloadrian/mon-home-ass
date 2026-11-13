@@ -35,6 +35,7 @@ spec:
       DB_URL: postgres.apps.svc.cluster.local:5432
       DB_NAME: home_assistant
       DB_USER: mon_home_ass
+      HA_URL: http://home-assistant.apps.svc.cluster.local:8123
       CORS_HOSTS: ""
       PUBLISHER: jetstream
       SOURCE_ID: home-assistant
