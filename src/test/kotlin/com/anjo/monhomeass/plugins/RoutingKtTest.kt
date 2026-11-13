@@ -92,6 +92,6 @@ class RoutingKtTest :
                 ready.bodyAsText() shouldContain "\"database\":false"
                 live.status shouldBe HttpStatusCode.OK
             }
-            TransactionManager.closeAndUnregister(TransactionManager.defaultDatabase!!)
+            TransactionManager.defaultDatabase?.let { TransactionManager.closeAndUnregister(it) }
         }
     })
