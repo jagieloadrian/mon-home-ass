@@ -24,6 +24,9 @@ which commits its tag to `helm/release.yaml`. Until the first `main` build does 
 - `main` is protected: the CI step "Deploy (bump image tag)" pushes as a GitHub App on the ruleset bypass list (variable
   `DEPLOY_APP_CLIENT_ID`, secret `DEPLOY_APP_PRIVATE_KEY`), setup in https://github.com/jagieloadrian/homelab-infra/blob/main/docs/apps.md (own app,
   step 3). The tag commit carries `[skip ci]`.
+- homelab-infra is private, so `devops.yml` fetches `charts/app` with a token of the same GitHub App, limited to
+  homelab-infra and Contents: read. The app must be installed on homelab-infra too (GitHub → Settings → GitHub Apps →
+  the app → Configure → Repository access → add `homelab-infra`); without it the step fails with `Not Found`.
 
 ## values.env (`helm/release.yaml`)
 

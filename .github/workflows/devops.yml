@@ -26,12 +26,22 @@ jobs:
     steps:
       - uses: actions/checkout@v7
 
+      - uses: actions/create-github-app-token@v3
+        id: chart-token
+        with:
+          client-id: ${{ vars.DEPLOY_APP_CLIENT_ID }}
+          private-key: ${{ secrets.DEPLOY_APP_PRIVATE_KEY }}
+          owner: jagieloadrian
+          repositories: homelab-infra
+          permission-contents: read
+
       - name: Checkout chart (homelab-infra)
         uses: actions/checkout@v7
         with:
           repository: jagieloadrian/homelab-infra
           path: homelab-infra
           sparse-checkout: charts
+          token: ${{ steps.chart-token.outputs.token }}
 
       - name: values.env
         run: |
