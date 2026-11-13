@@ -1,9 +1,10 @@
 # mon-home-ass
 
 Readonly HTTP API over a Home Assistant recorder database. Exposes
-statistics, entities, states, recorder/statistic runs, migrations, and
-schema changes as JSON endpoints for external tools/dashboards, without
-touching Home Assistant itself.
+statistics, entities, states, a sensor catalog and, under `/raw`, the recorder internals
+(recorder/statistic runs, migrations, events, schema changes) as JSON
+endpoints for external tools/dashboards, without touching Home Assistant
+itself.
 
 ## Stack
 
@@ -38,6 +39,29 @@ cross-origin access.
 
 Health probes: `/health/ready` answers 503 while the database is unreachable, `/health/live` stays 200.
 
+## Sensor catalog
+
+`GET /sensors` lists one sensor per row of `statistics_meta` with a human `name`, `area`, `floor`, `category` and
+`unit`, optionally filtered by exact `area` and `category`. It is built from the recorder database (the latest
+`friendly_name`, `device_class` and `unit_of_measurement` of each entity, then `statistics_meta`) and cached like
+every other read.
+
+- name: `friendly_name`, else the `statistics_meta` name, else the entity id without its domain (`sensor.kitchen_co2`
+  → `Kitchen co2`); repeated names get ` 2`, ` 3`, ... in entity id order
+- category: from `device_class` (`climate`, `air-quality`, `energy`, `utility`, `battery`, `light`, `diagnostic`),
+  else from the `statistics_meta` unit class, else `other`
+
+With `HA_URL` (e.g. `http://homeassistant.local:8123`) and `HA_TOKEN` (a long-lived access token) both set, the
+catalog also reads the entity, device, area and floor registries over the Home Assistant WebSocket API:
+
+- area: the entity's area, else its device's area; floor: the area's floor
+- name: the user's entity name, else the user's device name (plus the entity name), else `<area> <device class>`,
+  else the name from the recorder database
+- entities with the entity category `diagnostic` or `config` get the category `diagnostic`
+
+When Home Assistant does not answer within 10 s or rejects the token, the catalog is built from the recorder
+database alone and a warning is logged.
+
 ## Statistics publisher
 
 Optionally the app feeds statistics-service: every `PUBLISH_INTERVAL_SECONDS` it reads new rows of
@@ -68,10 +92,11 @@ flowchart LR
 | `KAFKA_BOOTSTRAP_SERVERS` | `localhost:9092` | with `kafka` (plaintext, no SASL) |
 | `KAFKA_TOPIC` | `stats.ingest` | same as `KAFKA_TOPIC` of statistics-service |
 
-One message carries one row in the native record format of statistics-service:
+One message carries one row in the native record format of statistics-service. Next to `statistic_id`, `dims` carry
+the `name`, `area`, `floor`, `category` and `unit` of the [sensor catalog](#sensor-catalog) when they are known:
 
 ```json
-{"ts": "2026-11-03T10:00:00Z", "dims": {"statistic_id": "sensor.living_room_temperature"}, "vals": {"mean": 21.4, "min": 21.1, "max": 21.8}}
+{"ts": "2026-11-03T10:00:00Z", "dims": {"statistic_id": "sensor.living_room_temperature", "name": "Living room temperature", "area": "Living room", "floor": "Ground floor", "category": "climate", "unit": "°C"}, "vals": {"mean": 21.4, "min": 21.1, "max": 21.8}}
 ```
 
 - The publisher waits for the broker's ack (JetStream stream ack, Kafka `send().get()`) before the next row. When

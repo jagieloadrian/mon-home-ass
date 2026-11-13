@@ -61,7 +61,7 @@ class RecorderRoutesKtTest :
 
                 // when
                 val response =
-                    client.get("/recorders") {
+                    client.get("/raw/recorders") {
                         header(HttpHeaders.ContentType, "application/json")
                         header(HttpHeaders.Accept, "application/json")
                     }

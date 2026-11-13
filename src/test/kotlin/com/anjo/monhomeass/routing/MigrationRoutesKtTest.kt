@@ -52,7 +52,7 @@ class MigrationRoutesKtTest :
 
                 // when
                 val response =
-                    client.get("/migrations") {
+                    client.get("/raw/migrations") {
                         header(HttpHeaders.ContentType, "application/json")
                         header(HttpHeaders.Accept, "application/json")
                     }
@@ -82,7 +82,7 @@ class MigrationRoutesKtTest :
                 }
 
                 // when
-                val response = client.get("/migrations")
+                val response = client.get("/raw/migrations")
 
                 // then
                 response.status shouldBe HttpStatusCode.ServiceUnavailable

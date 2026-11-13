@@ -30,6 +30,8 @@ dependencies {
     implementation(libs.ktor.server.cors)
     implementation(libs.ktor.server.status.pages)
     implementation(libs.ktor.server.swagger)
+    implementation(libs.ktor.client.cio)
+    implementation(libs.ktor.client.websockets)
 
     implementation(libs.postgresql)
     implementation(libs.mariadb)
@@ -48,6 +50,7 @@ dependencies {
 
     testImplementation(libs.ktor.server.test.host)
     testImplementation(libs.ktor.client.content.negotiation)
+    testImplementation(libs.ktor.server.websockets)
     testImplementation(libs.kotest.runner)
     testImplementation(libs.kotest.assertions)
     testImplementation(libs.mockk)

@@ -18,6 +18,9 @@ ktor:
         host: "$REDIS_HOST:localhost"
         port: "$REDIS_PORT:6379"
         ttlMillis: 300000
+    homeassistant:
+        url: "$?HA_URL"
+        token: "$?HA_TOKEN"
     publisher:
         type: "$PUBLISHER:none"
         source_id: "$SOURCE_ID:home-assistant"

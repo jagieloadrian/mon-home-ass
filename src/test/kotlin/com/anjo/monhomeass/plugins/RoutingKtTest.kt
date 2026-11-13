@@ -61,6 +61,8 @@ class RoutingKtTest :
                 ready.status shouldBe HttpStatusCode.OK
                 ready.bodyAsText() shouldContain "\"database\":true"
                 openApi shouldContain "/statistics-meta"
+                openApi shouldContain "/raw/migrations"
+                openApi shouldNotContain "\"/migrations\""
                 openApi shouldNotContain "/health"
             }
         }
@@ -90,6 +92,6 @@ class RoutingKtTest :
                 ready.bodyAsText() shouldContain "\"database\":false"
                 live.status shouldBe HttpStatusCode.OK
             }
-            TransactionManager.closeAndUnregister(TransactionManager.defaultDatabase!!)
+            TransactionManager.defaultDatabase?.let { TransactionManager.closeAndUnregister(it) }
         }
     })

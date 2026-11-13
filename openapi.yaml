@@ -3,7 +3,7 @@ info:
   title: Monitor Home Assistant Stats
   version: "1.0"
 paths:
-  /migrations:
+  /raw/migrations:
     get:
       tags:
       - Migration
@@ -17,7 +17,7 @@ paths:
                 type: array
                 items:
                   $ref: "#/components/schemas/MigrationDto"
-  /recorders:
+  /raw/recorders:
     get:
       tags:
       - Recorder
@@ -31,7 +31,7 @@ paths:
                 type: array
                 items:
                   $ref: "#/components/schemas/RecorderDto"
-  /schemas:
+  /raw/schemas:
     get:
       tags:
       - Schema Changes
@@ -45,7 +45,7 @@ paths:
                 type: array
                 items:
                   $ref: "#/components/schemas/SchemaChangeDto"
-  /events:
+  /raw/events:
     get:
       tags:
       - Event
@@ -59,6 +59,38 @@ paths:
                 type: array
                 items:
                   $ref: "#/components/schemas/EventDto"
+  /raw/statistics-runs:
+    get:
+      tags:
+      - Statistics
+      summary: List statistics recorder runs, most recent first
+      parameters:
+      - name: limit
+        in: query
+        schema:
+          type: integer
+      responses:
+        "200":
+          description: Recorder run rows, most recent first, optionally capped by
+            limit. Empty array if no runs recorded.
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/StatisticRunDto"
+        "400":
+          description: limit present but unparseable or negative.
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorDto"
+        "503":
+          description: Recorder database unreachable or query failed.
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorDto"
   /entities:
     get:
       tags:
@@ -342,32 +374,33 @@ paths:
             application/json:
               schema:
                 $ref: "#/components/schemas/ErrorDto"
-  /statistics-runs:
+  /sensors:
     get:
       tags:
-      - Statistics
-      summary: List statistics recorder runs, most recent first
+      - Sensors
+      summary: List sensors with a human name, area, floor, category and unit
       parameters:
-      - name: limit
+      - name: area
         in: query
+        description: Exact area name.
         schema:
-          type: integer
+          type: string
+      - name: category
+        in: query
+        description: 'Exact category: climate, air-quality, energy, utility, battery,
+          light, diagnostic or other.'
+        schema:
+          type: string
       responses:
         "200":
-          description: Recorder run rows, most recent first, optionally capped by
-            limit. Empty array if no runs recorded.
+          description: One sensor per statistic, ordered by entity id, optionally
+            filtered.
           content:
             application/json:
               schema:
                 type: array
                 items:
-                  $ref: "#/components/schemas/StatisticRunDto"
-        "400":
-          description: limit present but unparseable or negative.
-          content:
-            application/json:
-              schema:
-                $ref: "#/components/schemas/ErrorDto"
+                  $ref: "#/components/schemas/SensorDto"
         "503":
           description: Recorder database unreachable or query failed.
           content:
@@ -509,6 +542,25 @@ components:
           $ref: "#/components/schemas/DataContentDto"
         eventType:
           $ref: "#/components/schemas/EventTypeDto"
+    StatisticRunDto:
+      type: object
+      title: StatisticRunDto
+      required:
+      - runId
+      - startedAtTs
+      properties:
+        runId:
+          type: integer
+        startedAtTs:
+          type: integer
+    ErrorDto:
+      type: object
+      title: ErrorDto
+      required:
+      - message
+      properties:
+        message:
+          type: string
     EntityDto:
       type: object
       title: EntityDto
@@ -521,14 +573,6 @@ components:
           type:
           - string
           - "null"
-    ErrorDto:
-      type: object
-      title: ErrorDto
-      required:
-      - message
-      properties:
-        message:
-          type: string
     StatisticMetaDto:
       type: object
       title: StatisticMetaDto
@@ -660,14 +704,29 @@ components:
           type:
           - integer
           - "null"
-    StatisticRunDto:
+    SensorDto:
       type: object
-      title: StatisticRunDto
+      title: SensorDto
       required:
-      - runId
-      - startedAtTs
+      - entityId
+      - name
+      - category
       properties:
-        runId:
-          type: integer
-        startedAtTs:
-          type: integer
+        entityId:
+          type: string
+        name:
+          type: string
+        area:
+          type:
+          - string
+          - "null"
+        floor:
+          type:
+          - string
+          - "null"
+        category:
+          type: string
+        unit:
+          type:
+          - string
+          - "null"

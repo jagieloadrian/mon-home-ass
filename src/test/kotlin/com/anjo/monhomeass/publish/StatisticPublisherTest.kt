@@ -1,14 +1,17 @@
 package com.anjo.monhomeass.publish
 
+import com.anjo.monhomeass.model.dto.SensorDto
 import com.anjo.monhomeass.model.dto.StatisticRecordDto
 import com.anjo.monhomeass.model.tables.Statistic
 import com.anjo.monhomeass.model.tables.StatisticMetaData
 import com.anjo.monhomeass.model.tables.StatisticShortTerm
+import com.anjo.monhomeass.repository.SensorRepo
 import com.anjo.monhomeass.repository.StatisticRepo
 import com.anjo.monhomeass.testutils.addRecords
 import com.anjo.monhomeass.testutils.prepareDatabase
 import io.kotest.core.spec.style.StringSpec
 import io.kotest.matchers.shouldBe
+import io.mockk.coEvery
 import io.mockk.mockk
 import kotlinx.serialization.json.Json
 import org.jetbrains.exposed.v1.jdbc.SchemaUtils
@@ -17,6 +20,7 @@ import org.jetbrains.exposed.v1.jdbc.transactions.transaction
 import kotlin.time.Instant
 
 private val SINCE = Instant.fromEpochSeconds(1_700_000_000L)
+private const val STATISTIC_ID = "sensor.living_room_temperature"
 
 class StatisticPublisherTest :
     StringSpec({
@@ -30,6 +34,8 @@ class StatisticPublisherTest :
 
             override fun close() = Unit
         }
+
+        fun sensors(vararg catalog: SensorDto): SensorRepo = mockk<SensorRepo>().also { coEvery { it.getAll() } returns catalog.toList() }
 
         fun addShortTerm(
             rowId: Long,
@@ -58,7 +64,7 @@ class StatisticPublisherTest :
                 addRecords {
                     StatisticMetaData.insert {
                         it[id] = 1
-                        it[statisticId] = "sensor.living_room_temperature"
+                        it[statisticId] = STATISTIC_ID
                         it[meanType] = 0
                     }
                 }
@@ -72,7 +78,7 @@ class StatisticPublisherTest :
             // given
             setupWithRecords()
             val sink = RecordingSink()
-            val publisher = StatisticPublisher(StatisticRepo(mockk()), sink, SINCE, batchSize = 1)
+            val publisher = StatisticPublisher(StatisticRepo(mockk()), sensors(), sink, SINCE, batchSize = 1)
 
             // when
             val first = publisher.publishNew()
@@ -88,7 +94,7 @@ class StatisticPublisherTest :
             sink.records.first() shouldBe
                 StatisticRecordDto(
                     ts = "2023-11-14T22:13:20Z",
-                    dims = mapOf("statistic_id" to "sensor.living_room_temperature"),
+                    dims = mapOf("statistic_id" to STATISTIC_ID),
                     vals = mapOf("mean" to 10.0, "min" to 5.0, "max" to 15.0),
                 )
             sink.records[1].vals shouldBe mapOf("min" to 5.0, "max" to 15.0)
@@ -106,7 +112,7 @@ class StatisticPublisherTest :
                         sink.send(payload)
                     }
                 }
-            val publisher = StatisticPublisher(StatisticRepo(mockk()), flaky, SINCE)
+            val publisher = StatisticPublisher(StatisticRepo(mockk()), sensors(), flaky, SINCE)
 
             // when
             val failed = runCatching { publisher.publishNew() }
@@ -116,5 +122,42 @@ class StatisticPublisherTest :
             failed.isFailure shouldBe true
             published shouldBe 1
             sink.records.map { it.ts } shouldBe listOf("2023-11-14T22:13:20Z", "2023-11-14T22:18:20Z")
+        }
+
+        "should add the sensor name, area, floor, category and unit to dims when the statistic is in the catalog" {
+            // given
+            setupWithRecords()
+            val sink = RecordingSink()
+            val sensor = SensorDto(STATISTIC_ID, "Living room temperature", "Living room", "Ground floor", "climate", "°C")
+            val publisher = StatisticPublisher(StatisticRepo(mockk()), sensors(sensor), sink, SINCE)
+
+            // when
+            publisher.publishNew()
+
+            // then
+            sink.records.first().dims shouldBe
+                mapOf(
+                    "statistic_id" to STATISTIC_ID,
+                    "name" to "Living room temperature",
+                    "area" to "Living room",
+                    "floor" to "Ground floor",
+                    "category" to "climate",
+                    "unit" to "°C",
+                )
+        }
+
+        "should leave out unknown sensor fields from dims when area, floor and unit are not known" {
+            // given
+            setupWithRecords()
+            val sink = RecordingSink()
+            val sensor = SensorDto(STATISTIC_ID, "Living room temperature", null, null, "climate", null)
+            val publisher = StatisticPublisher(StatisticRepo(mockk()), sensors(sensor), sink, SINCE)
+
+            // when
+            publisher.publishNew()
+
+            // then
+            sink.records.first().dims shouldBe
+                mapOf("statistic_id" to STATISTIC_ID, "name" to "Living room temperature", "category" to "climate")
         }
     })

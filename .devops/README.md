@@ -24,6 +24,9 @@ which commits its tag to `helm/release.yaml`. Until the first `main` build does 
 - `main` is protected: the CI step "Deploy (bump image tag)" pushes as a GitHub App on the ruleset bypass list (variable
   `DEPLOY_APP_CLIENT_ID`, secret `DEPLOY_APP_PRIVATE_KEY`), setup in https://github.com/jagieloadrian/homelab-infra/blob/main/docs/apps.md (own app,
   step 3). The tag commit carries `[skip ci]`.
+- homelab-infra is private, so `devops.yml` fetches `charts/app` with a token of the same GitHub App, limited to
+  homelab-infra and Contents: read. The app must be installed on homelab-infra too (GitHub → Settings → GitHub Apps →
+  the app → Configure → Repository access → add `homelab-infra`); without it the step fails with `Not Found`.
 
 ## values.env (`helm/release.yaml`)
 
@@ -39,6 +42,7 @@ which commits its tag to `helm/release.yaml`. Until the first `main` build does 
 | `NATS_URL` | `nats://nats.apps.svc.cluster.local:4222` | homelab NATS |
 | `NATS_USER` | `mon-home-ass` | NATS user from homelab-infra; its password is `NATS_PASSWORD` in Vault |
 | `NATS_INBOX_PREFIX` | `_INBOX_mon_home_ass` | the only inbox the user may subscribe to; JetStream acks arrive there |
+| `HA_URL` | `http://home-assistant.apps.svc.cluster.local:8123` | Home Assistant on Wyse (Service from homelab-infra); used only together with `HA_TOKEN` |
 
 Redis is not required: without it the cache lives in pod memory (`REDIS_HOST`/`REDIS_PORT`, once there is one).
 
@@ -90,9 +94,34 @@ vault kv put secret/apps/mon-home-ass DB_PASSWORD=-
 | `DB_PASSWORD` | password of the read-only role below |
 | `NATS_PASSWORD` | `MON_HOME_ASS_PASSWORD` from `secret/apps/nats` |
 | `SOURCE_TOKEN` | token of the statistics-service source `home-assistant` (publisher section above) |
+| `HA_TOKEN` | optional, Home Assistant long-lived access token (section below) |
 
 Type the password from `openssl rand -hex 24`, then press Ctrl+D twice (no Enter, it would become part of the
 value). The same password goes into the role below.
+
+## Home Assistant token (optional)
+
+Without `HA_TOKEN` the sensor catalog (`/sensors`, published dims) is built from the recorder DB only:
+`friendly_name`, `device_class` and unit from the latest state attributes. With it, mon-home-ass also reads the
+Home Assistant registries over the WebSocket API: areas, floors, names you gave entities and devices, and
+`entity_category` (diagnostic sensors get the category `diagnostic`). If Home Assistant is unreachable the
+catalog falls back to the DB-only version.
+
+1. Home Assistant → Settings → People → add a user `mon-home-ass` (not an administrator).
+2. Log in as that user → Profile → Security → Long-lived access tokens → Create token, copy it.
+3. With Vault port-forwarded and `vault login` done ([vault.md](https://github.com/jagieloadrian/homelab-infra/blob/main/docs/vault.md)):
+
+   ```bash
+   HA_URL=http://<Wyse IP>:8123 .devops/scripts/ha-token-to-vault.sh
+   ```
+
+   The script reads the token without echo, checks it against `HA_URL/api/`, and stores it as `HA_TOKEN`
+   (`vault kv patch`, or `put` when the path does not exist yet), then prints how to apply it now.
+
+Risk: Home Assistant has no read-only users. A leaked token can read every entity and call services (switch
+devices) with that user's rights, so keep it a separate non-admin user and revoke the token in its profile if
+it leaks. If the registry calls turn out to need an administrator, the app logs a warning and stays on the
+DB-only catalog.
 
 ## Postgres: read-only role
 

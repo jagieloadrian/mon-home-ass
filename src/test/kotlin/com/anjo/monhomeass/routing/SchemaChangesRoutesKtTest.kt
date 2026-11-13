@@ -59,7 +59,7 @@ class SchemaChangesRoutesKtTest :
 
                 // when
                 val response =
-                    client.get("/schemas") {
+                    client.get("/raw/schemas") {
                         header(HttpHeaders.ContentType, "application/json")
                         header(HttpHeaders.Accept, "application/json")
                     }
@@ -89,7 +89,7 @@ class SchemaChangesRoutesKtTest :
                 }
 
                 // when
-                val response = client.get("/schemas")
+                val response = client.get("/raw/schemas")
 
                 // then
                 response.status shouldBe HttpStatusCode.ServiceUnavailable

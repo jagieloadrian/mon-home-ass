@@ -4,6 +4,7 @@ import com.anjo.monhomeass.repository.EventRepo
 import com.anjo.monhomeass.repository.MigrationRepo
 import com.anjo.monhomeass.repository.RecorderRepo
 import com.anjo.monhomeass.repository.SchemaChangesRepo
+import com.anjo.monhomeass.repository.SensorRepo
 import com.anjo.monhomeass.repository.StateMetadataRepo
 import com.anjo.monhomeass.repository.StateRepo
 import com.anjo.monhomeass.repository.StatisticMetaRepo
@@ -14,6 +15,7 @@ import com.anjo.monhomeass.routing.eventsRoute
 import com.anjo.monhomeass.routing.migrationRoute
 import com.anjo.monhomeass.routing.recorderRoute
 import com.anjo.monhomeass.routing.schemaChangesRoute
+import com.anjo.monhomeass.routing.sensorsRoute
 import com.anjo.monhomeass.routing.stateHistoryRoute
 import com.anjo.monhomeass.routing.stateRoute
 import com.anjo.monhomeass.routing.statisticMetaRoute
@@ -30,6 +32,7 @@ import io.ktor.server.plugins.swagger.swaggerUI
 import io.ktor.server.response.respondText
 import io.ktor.server.routing.get
 import io.ktor.server.routing.openapi.OpenApiDocSource
+import io.ktor.server.routing.route
 import io.ktor.server.routing.routing
 import io.ktor.server.routing.routingRoot
 
@@ -43,11 +46,15 @@ fun Application.configureRouting() {
     val statisticRepo: StatisticRepo by dependencies
     val stateRepo: StateRepo by dependencies
     val statisticRunRepo: StatisticRunRepo by dependencies
+    val sensorRepo: SensorRepo by dependencies
     routing {
-        migrationRoute(migrationRepo)
-        recorderRoute(recorderRepo)
-        schemaChangesRoute(schemaChangesRepo)
-        eventsRoute(eventRepo)
+        route("/raw") {
+            migrationRoute(migrationRepo)
+            recorderRoute(recorderRepo)
+            schemaChangesRoute(schemaChangesRepo)
+            eventsRoute(eventRepo)
+            statisticRunRoute(statisticRunRepo)
+        }
         entitiesRoute(stateMetadataRepo)
         statisticMetaRoute(statisticMetaRepo)
         statisticRoute(statisticRepo)
@@ -55,7 +62,7 @@ fun Application.configureRouting() {
         statisticSummaryRoute(statisticRepo)
         stateRoute(stateRepo)
         stateHistoryRoute(stateRepo)
-        statisticRunRoute(statisticRunRepo)
+        sensorsRoute(sensorRepo)
     }
 
     val openApiDocInfo = OpenApiDoc(info = OpenApiInfo("Monitor Home Assistant Stats", "1.0"))

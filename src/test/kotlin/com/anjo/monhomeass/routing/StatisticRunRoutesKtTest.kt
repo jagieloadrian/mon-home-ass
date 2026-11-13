@@ -61,7 +61,7 @@ class StatisticRunRoutesKtTest :
                 }
 
                 // when
-                val response = client.get("/statistics-runs")
+                val response = client.get("/raw/statistics-runs")
                 val decoded = Json.decodeFromString<List<StatisticRunDto>>(response.bodyAsText())
 
                 // then
@@ -86,7 +86,7 @@ class StatisticRunRoutesKtTest :
                 }
 
                 // when
-                val response = client.get("/statistics-runs?limit=1")
+                val response = client.get("/raw/statistics-runs?limit=1")
                 val decoded = Json.decodeFromString<List<StatisticRunDto>>(response.bodyAsText())
 
                 // then
@@ -111,7 +111,7 @@ class StatisticRunRoutesKtTest :
                 }
 
                 // when
-                val response = client.get("/statistics-runs")
+                val response = client.get("/raw/statistics-runs")
                 val decoded = Json.decodeFromString<List<StatisticRunDto>>(response.bodyAsText())
 
                 // then
@@ -132,7 +132,7 @@ class StatisticRunRoutesKtTest :
                 }
 
                 // when
-                val response = client.get("/statistics-runs?limit=-1")
+                val response = client.get("/raw/statistics-runs?limit=-1")
 
                 // then
                 response.status shouldBe HttpStatusCode.BadRequest
@@ -153,7 +153,7 @@ class StatisticRunRoutesKtTest :
                 }
 
                 // when
-                val response = client.get("/statistics-runs")
+                val response = client.get("/raw/statistics-runs")
 
                 // then
                 response.status shouldBe HttpStatusCode.ServiceUnavailable
