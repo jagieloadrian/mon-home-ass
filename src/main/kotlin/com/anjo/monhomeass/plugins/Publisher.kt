@@ -4,6 +4,7 @@ import com.anjo.monhomeass.publish.JetStreamSink
 import com.anjo.monhomeass.publish.KafkaSink
 import com.anjo.monhomeass.publish.Sink
 import com.anjo.monhomeass.publish.StatisticPublisher
+import com.anjo.monhomeass.repository.SensorRepo
 import com.anjo.monhomeass.repository.StatisticRepo
 import io.github.oshai.kotlinlogging.KotlinLogging
 import io.ktor.server.application.Application
@@ -12,6 +13,7 @@ import io.ktor.server.config.ApplicationConfig
 import io.ktor.server.plugins.di.dependencies
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.delay
+import kotlinx.coroutines.ensureActive
 import kotlinx.coroutines.isActive
 import kotlinx.coroutines.launch
 import kotlin.time.Clock
@@ -31,18 +33,22 @@ fun Application.configurePublisher() {
     val interval = config.string("interval_seconds").toLong().seconds
     val since = Clock.System.now() - config.string("lookback_minutes").toLong().minutes
     val statisticRepo: StatisticRepo by dependencies
+    val sensorRepo: SensorRepo by dependencies
 
     launch(Dispatchers.IO) {
         val sink =
             runCatching { newSink(type, sourceId, "Bearer $token") }
                 .getOrElse { return@launch logger.error(it) { "Cannot create the $type client, statistics publisher off" } }
         monitor.subscribe(ApplicationStopping) { sink.close() }
-        val publisher = StatisticPublisher(statisticRepo, sink, since)
+        val publisher = StatisticPublisher(statisticRepo, sensorRepo, sink, since)
         logger.info { "Publishing statistics since $since to $type as source '$sourceId'" }
         while (isActive) {
             runCatching { publisher.publishNew() }
                 .onSuccess { if (it > 0) logger.info { "Published $it statistics to $type" } }
-                .onFailure { logger.warn(it) { "Publishing statistics failed, retry in $interval" } }
+                .onFailure {
+                    ensureActive()
+                    logger.warn(it) { "Publishing statistics failed, retry in $interval" }
+                }
             delay(interval)
         }
     }

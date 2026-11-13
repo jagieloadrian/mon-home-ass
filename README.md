@@ -92,10 +92,11 @@ flowchart LR
 | `KAFKA_BOOTSTRAP_SERVERS` | `localhost:9092` | with `kafka` (plaintext, no SASL) |
 | `KAFKA_TOPIC` | `stats.ingest` | same as `KAFKA_TOPIC` of statistics-service |
 
-One message carries one row in the native record format of statistics-service:
+One message carries one row in the native record format of statistics-service. Next to `statistic_id`, `dims` carry
+the `name`, `area`, `floor`, `category` and `unit` of the [sensor catalog](#sensor-catalog) when they are known:
 
 ```json
-{"ts": "2026-11-03T10:00:00Z", "dims": {"statistic_id": "sensor.living_room_temperature"}, "vals": {"mean": 21.4, "min": 21.1, "max": 21.8}}
+{"ts": "2026-11-03T10:00:00Z", "dims": {"statistic_id": "sensor.living_room_temperature", "name": "Living room temperature", "area": "Living room", "floor": "Ground floor", "category": "climate", "unit": "°C"}, "vals": {"mean": 21.4, "min": 21.1, "max": 21.8}}
 ```
 
 - The publisher waits for the broker's ack (JetStream stream ack, Kafka `send().get()`) before the next row. When
