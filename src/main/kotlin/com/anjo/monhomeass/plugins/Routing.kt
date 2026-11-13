@@ -4,6 +4,7 @@ import com.anjo.monhomeass.repository.EventRepo
 import com.anjo.monhomeass.repository.MigrationRepo
 import com.anjo.monhomeass.repository.RecorderRepo
 import com.anjo.monhomeass.repository.SchemaChangesRepo
+import com.anjo.monhomeass.repository.SensorRepo
 import com.anjo.monhomeass.repository.StateMetadataRepo
 import com.anjo.monhomeass.repository.StateRepo
 import com.anjo.monhomeass.repository.StatisticMetaRepo
@@ -14,6 +15,7 @@ import com.anjo.monhomeass.routing.eventsRoute
 import com.anjo.monhomeass.routing.migrationRoute
 import com.anjo.monhomeass.routing.recorderRoute
 import com.anjo.monhomeass.routing.schemaChangesRoute
+import com.anjo.monhomeass.routing.sensorsRoute
 import com.anjo.monhomeass.routing.stateHistoryRoute
 import com.anjo.monhomeass.routing.stateRoute
 import com.anjo.monhomeass.routing.statisticMetaRoute
@@ -44,6 +46,7 @@ fun Application.configureRouting() {
     val statisticRepo: StatisticRepo by dependencies
     val stateRepo: StateRepo by dependencies
     val statisticRunRepo: StatisticRunRepo by dependencies
+    val sensorRepo: SensorRepo by dependencies
     routing {
         route("/raw") {
             migrationRoute(migrationRepo)
@@ -59,6 +62,7 @@ fun Application.configureRouting() {
         statisticSummaryRoute(statisticRepo)
         stateRoute(stateRepo)
         stateHistoryRoute(stateRepo)
+        sensorsRoute(sensorRepo)
     }
 
     val openApiDocInfo = OpenApiDoc(info = OpenApiInfo("Monitor Home Assistant Stats", "1.0"))

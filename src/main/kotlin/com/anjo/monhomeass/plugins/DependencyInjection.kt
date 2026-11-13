@@ -5,6 +5,7 @@ import com.anjo.monhomeass.repository.EventRepo
 import com.anjo.monhomeass.repository.MigrationRepo
 import com.anjo.monhomeass.repository.RecorderRepo
 import com.anjo.monhomeass.repository.SchemaChangesRepo
+import com.anjo.monhomeass.repository.SensorRepo
 import com.anjo.monhomeass.repository.StateMetadataRepo
 import com.anjo.monhomeass.repository.StateRepo
 import com.anjo.monhomeass.repository.StatisticMetaRepo
@@ -32,5 +33,6 @@ fun Application.configureDI() {
         provide { StatisticRepo(get(DependencyKey<RedisCache>())) }
         provide { StateRepo(get(DependencyKey<RedisCache>())) }
         provide { StatisticRunRepo(get(DependencyKey<RedisCache>())) }
+        provide { SensorRepo(get(DependencyKey<RedisCache>())) }
     }
 }

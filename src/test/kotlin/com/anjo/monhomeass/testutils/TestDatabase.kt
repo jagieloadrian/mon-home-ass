@@ -51,15 +51,17 @@ private object TestContainers {
     }
 }
 
-fun prepareDatabase() {
+fun prepareDatabase(): Database {
     val pg = TestContainers.postgres
-    Database.connect(
-        url = pg.jdbcUrl,
-        driver = "org.postgresql.Driver",
-        user = pg.username,
-        password = pg.password,
-    )
+    val database =
+        Database.connect(
+            url = pg.jdbcUrl,
+            driver = "org.postgresql.Driver",
+            user = pg.username,
+            password = pg.password,
+        )
     flushRedis()
+    return database
 }
 
 fun testApplicationConfig(): MapApplicationConfig {

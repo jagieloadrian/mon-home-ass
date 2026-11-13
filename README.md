@@ -1,7 +1,7 @@
 # mon-home-ass
 
 Readonly HTTP API over a Home Assistant recorder database. Exposes
-statistics, entities, states and, under `/raw`, the recorder internals
+statistics, entities, states, a sensor catalog and, under `/raw`, the recorder internals
 (recorder/statistic runs, migrations, events, schema changes) as JSON
 endpoints for external tools/dashboards, without touching Home Assistant
 itself.
@@ -38,6 +38,18 @@ and `https` both match), e.g. `statistics.home.arpa,localhost:8081`; default `lo
 cross-origin access.
 
 Health probes: `/health/ready` answers 503 while the database is unreachable, `/health/live` stays 200.
+
+## Sensor catalog
+
+`GET /sensors` lists one sensor per row of `statistics_meta` with a human `name`, `area`, `floor`, `category` and
+`unit`, optionally filtered by exact `area` and `category`. It is built from the recorder database (the latest
+`friendly_name`, `device_class` and `unit_of_measurement` of each entity, then `statistics_meta`) and cached like
+every other read.
+
+- name: `friendly_name`, else the `statistics_meta` name, else the entity id without its domain (`sensor.kitchen_co2`
+  → `Kitchen co2`); repeated names get ` 2`, ` 3`, ... in entity id order
+- category: from `device_class` (`climate`, `air-quality`, `energy`, `utility`, `battery`, `light`, `diagnostic`),
+  else from the `statistics_meta` unit class, else `other`
 
 ## Statistics publisher
 

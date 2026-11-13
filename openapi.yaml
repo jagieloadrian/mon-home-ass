@@ -374,6 +374,39 @@ paths:
             application/json:
               schema:
                 $ref: "#/components/schemas/ErrorDto"
+  /sensors:
+    get:
+      tags:
+      - Sensors
+      summary: List sensors with a human name, area, floor, category and unit
+      parameters:
+      - name: area
+        in: query
+        description: Exact area name.
+        schema:
+          type: string
+      - name: category
+        in: query
+        description: 'Exact category: climate, air-quality, energy, utility, battery,
+          light, diagnostic or other.'
+        schema:
+          type: string
+      responses:
+        "200":
+          description: One sensor per statistic, ordered by entity id, optionally
+            filtered.
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/SensorDto"
+        "503":
+          description: Recorder database unreachable or query failed.
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorDto"
 components:
   schemas:
     MigrationDto:
@@ -670,4 +703,30 @@ components:
         eventId:
           type:
           - integer
+          - "null"
+    SensorDto:
+      type: object
+      title: SensorDto
+      required:
+      - entityId
+      - name
+      - category
+      properties:
+        entityId:
+          type: string
+        name:
+          type: string
+        area:
+          type:
+          - string
+          - "null"
+        floor:
+          type:
+          - string
+          - "null"
+        category:
+          type: string
+        unit:
+          type:
+          - string
           - "null"
