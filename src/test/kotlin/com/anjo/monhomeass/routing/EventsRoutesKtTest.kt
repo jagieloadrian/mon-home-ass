@@ -141,7 +141,7 @@ class EventsRoutesKtTest :
 
                 // when and then
                 client
-                    .get("/events") {
+                    .get("/raw/events") {
                         header(HttpHeaders.ContentType, "application/json")
                         header(HttpHeaders.Accept, "application/json")
                     }.apply {
@@ -170,7 +170,7 @@ class EventsRoutesKtTest :
 
                 // when and then
                 client
-                    .get("/events") {
+                    .get("/raw/events") {
                         header(HttpHeaders.ContentType, "application/json")
                         header(HttpHeaders.Accept, "application/json")
                         parameter("exclude", "exclude")
@@ -216,7 +216,7 @@ class EventsRoutesKtTest :
 
                 // when and then
                 client
-                    .get("/events") {
+                    .get("/raw/events") {
                         header(HttpHeaders.ContentType, "application/json")
                         header(HttpHeaders.Accept, "application/json")
                         parameter("contain", "exclude something")

@@ -61,6 +61,8 @@ class RoutingKtTest :
                 ready.status shouldBe HttpStatusCode.OK
                 ready.bodyAsText() shouldContain "\"database\":true"
                 openApi shouldContain "/statistics-meta"
+                openApi shouldContain "/raw/migrations"
+                openApi shouldNotContain "\"/migrations\""
                 openApi shouldNotContain "/health"
             }
         }

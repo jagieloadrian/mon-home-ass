@@ -30,6 +30,7 @@ import io.ktor.server.plugins.swagger.swaggerUI
 import io.ktor.server.response.respondText
 import io.ktor.server.routing.get
 import io.ktor.server.routing.openapi.OpenApiDocSource
+import io.ktor.server.routing.route
 import io.ktor.server.routing.routing
 import io.ktor.server.routing.routingRoot
 
@@ -44,10 +45,13 @@ fun Application.configureRouting() {
     val stateRepo: StateRepo by dependencies
     val statisticRunRepo: StatisticRunRepo by dependencies
     routing {
-        migrationRoute(migrationRepo)
-        recorderRoute(recorderRepo)
-        schemaChangesRoute(schemaChangesRepo)
-        eventsRoute(eventRepo)
+        route("/raw") {
+            migrationRoute(migrationRepo)
+            recorderRoute(recorderRepo)
+            schemaChangesRoute(schemaChangesRepo)
+            eventsRoute(eventRepo)
+            statisticRunRoute(statisticRunRepo)
+        }
         entitiesRoute(stateMetadataRepo)
         statisticMetaRoute(statisticMetaRepo)
         statisticRoute(statisticRepo)
@@ -55,7 +59,6 @@ fun Application.configureRouting() {
         statisticSummaryRoute(statisticRepo)
         stateRoute(stateRepo)
         stateHistoryRoute(stateRepo)
-        statisticRunRoute(statisticRunRepo)
     }
 
     val openApiDocInfo = OpenApiDoc(info = OpenApiInfo("Monitor Home Assistant Stats", "1.0"))

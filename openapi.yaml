@@ -3,7 +3,7 @@ info:
   title: Monitor Home Assistant Stats
   version: "1.0"
 paths:
-  /migrations:
+  /raw/migrations:
     get:
       tags:
       - Migration
@@ -17,7 +17,7 @@ paths:
                 type: array
                 items:
                   $ref: "#/components/schemas/MigrationDto"
-  /recorders:
+  /raw/recorders:
     get:
       tags:
       - Recorder
@@ -31,7 +31,7 @@ paths:
                 type: array
                 items:
                   $ref: "#/components/schemas/RecorderDto"
-  /schemas:
+  /raw/schemas:
     get:
       tags:
       - Schema Changes
@@ -45,7 +45,7 @@ paths:
                 type: array
                 items:
                   $ref: "#/components/schemas/SchemaChangeDto"
-  /events:
+  /raw/events:
     get:
       tags:
       - Event
@@ -59,6 +59,38 @@ paths:
                 type: array
                 items:
                   $ref: "#/components/schemas/EventDto"
+  /raw/statistics-runs:
+    get:
+      tags:
+      - Statistics
+      summary: List statistics recorder runs, most recent first
+      parameters:
+      - name: limit
+        in: query
+        schema:
+          type: integer
+      responses:
+        "200":
+          description: Recorder run rows, most recent first, optionally capped by
+            limit. Empty array if no runs recorded.
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/StatisticRunDto"
+        "400":
+          description: limit present but unparseable or negative.
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorDto"
+        "503":
+          description: Recorder database unreachable or query failed.
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorDto"
   /entities:
     get:
       tags:
@@ -342,38 +374,6 @@ paths:
             application/json:
               schema:
                 $ref: "#/components/schemas/ErrorDto"
-  /statistics-runs:
-    get:
-      tags:
-      - Statistics
-      summary: List statistics recorder runs, most recent first
-      parameters:
-      - name: limit
-        in: query
-        schema:
-          type: integer
-      responses:
-        "200":
-          description: Recorder run rows, most recent first, optionally capped by
-            limit. Empty array if no runs recorded.
-          content:
-            application/json:
-              schema:
-                type: array
-                items:
-                  $ref: "#/components/schemas/StatisticRunDto"
-        "400":
-          description: limit present but unparseable or negative.
-          content:
-            application/json:
-              schema:
-                $ref: "#/components/schemas/ErrorDto"
-        "503":
-          description: Recorder database unreachable or query failed.
-          content:
-            application/json:
-              schema:
-                $ref: "#/components/schemas/ErrorDto"
 components:
   schemas:
     MigrationDto:
@@ -509,6 +509,25 @@ components:
           $ref: "#/components/schemas/DataContentDto"
         eventType:
           $ref: "#/components/schemas/EventTypeDto"
+    StatisticRunDto:
+      type: object
+      title: StatisticRunDto
+      required:
+      - runId
+      - startedAtTs
+      properties:
+        runId:
+          type: integer
+        startedAtTs:
+          type: integer
+    ErrorDto:
+      type: object
+      title: ErrorDto
+      required:
+      - message
+      properties:
+        message:
+          type: string
     EntityDto:
       type: object
       title: EntityDto
@@ -521,14 +540,6 @@ components:
           type:
           - string
           - "null"
-    ErrorDto:
-      type: object
-      title: ErrorDto
-      required:
-      - message
-      properties:
-        message:
-          type: string
     StatisticMetaDto:
       type: object
       title: StatisticMetaDto
@@ -660,14 +671,3 @@ components:
           type:
           - integer
           - "null"
-    StatisticRunDto:
-      type: object
-      title: StatisticRunDto
-      required:
-      - runId
-      - startedAtTs
-      properties:
-        runId:
-          type: integer
-        startedAtTs:
-          type: integer

@@ -1,9 +1,10 @@
 # mon-home-ass
 
 Readonly HTTP API over a Home Assistant recorder database. Exposes
-statistics, entities, states, recorder/statistic runs, migrations, and
-schema changes as JSON endpoints for external tools/dashboards, without
-touching Home Assistant itself.
+statistics, entities, states and, under `/raw`, the recorder internals
+(recorder/statistic runs, migrations, events, schema changes) as JSON
+endpoints for external tools/dashboards, without touching Home Assistant
+itself.
 
 ## Stack
 
